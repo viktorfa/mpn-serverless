@@ -1,0 +1,2 @@
+NOK = 'NOK'
+SEK = 'SEK'

@@ -1,0 +1,2 @@
+AUTO = 'auto'
+MANUAL = 'manual'

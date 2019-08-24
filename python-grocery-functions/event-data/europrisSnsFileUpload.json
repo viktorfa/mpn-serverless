@@ -1,0 +1,22 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed:a1330e32-82df-43cd-821e-51160c88a124",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "d71a775d-c85d-585d-bcb2-2337693a40ba",
+        "TopicArn": "arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed",
+        "Subject": "Amazon S3 Notification",
+        "Message": "{\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2018-11-17T23:07:19.846Z\",\"eventName\":\"ObjectCreated:Copy\",\"userIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"requestParameters\":{\"sourceIPAddress\":\"84.211.29.59\"},\"responseElements\":{\"x-amz-request-id\":\"D90B2EB60470DC65\",\"x-amz-id-2\":\"g8A7kbZ5ztkQ8gWV/LJXSTvB8RuqMJT0csw1e2r6r1bfdRWBnsDTZs5oJmUxgCnoluTeQQXj6y4=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"ScrapingFeedUpload\",\"bucket\":{\"name\":\"grocery-prices\",\"ownerIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"arn\":\"arn:aws:s3:::grocery-prices\"},\"object\":{\"key\":\"europris_scraper_feed/europris_spider-latest.json\",\"size\":1798675,\"eTag\":\"29f1e1cea6d8c5512069f308a2b51799\",\"versionId\":\"2RgrIrfUxGojCvf0nt7M6.zoIhqcnIMT\",\"sequencer\":\"005BF09F27AC289591\"}}}]}",
+        "Timestamp": "2018-11-17T23:07:19.924Z",
+        "SignatureVersion": "1",
+        "Signature": "LHak977UUw9ngXugA8myWlyvDBWvNd/EfmvSxonNh8qg3feQqArp2TNaDxZgiRwYmoad7EIBILoZxdhULQ+vNsmhC0kXHpKsIUAXgshGdK0TqWZNMVgzKCfFpPIroWNBH6HG/kOYX7BjFNyOmZdFd+L+Bx4ae1yKh9B/1pKD9aoCKuxO3l8s4HXIl0YmJJmuICSZA5wLBFJ4fw9zu1X8je4z72Q9TkYuePuqBT25Xwlj6d2MdLTMBtB2iJp7qSNhelVcjHRvJu2VxpQ0Z7eEZ6NTnPFyIu+evY9wNVuYByBuzWmOcydiQIIN7dXv6/0gqptxdic7E6Njxo9WHQk5Yg==",
+        "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem",
+        "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed:a1330e32-82df-43cd-821e-51160c88a124",
+        "MessageAttributes": {}
+      }
+    }
+  ]
+}

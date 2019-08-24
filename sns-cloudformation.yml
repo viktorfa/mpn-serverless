@@ -1,0 +1,49 @@
+resources:
+  Resources:
+    shopgunScraperFeedTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.shopgunSnsTopicName}
+    kolonialScraperFeedTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.kolonialSnsTopicName}
+    menyScraperFeedTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.menySnsTopicName}
+    europrisScraperFeedTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:custom.europrisSnsTopicName}
+    objectsCreatedTopicPolicy:
+      Type: AWS::SNS::TopicPolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: SnsTopicPolicy
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sns:Publish
+            Resources: 
+              - Ref: shopgunScraperFeedTopic
+              - Ref: kolonialScraperFeedTopic
+              - Ref: menyScraperFeedTopic
+              - Ref: europrisScraperFeedTopic
+              
+            Condition: 
+              ArnLike: 
+                'AWS:SourceArn': 'arn:aws:s3:::grocery-prices'
+        Topics:
+          - Ref: shopgunScraperFeedTopic
+          - Ref: kolonialScraperFeedTopic
+          - Ref: menyScraperFeedTopic
+          - Ref: europrisScraperFeedTopic
+
+custom:
+  shopgunSnsTopicName: shopgun-scraper-feed
+  kolonialSnsTopicName: kolonial-scraper-feed
+  menySnsTopicName: meny-scraper-feed
+  europrisSnsTopicName: europris-scraper-feed

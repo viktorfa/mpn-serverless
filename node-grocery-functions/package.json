@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "aws-sdk": "^2.489.0",
+    "chai": "^4.2.0",
+    "lodash": "^4.17.11",
+    "lunr": "^2.3.6",
+    "mocha": "^6.1.4",
+    "mongodb": "^3.2.7",
+    "dotenv-safe": "^6.1.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "Records": [{
+    "EventSource": "aws:sns",
+    "EventVersion": "1.0",
+    "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:meny-scraper-feed:3ebcc9b7-56d2-4b32-bc7a-2c546add318e",
+    "Sns": {
+      "Type": "Notification",
+      "MessageId": "f994cf58-c4c2-5af6-8cb5-9be0073103b3",
+      "TopicArn": "arn:aws:sns:eu-central-1:459015585648:meny-scraper-feed",
+      "Subject": "Amazon S3 Notification",
+      "Message": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2019-01-16T05:31:31.673Z\",\"eventName\":\"ObjectCreated:Copy\",\"userIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"requestParameters\":{\"sourceIPAddress\":\"84.215.48.146\"},\"responseElements\":{\"x-amz-request-id\":\"8F72B332BC3CEDBF\",\"x-amz-id-2\":\"pvUdvNZUgvaUF8HGFN03GFNrEnaEqDsOTqtsSvIVlDrkIK7z830Lbm9mbXzpUa0B/QPNWad96yc=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"MenyScraperFeedCreate\",\"bucket\":{\"name\":\"grocery-prices\",\"ownerIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"arn\":\"arn:aws:s3:::grocery-prices\"},\"object\":{\"key\":\"meny_scraper_feed/meny_spider-latest.json\",\"size\":3567283,\"eTag\":\"a331b86b38cab681a7d9ae838df9d3ca\",\"versionId\":\"9_2mbAI_K6PC5zqCofH2ktoxmBfk16ES\",\"sequencer\":\"005C3EC1B37E5FB615\"}}}]}",
+      "Timestamp": "2019-01-16T05:31:31.719Z",
+      "SignatureVersion": "1",
+      "Signature": "Q6Fzb8Qi81Eg4Xx7ynBzzObIjP/ULi3RUThDA3V6n1MuLKP5Vq5UxEJMoIDEh5Ak+D1Sler1rH8kUCV+Q1yjTVQTkKLc6KiiEhgevUQTJV/bSC98uaNGx4Q0iK9PPUJWm26ZN423WHs6nKbFJpiU2eUkrf/5Pzi3CEMNkVynD7xVF72jkhSjstMnKY/g4GMcHBxMLgR7w9+WGDQAwBkMUAh+iQk3LItr7f2RTP6C/m6OiOgYlQ1U+00JhjS1gLXu4ULnMdZT75NIhpF6ApImaSc+3dI2xMX6rdAo0H/erdtULUlWOiAkt8hd7dJQGWDq0LPnuDrWKfJu5cRrLus5gg==",
+      "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem",
+      "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:459015585648:meny-scraper-feed:3ebcc9b7-56d2-4b32-bc7a-2c546add318e",
+      "MessageAttributes": {}
+    }
+  }]
+}

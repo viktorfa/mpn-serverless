@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "lint": "mypy",
+    "test": "python -m unittest discover"
+  },
+  "dependencies": {
+    "dotenv-safe": "^6.1.0",
+    "serverless-python-requirements": "^4.2.5"
+  }
+}
