@@ -11,11 +11,7 @@
 #
 # Happy Coding!
 
-service: python-grocery-functions # NOTE: update this with your service name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
+service: python-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
@@ -24,149 +20,39 @@ provider:
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
 
-  environment:
-    MONGO_HOST: ${env:MONGO_HOST}
-    MONGO_PORT: ${env:MONGO_PORT}
-    MONGO_DATABASE: ${env:MONGO_DATABASE}
-    MONGO_USER: ${env:MONGO_USER}
-    MONGO_PASSWORD: ${env:MONGO_PASSWORD}
-    BUCKET_NAME: ${self:custom.vars.bucketName}
-
   memorySize: 1024
   timeout: 60
 
   iamRoleStatements:
     - Effect: "Allow"
       Action:
-        - "s3:PutObject"
-      Resource: "arn:aws:s3:::${self:custom.vars.bucketName}/*"
-
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  include:
-#    - include-me.py
-#    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
+        - "s3:GetObject"
+      Resource: !Sub
+        - "arn:aws:s3:::#{BucketName}/*"
+        - BucketName:
+            Ref: ScraperFeedBucket
 
 package:
   include:
+    - hello.py
     - scraper_feed_handler.py
-    - assess_offers_handler.py
-    - assess_offers/**
-    - scraper_feed/**
-    - amp_types/**
-    - config/**
-    - storage/**
-    - util/**
   exclude:
     - ./**
 
 functions:
-  assess_offers:
-    handler: assess_offers_handler.assess_offers
+  scraperFeed:
+    handler: scraper_feed_handler.scraper_feed
     events:
-      - sns: arn:aws:sns:eu-central-1:459015585648:${self:custom.vars.shopgunSnsTopicName}
+      - sns:
+          topicName: ScraperFeedCreated
+          arn:
+            Ref: ScraperFeedCreatedTopic
 
-  shopgun_feed:
-    handler: scraper_feed_handler.shopgun_feed
-    events:
-      - sns: arn:aws:sns:eu-central-1:459015585648:${self:custom.vars.shopgunSnsTopicName}
-  kolonial_feed:
-    handler: scraper_feed_handler.kolonial_feed
-    events:
-      - sns: arn:aws:sns:eu-central-1:459015585648:${self:custom.vars.kolonialSnsTopicName}
-  meny_feed:
-    handler: scraper_feed_handler.meny_feed
-    events:
-      - sns: arn:aws:sns:eu-central-1:459015585648:${self:custom.vars.menySnsTopicName}
-  europris_feed:
-    handler: scraper_feed_handler.europris_feed
-    events:
-      - sns: arn:aws:sns:eu-central-1:459015585648:${self:custom.vars.europrisSnsTopicName}
-
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill: amzn1.ask.skill.xx-xx-xx-xx
-#      - alexaSmartHome: amzn1.ask.skill.xx-xx-xx-xx
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+resources:
+  - ${file(../s3-sns-cloudformation.yml)}
 
 plugins:
-  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
 
 custom:
   vars: ${file(./sls-config.js)}
-  pythonRequirements:
-    dockerizePip: true # Had some problem with C libs in python if using no-linux
-    slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
-    # Caching pip
-    useDownloadCache: true
-    useStaticCache: true
-    # This package has cause some problems
-    noDeploy:
-      - pkg-resources
-    fileName: requirements.txt

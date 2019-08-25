@@ -18,13 +18,5 @@ module.exports = () => {
   return {
     stage: process.env.NODE_ENV === "production" ? "prod" : "dev",
     logRetentionInDays: process.env.NODE_ENV === "production" ? 30 : 1,
-    shopgunSnsTopicName: "shopgun-scraper-feed",
-    kolonialSnsTopicName: "kolonial-scraper-feed",
-    menySnsTopicName: "meny-scraper-feed",
-    europrisSnsTopicName: "europris-scraper-feed",
-    bucketName:
-      process.env.NODE_ENV === "production"
-        ? "grocery-prices"
-        : "grocery-prices-dev",
   };
 };

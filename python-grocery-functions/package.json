@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "dotenv-safe": "^6.1.0",
+    "serverless-cloudformation-sub-variables": "^0.2.1",
     "serverless-python-requirements": "^4.2.5"
   }
 }
