@@ -1,15 +1,13 @@
 import json
 import boto3
+from bson.json_util import dumps
+
+from scraper_feed.handle_products import handle_products
+from storage.db import save_scraped_products
+from storage.s3 import get_s3_file_content
+
 
 s3 = boto3.client('s3')
-
-
-def get_s3_file_content(bucket: str, key: str):
-    """
-    Gets the raw content of an S3 object.
-    """
-    s3_object = s3.get_object(Bucket=bucket, Key=key)
-    return s3_object['Body'].read().decode()
 
 
 def scraper_feed(event, context):
@@ -20,8 +18,17 @@ def scraper_feed(event, context):
         key = message_record['s3']['object']['key']
         file_content = get_s3_file_content(bucket, key)
 
+        provenance = key.split('/')[0]
+
+        products = handle_products(
+            json.loads(file_content),
+            provenance
+        )
+        result = save_scraped_products(products)
         return {
-            "message": file_content
+            "message": "Go Serverless v1.0! Your function executed successfully!",
+            "event": event,
+            "result": dumps(result.bulk_api_result)
         }
     except Exception as e:
         print("Could not get SNS message from event")

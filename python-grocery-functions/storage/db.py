@@ -16,7 +16,9 @@ def get_update_one(product, id_field: str = 'uri'):
     return UpdateOne({id_field: product[id_field]}, {'$set': product}, upsert=True)
 
 
-def bulk_upsert(iterable: Iterable, collection_name: str, id_field: str = 'uri'):
+def bulk_upsert(iterable: Iterable,
+                collection_name: str,
+                id_field: str = 'uri'):
     print('Start saving to Mongo collection: {}'.format(collection_name))
     collection = get_collection(collection_name)
     requests = list(map(get_update_one, iterable))
@@ -26,7 +28,7 @@ def bulk_upsert(iterable: Iterable, collection_name: str, id_field: str = 'uri')
 
 
 def save_promoted_offers(df):
-    collection = get_collection('groceryoffer')
+    collection = get_collection('mpnoffer')
     requests = list([UpdateOne(dict(uri=get_product_uri(provenances.SHOPGUN, row.id)), {
         '$set': dict(is_promoted=True, select_method=select_methods.AUTO)
     })
@@ -36,12 +38,12 @@ def save_promoted_offers(df):
 
 def save_scraped_products(products: Iterable):
     last_update_limit = datetime.utcnow() - timedelta(OVERWRITE_EDIT_LIMIT_DAYS)
-    meta_fields_collection = get_collection('groceryoffermeta')
+    meta_fields_collection = get_collection('mpnoffermeta')
     meta_fields = meta_fields_collection.find(
         dict(updatedAt={"$gt": last_update_limit}))
     uri_field_dict = meta_fields_result_to_dict(meta_fields)
     return bulk_upsert(
         remove_protected_fields(products, uri_field_dict),
-        'groceryoffer',
+        'mpnoffer',
         'uri'
     )

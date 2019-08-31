@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from datetime import timedelta
 from typing import List, Dict, Optional
+from urllib.parse import urlparse
 
 from util.helpers import get_kolonial_image_url, get_shopgun_href, json_time_to_datetime, get_product_uri
 from util.enums import currency_codes, provenances, dealers
@@ -11,6 +12,16 @@ from util.quantity_extraction import analyze_quantity
 
 now = datetime.utcnow()
 one_week_ahead = now + timedelta(7)
+
+
+def get_provenance_id(product):
+    candidates = (
+        product.get('provenance_id'),
+        product.get('sku'),
+        product.get('id'),
+        urlparse(product.get('url')).path[1:],
+    )
+    return next(x for x in candidates if x)
 
 
 def handle_products(products: List[Dict], source: str) -> list:
@@ -94,7 +105,23 @@ def get_standard_product(product: dict, source: str) -> dict:
             }
         )
     else:
-        raise Exception('Invalid source')
+        provenance_id = get_provenance_id(product)
+        return {
+            ** product,
+            "provenance_id": provenance_id,
+            "provenance": source,
+            "dealer": source,
+            "run_from": now,
+            "run_till": one_week_ahead,
+            "heading": product.get('title'),
+            "description": product.get('description'),
+            "brand": product.get('brand'),
+            "href": product.get('url'),
+            "image_url": product.get('image'),
+            "uri": get_product_uri(source, provenance_id),
+            "pricing": get_product_pricing(product, source),
+            ** analyzed_product,
+        }
 
 
 def get_amount_from_shopgun_quantity(quantity: dict) -> dict:
@@ -149,7 +176,11 @@ def get_product_pricing(product: dict, source: str) -> Optional[dict]:
     elif source == provenances.SHOPGUN:
         return product.get('pricing')
     else:
-        raise Exception('Invalid source')
+        return dict(
+            price=product.get('price'),
+            currency=product.get("priceCurrency", currency_codes.NOK),
+            pre_price=product.get('prePrice'),
+        )
 
 
 def get_quantity_fields(product: dict, source: str) -> Optional[List[str]]:
@@ -162,5 +193,5 @@ def get_quantity_fields(product: dict, source: str) -> Optional[List[str]]:
     elif source == provenances.SHOPGUN:
         quantity_fields = ['description', 'heading']
     else:
-        raise Exception('Invalid source')
+        quantity_fields = ['description', 'title']
     return [product[key] for key in quantity_fields if key in product.keys()]
