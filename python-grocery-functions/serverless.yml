@@ -23,6 +23,13 @@ provider:
   memorySize: 1024
   timeout: 60
 
+  environment:
+    MONGO_HOST: ${env:MONGO_HOST}
+    MONGO_PORT: ${env:MONGO_PORT}
+    MONGO_DATABASE: ${env:MONGO_DATABASE}
+    MONGO_USER: ${env:MONGO_USER}
+    MONGO_PASSWORD: ${env:MONGO_PASSWORD}
+
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -34,8 +41,12 @@ provider:
 
 package:
   include:
-    - hello.py
     - scraper_feed_handler.py
+    - scraper_feed/**
+    - storage/**
+    - util/**
+    - config/**
+    - amp_types/**
   exclude:
     - ./**
 
@@ -52,7 +63,15 @@ resources:
   - ${file(../s3-sns-cloudformation.yml)}
 
 plugins:
+  - serverless-python-requirements
   - serverless-cloudformation-sub-variables
 
 custom:
   vars: ${file(./sls-config.js)}
+  pythonRequirements:
+    # dockerizePip: true # Had some problem with C libs in python if using no-linux
+    slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
+    # Caching pip
+    useDownloadCache: true
+    useStaticCache: true
+    fileName: requirements.txt

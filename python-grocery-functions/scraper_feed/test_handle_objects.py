@@ -17,6 +17,8 @@ class Basic(TestCase):
             self.shopgun_products = json.load(shopgun_products_json)
         with open('assets/swecandy-scraper-feed.json') as swecandy_products_json:
             self.swecandy_products = json.load(swecandy_products_json)
+        with open('assets/gottebiten-scraper-feed.json') as gottebiten_products_json:
+            self.gottebiten_products = json.load(gottebiten_products_json)
 
     def test_meny_products(self):
         actual = handle_products(self.meny_products, provenances.MENY)
@@ -50,5 +52,12 @@ class Basic(TestCase):
         actual = handle_products(self.swecandy_products, "swecandy.se")
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.swecandy_products))
+        self.assertIsNotNone(actual[0]['run_till'])
+        self.assertIsNotNone(actual[0]['run_from'])
+
+    def test_gottebiten_products(self):
+        actual = handle_products(self.gottebiten_products, "gottebiten.se")
+        self.assertIsInstance(actual, list)
+        self.assertEqual(len(actual), len(self.gottebiten_products))
         self.assertIsNotNone(actual[0]['run_till'])
         self.assertIsNotNone(actual[0]['run_from'])

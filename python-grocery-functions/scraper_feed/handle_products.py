@@ -194,4 +194,4 @@ def get_quantity_fields(product: dict, source: str) -> Optional[List[str]]:
         quantity_fields = ['description', 'heading']
     else:
         quantity_fields = ['description', 'title']
-    return [product[key] for key in quantity_fields if key in product.keys()]
+    return [product[key] if product[key] else "" for key in quantity_fields if key in product.keys()]

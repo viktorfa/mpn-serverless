@@ -1,4 +1,6 @@
 import json
+import logging
+
 import boto3
 from bson.json_util import dumps
 
@@ -11,6 +13,8 @@ s3 = boto3.client('s3')
 
 
 def scraper_feed(event, context):
+    logging.info("event")
+    logging.info(event)
     try:
         sns_message = json.loads(event['Records'][0]['Sns']['Message'])
         message_record = sns_message['Records'][0]
@@ -19,7 +23,13 @@ def scraper_feed(event, context):
         file_content = get_s3_file_content(bucket, key)
 
         provenance = key.split('/')[0]
+    except Exception:
+        logging.exception("Could not get SNS message from event")
+        return {
+            "message": "no cannot"
+        }
 
+    try:
         products = handle_products(
             json.loads(file_content),
             provenance
@@ -30,9 +40,9 @@ def scraper_feed(event, context):
             "event": event,
             "result": dumps(result.bulk_api_result)
         }
-    except Exception as e:
-        print("Could not get SNS message from event")
-        print(e)
+    except Exception:
+        logging.exception("Could not handle scraped products")
+
     return {
         "message": "no cannot"
     }
