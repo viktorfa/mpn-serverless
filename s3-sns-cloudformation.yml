@@ -2,6 +2,8 @@ Resources:
   ScraperFeedBucket:
     Type: AWS::S3::Bucket
     Properties:
+      VersioningConfiguration:
+        Status: "Enabled"
       NotificationConfiguration:
         TopicConfigurations:
           - Event: s3:ObjectCreated:*
@@ -28,3 +30,15 @@ Outputs:
   ScraperFeedCreatedTopic:
     Value:
       Ref: ScraperFeedCreatedTopic
+  ScraperFeedBucket:
+    Value:
+      Ref: ScraperFeedBucket
+    Export:
+      Name: ${self:provider.stage}-ScraperFeedBucket
+  ScraperFeedBucketArn:
+    Value:
+      Fn::GetAtt:
+        - ScraperFeedBucket
+        - Arn
+    Export:
+      Name: ${self:provider.stage}-ScraperFeedBucketArn
