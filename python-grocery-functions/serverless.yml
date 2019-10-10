@@ -19,6 +19,7 @@ provider:
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
+  profile: serverless-mpn-admin
 
   memorySize: 1024
   timeout: 60

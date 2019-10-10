@@ -22,6 +22,13 @@ class ExtractUnitPairs(TestCase):
         self.assertIsInstance(actual, list)
         self.assertListEqual(actual, expected)
 
+    def test_with_comma(self):
+        string = 'Pingvin Heksehyl Stang 50 st. 1,25 kg'
+        expected = [(50, 'st.'), (1.25, 'kg')]
+        actual = extract_number_unit_pairs(string)
+        self.assertIsInstance(actual, list)
+        self.assertListEqual(actual, expected)
+
     def test_with_multiple(self):
         string = 'Cloetta sjokolade 450g 75,00kr/kg'
         expected = [(450.0, 'g'), (75.0, 'kr/kg')]

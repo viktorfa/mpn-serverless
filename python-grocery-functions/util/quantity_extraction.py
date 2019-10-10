@@ -36,16 +36,13 @@ def extract_quantity(strings: List[str]) -> QuantityField:
             except Exception:
                 pass
 
-        min_size = min((x['value'] for x in number_unit_dicts if x['unit']
-                        and x['unit']['type'] == unit_types.QUANTITY), default=None)
-        max_size = max((x['value'] for x in number_unit_dicts if x['unit']
-                        and x['unit']['type'] == unit_types.QUANTITY), default=None)
-        min_pieces = min((x['value'] for x in number_unit_dicts if x['unit']
-                          and x['unit']['type'] == unit_types.PIECE), default=None)
-        max_pieces = max((x['value'] for x in number_unit_dicts if x['unit']
-                          and x['unit']['type'] == unit_types.PIECE), default=None)
-        size_amount = dict(min=min_size, max=max_size)
-        piece_amount = dict(min=min_pieces, max=max_pieces)
+        size = next((x['value'] for x in number_unit_dicts if x['unit']
+                     and x['unit']['type'] == unit_types.QUANTITY), None)
+
+        pieces = next((x['value'] for x in number_unit_dicts if x['unit']
+                       and x['unit']['type'] == unit_types.PIECE), None)
+        size_amount = dict(min=size, max=size)
+        piece_amount = dict(min=pieces, max=pieces)
         size_unit = next(
             (x['unit'] for x in number_unit_dicts if x['unit']
              and x['unit']['type'] == unit_types.QUANTITY), None)

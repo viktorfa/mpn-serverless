@@ -193,5 +193,5 @@ def get_quantity_fields(product: dict, source: str) -> Optional[List[str]]:
     elif source == provenances.SHOPGUN:
         quantity_fields = ['description', 'heading']
     else:
-        quantity_fields = ['description', 'title']
+        quantity_fields = ['title', 'description']
     return [product[key] if product[key] else "" for key in quantity_fields if key in product.keys()]
