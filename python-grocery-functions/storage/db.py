@@ -27,8 +27,8 @@ def bulk_upsert(iterable: Iterable,
     return result
 
 
-def save_promoted_offers(df):
-    collection = get_collection('mpnoffer')
+def save_promoted_offers(df, collection_name: str):
+    collection = get_collection(collection_name)
     requests = list([UpdateOne(dict(uri=get_product_uri(provenances.SHOPGUN, row.id)), {
         '$set': dict(is_promoted=True, select_method=select_methods.AUTO)
     })
@@ -36,14 +36,14 @@ def save_promoted_offers(df):
     return collection.bulk_write(requests)
 
 
-def save_scraped_products(products: Iterable):
+def save_scraped_products(products: Iterable, offers_collection_name: str):
     last_update_limit = datetime.utcnow() - timedelta(OVERWRITE_EDIT_LIMIT_DAYS)
-    meta_fields_collection = get_collection('mpnoffermeta')
+    meta_fields_collection = get_collection(f"{offers_collection_name}meta")
     meta_fields = meta_fields_collection.find(
         dict(updatedAt={"$gt": last_update_limit}))
     uri_field_dict = meta_fields_result_to_dict(meta_fields)
     return bulk_upsert(
         remove_protected_fields(products, uri_field_dict),
-        'mpnoffer',
+        offers_collection_name,
         'uri'
     )

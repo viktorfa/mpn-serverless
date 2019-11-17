@@ -2,10 +2,8 @@ import json
 import logging
 
 import boto3
-from bson.json_util import dumps
 
-from scraper_feed.handle_products import handle_products
-from storage.db import save_scraped_products
+from scraper_feed.handle_feed import handle_feed
 from storage.s3 import get_s3_file_content
 
 
@@ -30,15 +28,13 @@ def scraper_feed(event, context):
         }
 
     try:
-        products = handle_products(
-            json.loads(file_content),
-            provenance
-        )
-        result = save_scraped_products(products)
+        config = dict(provenance=provenance)
+        result = handle_feed(json.loads(file_content), config)
+
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",
             "event": event,
-            "result": dumps(result.bulk_api_result)
+            "result": json.dumps(result, default=str)
         }
     except Exception:
         logging.exception("Could not handle scraped products")
