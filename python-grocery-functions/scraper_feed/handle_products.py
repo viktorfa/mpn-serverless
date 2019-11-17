@@ -34,7 +34,7 @@ def get_standard_product(product: dict, source: str) -> dict:
     analyzed_product = analyze_quantity(
         get_quantity_fields(product, source))
     if source == provenances.MENY:
-        provenance_id = product['meny_id']
+        provenance_id = get_provenance_id(product)
         return dict(
             provenance_id=provenance_id,
             provenance=provenances.MENY,
@@ -51,7 +51,7 @@ def get_standard_product(product: dict, source: str) -> dict:
             ** analyzed_product,
         )
     elif source == provenances.KOLONIAL:
-        provenance_id = product['kolonial_id']
+        provenance_id = get_provenance_id(product)
         return dict(
             provenance_id=provenance_id,
             provenance=provenances.KOLONIAL,
@@ -68,7 +68,7 @@ def get_standard_product(product: dict, source: str) -> dict:
             ** analyzed_product,
         )
     elif source == provenances.EUROPRIS:
-        provenance_id = product['sku']
+        provenance_id = get_provenance_id(product)
         return dict(
             provenance_id=provenance_id,
             provenance=provenances.EUROPRIS,
@@ -85,7 +85,7 @@ def get_standard_product(product: dict, source: str) -> dict:
             **analyzed_product,
         )
     elif source == provenances.SHOPGUN:
-        provenance_id = product['id']
+        provenance_id = get_provenance_id(product)
         return dict(
             provenance_id=provenance_id,
             provenance=provenances.SHOPGUN,
