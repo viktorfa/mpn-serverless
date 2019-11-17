@@ -1,6 +1,7 @@
-numpy==1.16.4
-pandas==0.24.2
+#numpy==1.16.4
+#pandas==0.24.2
 pymongo==3.8.0
-scikit-learn==0.21.2
+#scikit-learn==0.21.2
 typing_extensions==3.7.4
 pydash==4.7.5
+python-dotenv==0.10.3
