@@ -1,0 +1,1124 @@
+[
+  {
+    "price": 5.45,
+    "priceCurrency": "USD",
+    "sku": "WDN-12463",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "716123124638",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Wisdom Natural",
+    "title": "Wisdom Natural, SweetLeaf, Natural Stevia Sweetner, 70 Packets",
+    "url": "https://www.iherb.com/pr/Wisdom-Natural-SweetLeaf-Natural-Stevia-Sweetner-70-Packets/47601",
+    "image": "https://s3.images-iherb.com/wdn/wdn12463/b/4.jpg",
+    "description": "World's Best-Tasting Stevia  Non-GMO Project Verified  Zero Calories  Zero Carbs  Non-Glycemic Response  No Bitterness or Aftertaste  No Artificial Ingredients  Kosher Parve  Best Replacement For Sugar and Artificial Sweeteners  Each Packet as Sweet as 2 Tbs of Sugar            \u00a0      SweetLeaf      Sugar      Splenda      Equal      Sweet' N Low              Calories      0      32      0      0      0              Net Carbohydrates      0      8 g      1 g      1 g      1 g              Dietary Fiber      0 g      0 g      0 g      0 g      0 g              Glycemic Index      0      70      80      80      80              (N)atural/ (A)rtificial      N      N      A      A      A      SweetLeaf: the body-friendly sweetenerOur stevia extract is made from high-grade stevia leaves and purified water; natural, from leaf to packet. No erythritol, no methanol, no aspartame, no sucralose, no maltodextrin, no dextrose, no additives, period. Non-GMO, allergen-free and gluten-free.SweetLeaf Stevia Sweetener, a stevia-based tabletop sweetener, has zero calories, zero carbs, a non-glycemic response, is gluten-free and is made with premium quality ingredients. Sweetleaf is the stevia brand with numerous international awards for taste and innovation.Whether it is for hydration, weight management, or just enjoying a delectable meal or drink, enjoy exceptional taste without the guilt!Our stevia is produced by an ideal balance of nature and science using high-quality, non-GMO stevia plants. We use only the finest, purest stevia leaves, making SweetLeaf delicious, sweeter than sugar, and a smart solution for people trying to reduce dietary sugars and calories.Let SweetLeaf help you meet your daily challenges with delightful pleasure.Save on calories...not taste.Making the world a sweeter place...one packet at a time. The original and world's finest since 1982.Enjoy SweetLeaf Stevia Sweetener in your favorite hot or cold coffees, teas, lemonade or any beverage. It is great sprinkled on hot or cold cereal or mixed in pies, puddings, or other desserts, as well as yogurt, muffins and cookies. It's delicious sprinkled on sweet potatoes, berries, or any fruit.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$0.08/Count",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a00.5 g  (1/2 packet)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Wisdom Natural",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/wisdom-natural-sweetleaf-natural-stevia-sweetner-70-packets/47601",
+    "provenance": "iherb",
+    "url_fingerprint": "d5af4705c0f007e29df40d75e50a32022d006720",
+    "provenance_id": "WDN-12463"
+  },
+  {
+    "price": 4.79,
+    "priceCurrency": "USD",
+    "sku": "LAK-00003",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "843076000037",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Lakanto",
+    "title": "Lakanto, Monkfruit Sweetener with Erythritol, Golden, 8.29 oz (235g)",
+    "url": "https://www.iherb.com/pr/Lakanto-Monkfruit-Sweetener-with-Erythritol-Golden-8-29-oz-235g/73339",
+    "image": "https://s3.images-iherb.com/lak/lak00003/b/2.jpg",
+    "description": "Made from  Nature  Cooks and  Bakes like Sugar  Non GMO  Project Verified  Zero  Calories  Zero  Glycemic  Non GMO  Zero  Additives  Vegan  Gluten Free  Zero  Aftertaste  1:1 Sugar  Replacement  Kosher Check  Tastes like SugarOver a  Thousand Years AgoIn the remote  mountain highlands of Asia, a group of Buddhist monks called the Luohan  achieved enlightenment through meditation, prayer and pure living. On the  slopes of a primeval forest, the monks discovered and cultivated a rare fruit  prized for its sweetness. This scared fruit was named Monk Fruit, or Luohan  Guo, after its devoted caretakers and was used in elixirs to increase chi, or  life energy.Monk Fruit was used for centuries in eastern traditional herbalism to   increase chi and well-being, earning it the nickname \"The Immortals'   Fruit\". We still grow and harvest Monk Fruit for Lakanto in the same pristine area and according to traditional and environmental methods.Born from a  proprietary mixture of the high-purity Monk Fruit extract and Non GMO  Erythritol, Lakanto is a delicious zero calorie, zero glycemic sweetener with  the sumptuous rich taste of sugar.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$0.58/oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 1 tsp. (4 g)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Lakanto",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Monk Fruit (Lo Han)"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/lakanto-monkfruit-sweetener-with-erythritol-golden-8-29-oz-235g/73339",
+    "provenance": "iherb",
+    "url_fingerprint": "570704dcdb101e469bead75b8fb825684633c384",
+    "provenance_id": "LAK-00003"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06966",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069665",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Dark Chocolate, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Dark-Chocolate-2-fl-oz-59-ml/16571",
+    "image": "https://s3.images-iherb.com/now/now06966/b/8.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 5 Drops (0.13 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-dark-chocolate-2-fl-oz-59-ml/16571",
+    "provenance": "iherb",
+    "url_fingerprint": "0862a391cde34fa414b64dc967e21bb40f7b2a23",
+    "provenance_id": "NOW-06966"
+  },
+  {
+    "price": 9.59,
+    "priceCurrency": "USD",
+    "sku": "NNS-00177",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "739223001777",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "NuNaturals",
+    "title": "NuNaturals, Clear Extract NuStevia, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/NuNaturals-Clear-Extract-NuStevia-2-fl-oz-59-ml/4310",
+    "image": "https://s3.images-iherb.com/nns/nns00177/b/14.jpg",
+    "description": "0 Calories   0 Sugars  Non-GMO  Add A Few Drops To Your Favorite Food or Beverage   Herbal Supplement NuNaturals NuStevia is a premium plant-based herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-based natural flavors are added to make NuStevia products the best-tasting ones available.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$4.80/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 4 Drops (.20 ml) (approx. 1/4 dropperful)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "NuNaturals",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/nunaturals-clear-extract-nustevia-2-fl-oz-59-ml/4310",
+    "provenance": "iherb",
+    "url_fingerprint": "8ae01571bb43af28ca68fd90d98173bcc78c66d1",
+    "provenance_id": "NNS-00177"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06918",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069184",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Maple, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Maple-2-fl-oz-59-ml/84449",
+    "image": "https://s3.images-iherb.com/now/now06918/b/9.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan Non-GMO",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 8 Drops (0.33 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-maple-2-fl-oz-59-ml/84449",
+    "provenance": "iherb",
+    "url_fingerprint": "0cc3454cd40205af48bfcca341af1b21dbb64b9e",
+    "provenance_id": "NOW-06918"
+  },
+  {
+    "price": 3.46,
+    "priceCurrency": "USD",
+    "sku": "WDN-12847",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "716123128476",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Wisdom Natural",
+    "title": "Wisdom Natural, SweetLeaf, Water Drops, Delicious Stevia Water Enhancer, Raspberry Lemonade, 1.62 fl oz (48 ml)",
+    "url": "https://www.iherb.com/pr/Wisdom-Natural-SweetLeaf-Water-Drops-Delicious-Stevia-Water-Enhancer-Raspberry-Lemonade-1-62-fl-oz-48-ml/82608",
+    "image": "https://s3.images-iherb.com/wdn/wdn12847/b/0.jpg",
+    "description": "Now 50% More*  Made with the World's Best Tasting Stevia  0 Calories or Sugars  48 Servings  No Artificial Sweeteners  Gluten Free  Kosher Parve  Non-GMO Project Verified  The Stevia Brand Consistently Winning International Taste Awards  BPA FreeSweetLeaf WaterDrops are a convenient, sugar-free, and gluten-free water enhancer. Squirt into water for hydration and a delicious refreshment with a crisp burst of flavor.*Servings.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$2.14/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a0a squeeze (1 ml) per 8 oz of liquid or to taste",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Wisdom Natural",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia",
+      "Categories",
+      "Grocery",
+      "Creamers & Beverage Enhancers"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/wisdom-natural-sweetleaf-water-drops-delicious-stevia-water-enhancer-raspberry-lemonade-1-62-fl-oz-48-ml/82608",
+    "provenance": "iherb",
+    "url_fingerprint": "4640ccde5d2f3cb21fe44295d555c1d81306257a",
+    "provenance_id": "WDN-12847"
+  },
+  {
+    "price": 3.99,
+    "priceCurrency": "USD",
+    "sku": "PYB-00343",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "850196003435",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Pyure",
+    "title": "Pyure, Organic Liquid Stevia Extract, Simply Sweet, 1.8 fl oz (53 ml)",
+    "url": "https://www.iherb.com/pr/Pyure-Organic-Liquid-Stevia-Extract-Simply-Sweet-1-8-fl-oz-53-ml/77141",
+    "image": "https://s3.images-iherb.com/pyb/pyb00343/b/3.jpg",
+    "description": "Sugar Free  Non GMO Project Verified  USDA Organic  Kosher  Certified Organic by Organic Certifiers",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$2.22/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a01/200th of bottle",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Pyure",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/pyure-organic-liquid-stevia-extract-simply-sweet-1-8-fl-oz-53-ml/77141",
+    "provenance": "iherb",
+    "url_fingerprint": "2fe8bde15f12ae1d96036ba59ae9a4fd8999b133",
+    "provenance_id": "PYB-00343"
+  },
+  {
+    "price": 7.99,
+    "priceCurrency": "USD",
+    "sku": "LAK-00027",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "843076000273",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Lakanto",
+    "title": "Lakanto, Monkfruit Sweetened Chocolate Syrup, 16 fl oz (473 ml)",
+    "url": "https://www.iherb.com/pr/Lakanto-Monkfruit-Sweetened-Chocolate-Syrup-16-fl-oz-473-ml/90000",
+    "image": "https://s3.images-iherb.com/lak/lak00027/b/1.jpg",
+    "description": "Monkfruit Sweetened  2 Net Carbs  Keto  No Artificial Sweeteners  Vegan  Sugar Free  Sweet ResponsibilityOver A Thousand Years AgoIn remote mountain highlands of Asia. Buddhist monks achieved enlightenment through meditation, prayer and pure living. The monks discovered a rare fruit prized for its sweetness. This sacred fruit was named Monk Fruit and was used in elixirs to increase chi, or life energy. Now you can enjoy this guilt-free sweetness in our Chocolate Syrup and other Lakanto products!Discover Your ChiLakanto makes the sweet life healthy, nutritious and guilt free.Indulge You Love For ChocolateLakanto sugar-free Chocolate Syrup originates from premium cocoa extracted from some of the world's finest cocoa beans. We blend in the perfect amount of Lakanto sugar-free, non-GMO Monkfruit Sweetener, for a deliciously balanced syrup to top your favorite desserts and fruits. Low in carbs and high in satisfaction!Net Carbs: Subtract Fiber and Sugar Alcohol from Total Carbohydrate",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$0.50/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 2 tbsp (30 g)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Lakanto",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Monk Fruit (Lo Han)"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/lakanto-monkfruit-sweetened-chocolate-syrup-16-fl-oz-473-ml/90000",
+    "provenance": "iherb",
+    "url_fingerprint": "3062fd17f8a06000487ec63d6dfd704294dcd34c",
+    "provenance_id": "LAK-00027"
+  },
+  {
+    "price": 11.86,
+    "priceCurrency": "USD",
+    "sku": "NOW-07110",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739071101",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Real Food, Organic Monk Fruit, Liquid Sweetener, Chocolate, 1.8 fl oz (53 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Real-Food-Organic-Monk-Fruit-Liquid-Sweetener-Chocolate-1-8-fl-oz-53-ml/89695",
+    "image": "https://s3.images-iherb.com/now/now07110/b/0.jpg",
+    "description": "Zero-Calorie Liquid Sweetener   USDA Organic   Non-GMO   Gluten-Free   Vegan   Keto Friendly   Certified Organic by QAI",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$6.59/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a010 drops (0.36 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Monk Fruit (Lo Han)"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-real-food-organic-monk-fruit-liquid-sweetener-chocolate-1-8-fl-oz-53-ml/89695",
+    "provenance": "iherb",
+    "url_fingerprint": "a3a78d3b9d7bcd66752c6bd41dd9645a01714574",
+    "provenance_id": "NOW-07110"
+  },
+  {
+    "price": 9.59,
+    "priceCurrency": "USD",
+    "sku": "LAK-00044",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "843076000440",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Lakanto",
+    "title": "Lakanto, Liquid Monkfruit Extract Drops, 1.85 oz (52 g)",
+    "url": "https://www.iherb.com/pr/Lakanto-Liquid-Monkfruit-Extract-Drops-1-85-oz-52-g/89996",
+    "image": "https://s3.images-iherb.com/lak/lak00044/b/1.jpg",
+    "description": "Sugar Free Drops  Zero Calories  Zero Glycemic  262 Servings  Ketogenic - 0 Carbs  No Bitter Aftertaste  3-4 Drops = 1 Teaspoon of Sugar  23X Sweeter than Sugar  Great in Coffee & Tea  Pure Monk FruitWhat Is Monk Fruit?Unlike most fruits, whose sweetness comes from fructose. Monk Fruit's sweetness comes from natural mogrosides that are 300 times sweeter than sugar. Modern research shows that Monk Fruit Extract does not elevate blood sugar or insulin, making it a perfect sweetener for blood sugar and weight management.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$5.18/oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 3-4 Drops (0.2 g)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Lakanto",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Monk Fruit (Lo Han)"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/lakanto-liquid-monkfruit-extract-drops-1-85-oz-52-g/89996",
+    "provenance": "iherb",
+    "url_fingerprint": "a54e42c7292befad83909083a190d7c9d9ce600b",
+    "provenance_id": "LAK-00044"
+  },
+  {
+    "price": 11.99,
+    "priceCurrency": "USD",
+    "sku": "NNS-00175",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "739223001753",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "NuNaturals",
+    "title": "NuNaturals, Alcohol Free NuStevia, Vanilla , 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/NuNaturals-Alcohol-Free-NuStevia-Vanilla-2-fl-oz-59-ml/15940",
+    "image": "https://s3.images-iherb.com/nns/nns00175/b/7.jpg",
+    "description": "0 Calories - 0 Sugar- Non-GMO  Add a Few Drops to Your Favorite Food or Beverage  Herbal Supplement NuNaturals NuStevia is a premium plant-based  herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-Based natural flavors are added to make NuStevia products the best-tasting ones available.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$6.00/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:  4 drops (20 ml) (approx \u00bc dropperful)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "NuNaturals",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/nunaturals-alcohol-free-nustevia-vanilla-2-fl-oz-59-ml/15940",
+    "provenance": "iherb",
+    "url_fingerprint": "1578db0cb048ae75556d996d383859dd046e06d6",
+    "provenance_id": "NNS-00175"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06932",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069320",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Pomegranate Blueberry, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Pomegranate-Blueberry-2-fl-oz-59-ml/50641",
+    "image": "https://s3.images-iherb.com/now/now06932/b/11.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten-Free  Vegan  Kosher  Non-GMO",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 5 Drops (0.14 mL)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-pomegranate-blueberry-2-fl-oz-59-ml/50641",
+    "provenance": "iherb",
+    "url_fingerprint": "cd9a600429ce8885adff01ad8a3e40da3be0f715",
+    "provenance_id": "NOW-06932"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06987",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069870",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Lemon Twist, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Lemon-Twist-2-fl-oz-59-ml/16557",
+    "image": "https://s3.images-iherb.com/now/now06987/b/13.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 5 Drops (0.12 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-lemon-twist-2-fl-oz-59-ml/16557",
+    "provenance": "iherb",
+    "url_fingerprint": "3bf187f359925a275667b08b1e84d1d140b844f2",
+    "provenance_id": "NOW-06987"
+  },
+  {
+    "price": 7.34,
+    "priceCurrency": "USD",
+    "sku": "WHS-94660",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "012511946609",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Wholesome",
+    "title": "Wholesome , Organic Stevia, 6 oz (170 g)",
+    "url": "https://www.iherb.com/pr/Wholesome-Sweeteners-Inc-Organic-Stevia-6-oz-170-g/79356",
+    "image": "https://s3.images-iherb.com/whs/whs94660/b/1.jpg",
+    "description": "Better Taste & 40% More Free*  Zero Calorie Sweetener Blend  Zero Glycemic Impact - No Artificial Ingredients  Mindfully Delicious   USDA Organic  Non GMO Project Verified  Equals 340 Teaspoons of Sugar  Gluten Free  Naturally Vegan  Kosher Certified  Certified Organic by Quality Assurance International  1/4 Tsp Organic Stevia = 2 Tsp SugarWe're bringing sweetness back! At Wholesome, we have a passion for real food, and we never compromise on taste. If you are avoiding sugar and artificial sweeteners, but crave deliciously sweet drinks and breakfast withou the guilt, then Wholesome Organic Stevia was made for you. Our blend is perfect for coffee, tea, smoothies or cereal.*Compared to Wholesome! Organic Stevia powered blend and 4.2 oz jar",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$1.22/oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 1/4 tsp (1 g)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Wholesome Sweeteners",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/wholesome-sweeteners-inc-organic-stevia-6-oz-170-g/79356",
+    "provenance": "iherb",
+    "url_fingerprint": "7e21b49ef535b004ca20a98c771011e499ea7d90",
+    "provenance_id": "WHS-94660"
+  },
+  {
+    "price": 11.32,
+    "priceCurrency": "USD",
+    "sku": "NNS-00153",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "739223001531",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "NuNaturals",
+    "title": "NuNaturals, Alcohol Free NuStevia, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/NuNaturals-Alcohol-Free-NuStevia-2-fl-oz-59-ml/4460",
+    "image": "https://s3.images-iherb.com/nns/nns00153/b/11.jpg",
+    "description": "0 Calories  0 Sugars  Non-GMO  Add a Few Drops to Your Favorite Food or Beverage  Herbal SupplementNuNaturals NuStevia is a premium plant-based herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-based natural flavors are added to make NuStevia products the best-tasting ones available.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$5.66/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 4 Drops (.20 m) (approx. \u00bc dropperful)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "NuNaturals",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/nunaturals-alcohol-free-nustevia-2-fl-oz-59-ml/4460",
+    "provenance": "iherb",
+    "url_fingerprint": "49bb8293bf502b241dc619efbca7c1d8c28640f3",
+    "provenance_id": "NNS-00153"
+  },
+  {
+    "price": 18.14,
+    "priceCurrency": "USD",
+    "sku": "NOW-06991",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069917",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Organic, Better Stevia, Zero-Calorie Liquid Sweetener, 8 fl oz (237 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Organic-Better-Stevia-Zero-Calorie-Liquid-Sweetener-8-fl-oz-237-ml/16270",
+    "image": "https://s3.images-iherb.com/now/now06991/b/9.jpg",
+    "description": "Zero-Calorie Liquid Sweetener   USDA Organic  Non-GMO Project Verified  Gluten Free   Kosher   Vegan   Certified Organic by QAI",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$2.27/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a04 Drops (0.13 mL)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-organic-better-stevia-zero-calorie-liquid-sweetener-8-fl-oz-237-ml/16270",
+    "provenance": "iherb",
+    "url_fingerprint": "c0bb2e5059283dbef5af56c86b061a5a67f3797c",
+    "provenance_id": "NOW-06991"
+  },
+  {
+    "price": 12.74,
+    "priceCurrency": "USD",
+    "sku": "STE-00020",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "617928000205",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Stevita",
+    "title": "Stevita, Organic Liquid Stevia, 3.3 fl oz (100 ml)",
+    "url": "https://www.iherb.com/pr/Stevita-Organic-Liquid-Stevia-3-3-fl-oz-100-ml/14489",
+    "image": "https://s3.images-iherb.com/ste/ste00020/b/7.jpg",
+    "description": "Family Farms to Family Tables  The Original Stevia Sweetener  Non GMO  Certified Kosher  USDA Organic  500 Servings  Delicious Sweetness  Zero Calories  Allergen-Free  Zero Carbs  Vegan  Sustainable  Gluten-Free  Certified Organic by: BCS OKO-Garantie GMBH",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.86/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a04 drops (0.2 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Stevita",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/stevita-organic-liquid-stevia-3-3-fl-oz-100-ml/14489",
+    "provenance": "iherb",
+    "url_fingerprint": "39b8cd07c401b48d775faa08057ab8a9ab4ae431",
+    "provenance_id": "STE-00020"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06899",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739068996",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Peppermint Cookie, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Peppermint-Cookie-2-fl-oz-59-ml/84448",
+    "image": "https://s3.images-iherb.com/now/now06899/b/9.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten Free  VeganNon-GMO",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 8 Drops (0.29 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-peppermint-cookie-2-fl-oz-59-ml/84448",
+    "provenance": "iherb",
+    "url_fingerprint": "37fbf33ae9bf43b351989fc883e38fa1a7674ac7",
+    "provenance_id": "NOW-06899"
+  },
+  {
+    "price": 6.37,
+    "priceCurrency": "USD",
+    "sku": "STE-00007",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "617928000076",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Stevita",
+    "title": "Stevita, Organic Liquid Stevia, 1.35 fl oz (40 ml)",
+    "url": "https://www.iherb.com/pr/Stevita-Organic-Liquid-Stevia-1-35-fl-oz-40-ml/12661",
+    "image": "https://s3.images-iherb.com/ste/ste00007/b/8.jpg",
+    "description": "Family Farms to Family Tablets   The Original Stevia Sweetener   Non GMO   Kosher   USDA Organic   200 Servings   Delicious Sweetness   Zero Calories   Allergen-Free   Zero Carbs   Vegan   Sustainable   Gluten-Free   Certified Organic by BCS",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$4.72/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a04 drops (0.2 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Stevita",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/stevita-organic-liquid-stevia-1-35-fl-oz-40-ml/12661",
+    "provenance": "iherb",
+    "url_fingerprint": "298f09e4d82ecb549d9449dced746a5f950fb53d",
+    "provenance_id": "STE-00007"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06930",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069306",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Coconut, 2 fl oz (59 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Coconut-2-fl-oz-59-ml/50640",
+    "image": "https://s3.images-iherb.com/now/now06930/b/8.jpg",
+    "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 5 Drops (0.15 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-coconut-2-fl-oz-59-ml/50640",
+    "provenance": "iherb",
+    "url_fingerprint": "ddbcc71300c8d1bbb077aba867571043dea0944d",
+    "provenance_id": "NOW-06930"
+  },
+  {
+    "price": 5.51,
+    "priceCurrency": "USD",
+    "sku": "OGT-00290",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "627733002905",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Organic Traditions",
+    "title": "Organic Traditions, Stevia Leaf Powder, 3.5 oz (100 g)",
+    "url": "https://www.iherb.com/pr/Organic-Traditions-Stevia-Leaf-Powder-3-5-oz-100-g/81951",
+    "image": "https://s3.images-iherb.com/ogt/ogt00290/b/1.jpg",
+    "description": "Raw & Gluten Free  Superherbs  Use in Smoothies, Teas & Yogurt, Deserts & Baking  Green Stevia  Not Refined  A Zero Glycemic Natural Sweetener  Sustainably Grown and Harvested  Demeter Biodynamic Certified  Zero Glycemic\u2021  Ready to Use  Zero Calories  Certified Organic by: Ecocert SA  USDA Organic  Gluten-Free  Kosher  Resealable  Stevia Rebaudiana\u2021Although Stevia is one of the sweetest substances in nature, it has one of the lowest glycemic scores with no effect on blood sugar.Stevia Leaf PowderStevia, also commonly known as Sweet Leaf of Sugar Leaf, is a natural sweetener indigenous to the Amazon. For centuries the Guarani people of Paraguay, Brazil and Bolivia used fresh stevia leaves to sweeten recipes, teas and medicinal preparations. Stevia is ideal for anyone on a carbohydrate-cautious diet for although it is one of the sweetest substances in nature, it has one of the lowest glycemic scores with no effect on blood sugar.Organic Nutrition From Around The WorldAt Organic Traditions we provide nutrient dense superfoods from many healing traditions. We are committed to supporting farmers who are dedicated to the principles of sustainable and fair trade agriculture. Now more than ever we need to nourish ourselves with superfoods, herbs, seeds and fruits packed with the nutrition needed to support the challenges that come with living in a fast paced world. Be adventurous. These superfoods are versatile. Incorporate them into recipes in any creative way you see fit. At every meal you have the opportunity to choose dense nutrition. Food is powerful. Make choices for a better you and a better planet.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$1.57/oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Organic Traditions",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/organic-traditions-stevia-leaf-powder-3-5-oz-100-g/81951",
+    "provenance": "iherb",
+    "url_fingerprint": "2ad4d28833e908a24e6585784e4a71ce5ba15da4",
+    "provenance_id": "OGT-00290"
+  },
+  {
+    "price": 4.95,
+    "priceCurrency": "USD",
+    "sku": "STE-40001",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "617928400012",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Stevita",
+    "title": "Stevita, Supreme, 50 Packets, 1.8 oz (50 g)",
+    "url": "https://www.iherb.com/pr/Stevita-Supreme-50-Packets-1-8-oz-50-g/12367",
+    "image": "https://s3.images-iherb.com/ste/ste40001/b/4.jpg",
+    "description": "The Original and Authentic Stevia Company  From Our Brazilian Farms to Your Family Table  Calorie Free  Tooth Friendly Xylitol  Guaranteed 100% Quality  The Original Stevia Sweetener   Quality You Can Taste  Certified Kosher  Non GMO  40% More Than Leading Brands  No Gluten  No Trans Fat  No Allergens  Fair Labor  Eco Friendly  No Artificial IngredientsEach packet has the sweetness of 3 teaspoons of sugar.The Stevita StoryStevia is dedicated to offering you the highest quality and best tasting stevia, supported by a long tradition in the stevia business;  Farmers in Maringa, Brazil, in the early 80's formed a cooperative to harvest stevia leaves. Maringa is in Southwestern Brazil, the native habitat of the stevia plant;  In the mid 80's these farmers turned it into a company to farm the plants and extract the sweet crystals from the stevia leaves;  In the 1987 the extraction factory was completed;  In 1988 the Stevita brand, the first stevia table top sweetener in the world, was introduced in the local market.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$0.10/Count",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size:\u00a01 packet (1 g)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Stevita",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/stevita-supreme-50-packets-1-8-oz-50-g/12367",
+    "provenance": "iherb",
+    "url_fingerprint": "ea4226a23595dc7349988526ce44745eb02c548f",
+    "provenance_id": "STE-40001"
+  },
+  {
+    "price": 3.99,
+    "priceCurrency": "USD",
+    "sku": "PYB-00344",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "850196003442",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Pyure",
+    "title": "Pyure, Organic Liquid Stevia Extract, Vanilla, 1.8 fl oz (53 ml)",
+    "url": "https://www.iherb.com/pr/Pyure-Organic-Liquid-Stevia-Extract-Vanilla-1-8-fl-oz-53-ml/77142",
+    "image": "https://s3.images-iherb.com/pyb/pyb00344/b/3.jpg",
+    "description": "Sugar Free  Made with Vanilla Flavor  Non GMO Project Verified  USDA Organic  Kosher  Certified Organic by Organic Certifiers",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$2.22/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 1/100th of bottle",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Pyure",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/pyure-organic-liquid-stevia-extract-vanilla-1-8-fl-oz-53-ml/77142",
+    "provenance": "iherb",
+    "url_fingerprint": "530b27f448acca18d5c734bb0b6ac6ffa0fd9a95",
+    "provenance_id": "PYB-00344"
+  },
+  {
+    "price": 14.39,
+    "priceCurrency": "USD",
+    "sku": "NNS-00620",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "739223006208",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "NuNaturals",
+    "title": "NuNaturals, NuStevia Cocoa Syrup, 16 fl oz (.47 l)",
+    "url": "https://www.iherb.com/pr/NuNaturals-NuStevia-Cocoa-Syrup-16-fl-oz-47-l/58190",
+    "image": "https://s3.images-iherb.com/nns/nns00620/b/4.jpg",
+    "description": "0 Sugar  0 Calories  Non GMO Project Verified  Chocolate Sweetener Perfect for Your Favorite Food or Beverage  Fair Trade Certified CocoaNuNaturals NuStevia is a premium plant-based herbal sweetener that comes from the Stevia leaf, an herb native to South America. NuStevia syrups are concentrated sweeteners designed to maximize flavor.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$0.90/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 1/4 tsp (1.23 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "NuNaturals",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/nunaturals-nustevia-cocoa-syrup-16-fl-oz-47-l/58190",
+    "provenance": "iherb",
+    "url_fingerprint": "0d837b22902384a558f76144bda982237e1c62ee",
+    "provenance_id": "NNS-00620"
+  },
+  {
+    "price": 7.12,
+    "priceCurrency": "USD",
+    "sku": "NOW-06937",
+    "mpn": null,
+    "gtin": null,
+    "gtin12": "733739069375",
+    "gtin13": null,
+    "gtin8": null,
+    "ean": null,
+    "upc": null,
+    "brand": "Now Foods",
+    "title": "Now Foods, Better Stevia, Zero-Calorie Liquid Sweetener, Cinnamon Vanilla, 2 fl oz (60 ml)",
+    "url": "https://www.iherb.com/pr/Now-Foods-Better-Stevia-Zero-Calorie-Liquid-Sweetener-Cinnamon-Vanilla-2-fl-oz-60-ml/50802",
+    "image": "https://s3.images-iherb.com/now/now06937/b/9.jpg",
+    "description": "Gluten-Free  Vegan Kosher  Non GMO Project VerifiedNOW BetterStevia is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW BetterStevia contains pure Stevia extract.",
+    "availability": "http://schema.org/InStock",
+    "itemCondition": "http://schema.org/NewCondition",
+    "additionalProperty": [
+      {
+        "value": "$3.56/fl oz",
+        "key": "unitPrice",
+        "type": "float",
+        "extraType": "unitPrice"
+      },
+      {
+        "value": "Serving Size: 5 Drops (0.21 ml)",
+        "key": "servingSize",
+        "type": "float",
+        "extraType": "foodQuantity"
+      }
+    ],
+    "categories": [
+      "Brands A-Z",
+      "Now Foods",
+      "Categories",
+      "Grocery",
+      "Honey & Sweeteners",
+      "Stevia"
+    ],
+    "canonical_url": "https://www.iherb.com/pr/now-foods-better-stevia-zero-calorie-liquid-sweetener-cinnamon-vanilla-2-fl-oz-60-ml/50802",
+    "provenance": "iherb",
+    "url_fingerprint": "cbc56077ec1f64149354267f44b9b07f55fbb2a0",
+    "provenance_id": "NOW-06937"
+  }
+]

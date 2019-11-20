@@ -1,11 +1,12 @@
 import json
 from unittest import TestCase
+from pprint import pprint
 
 from util.enums import provenances
 from scraper_feed.handle_products import handle_products
 
 
-class Basic(TestCase):
+class TestWithConfig(TestCase):
     def setUp(self):
         with open("assets/meny-scraper-feed.json") as meny_products_json:
             self.meny_products = json.load(meny_products_json)
@@ -19,45 +20,88 @@ class Basic(TestCase):
             self.swecandy_products = json.load(swecandy_products_json)
         with open("assets/gottebiten-scraper-feed.json") as gottebiten_products_json:
             self.gottebiten_products = json.load(gottebiten_products_json)
+        with open("assets/iherb-scraper-feed.json") as iherb_products_json:
+            self.iherb_products = json.load(iherb_products_json)
 
     def test_meny_products(self):
-        actual = handle_products(self.meny_products, provenances.MENY)
+        actual = handle_products(self.meny_products, {"source": "meny"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.meny_products))
-        self.assertIsNotNone(actual[0]["run_till"])
-        self.assertIsNotNone(actual[0]["run_from"])
-        print(actual[0]["run_till"])
-        print(type(actual[0]["run_till"]))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["sku"])
+        self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
 
     def test_kolonial_products(self):
-        actual = handle_products(self.kolonial_products, provenances.KOLONIAL)
+        actual = handle_products(self.kolonial_products, {"source": "kolonial"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.kolonial_products))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
 
     def test_europris_products(self):
-        actual = handle_products(self.europris_products, provenances.EUROPRIS)
+        actual = handle_products(self.europris_products, {"source": "europris"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.europris_products))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["sku"])
 
     def test_shopgun_products(self):
-        actual = handle_products(self.shopgun_products, provenances.SHOPGUN)
+        actual = handle_products(self.shopgun_products, {"source": "shopgun"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.shopgun_products))
-        self.assertIsNotNone(actual[0]["run_till"])
-        self.assertIsNotNone(actual[0]["run_from"])
-        print(actual[0]["run_till"])
-        print(type(actual[0]["run_till"]))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
 
     def test_swecandy_products(self):
-        actual = handle_products(self.swecandy_products, "swecandy.se")
+        actual = handle_products(self.swecandy_products, {"source": "swecandy.se"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.swecandy_products))
-        self.assertIsNotNone(actual[0]["run_till"])
-        self.assertIsNotNone(actual[0]["run_from"])
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["categories"])
 
     def test_gottebiten_products(self):
-        actual = handle_products(self.gottebiten_products, "gottebiten.se")
+        actual = handle_products(self.gottebiten_products, {"source": "gottebiten.se"})
+        pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.gottebiten_products))
-        self.assertIsNotNone(actual[0]["run_till"])
-        self.assertIsNotNone(actual[0]["run_from"])
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["provenanceId"])
+
+    def test_iherb_products(self):
+        actual = handle_products(self.iherb_products, {"source": "www.iherb.com"})
+        pprint(actual[0])
+        self.assertIsInstance(actual, list)
+        self.assertEqual(len(actual), len(self.iherb_products))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["mpn"])
+        self.assertIsNotNone(actual[0]["sku"])

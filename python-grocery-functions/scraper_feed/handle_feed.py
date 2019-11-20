@@ -35,6 +35,7 @@ def populate_config(config: dict) -> dict:
     )
 
     config["offers_collection_name"] = offers_collection_name
+    config["source"] = config.get("provenance")
     return config
 
 
@@ -45,6 +46,6 @@ def handle_feed(feed: list, config: dict) -> dict:
 
     _config = populate_config(config)
 
-    products = handle_products(feed, _config["provenance"])
+    products = handle_products(feed, _config)
     result = save_scraped_products(products, _config["offers_collection_name"])
     return result

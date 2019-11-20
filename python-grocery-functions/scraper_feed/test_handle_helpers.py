@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from scraper_feed.handle_products import get_shopgun_quantity, get_provenance_id
+from scraper_feed.helpers import get_provenance_id
+from scraper_feed.handle_shopgun_offers import get_shopgun_quantity
 
 
 class TestHelpers(TestCase):
