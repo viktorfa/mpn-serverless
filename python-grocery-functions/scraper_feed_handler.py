@@ -7,25 +7,23 @@ from scraper_feed.handle_feed import handle_feed
 from storage.s3 import get_s3_file_content
 
 
-s3 = boto3.client('s3')
+s3 = boto3.client("s3")
 
 
 def scraper_feed(event, context):
     logging.info("event")
     logging.info(event)
     try:
-        sns_message = json.loads(event['Records'][0]['Sns']['Message'])
-        message_record = sns_message['Records'][0]
-        bucket = message_record['s3']['bucket']['name']
-        key = message_record['s3']['object']['key']
+        sns_message = json.loads(event["Records"][0]["Sns"]["Message"])
+        message_record = sns_message["Records"][0]
+        bucket = message_record["s3"]["bucket"]["name"]
+        key = message_record["s3"]["object"]["key"]
         file_content = get_s3_file_content(bucket, key)
 
-        provenance = key.split('/')[0]
+        provenance = key.split("/")[0]
     except Exception:
         logging.exception("Could not get SNS message from event")
-        return {
-            "message": "no cannot"
-        }
+        return {"message": "no cannot"}
 
     try:
         config = dict(provenance=provenance)
@@ -34,11 +32,9 @@ def scraper_feed(event, context):
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",
             "event": event,
-            "result": json.dumps(result, default=str)
+            "result": json.dumps(result, default=str),
         }
     except Exception:
         logging.exception("Could not handle scraped products")
 
-    return {
-        "message": "no cannot"
-    }
+    return {"message": "no cannot"}

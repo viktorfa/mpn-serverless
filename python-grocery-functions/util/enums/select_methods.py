@@ -1,2 +1,2 @@
-AUTO = 'auto'
-MANUAL = 'manual'
+AUTO = "auto"
+MANUAL = "manual"

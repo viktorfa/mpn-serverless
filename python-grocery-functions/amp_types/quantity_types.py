@@ -22,7 +22,7 @@ class Quantity(TypedDict):
 
 
 class QuantityField(TypedDict):
-    size = Quantity,
+    size = (Quantity,)
     pieces = Quantity
 
 

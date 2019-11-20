@@ -1,7 +1,7 @@
-MENY = 'meny'
-KOLONIAL = 'kolonial'
-EUROPRIS = 'europris'
-SHOPGUN = 'shopgun'
+MENY = "meny"
+KOLONIAL = "kolonial"
+EUROPRIS = "europris"
+SHOPGUN = "shopgun"
 
 YOOLANDO = "yoolando.com"
 GOTTEBITEN = "gittebiten.se"

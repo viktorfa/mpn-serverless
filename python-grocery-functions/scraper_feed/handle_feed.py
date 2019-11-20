@@ -5,17 +5,34 @@ from util.enums import provenances
 
 
 provenance_to_collection_name_map = {
-    'mpnoffer': (provenances.GOTTEBITEN, provenances.YOOLANDO, provenances.MAXGODIS, provenances.SWECANDY, provenances.HOLDBART,),
-    'groceryoffer': (provenances.KOLONIAL, provenances.MENY, provenances.EUROPRIS, provenances.SHOPGUN,),
-    'herbvuoffer': (provenances.IHERB, provenances.VITACOST,),
+    "mpnoffer": (
+        provenances.GOTTEBITEN,
+        provenances.YOOLANDO,
+        provenances.MAXGODIS,
+        provenances.SWECANDY,
+        provenances.HOLDBART,
+    ),
+    "groceryoffer": (
+        provenances.KOLONIAL,
+        provenances.MENY,
+        provenances.EUROPRIS,
+        provenances.SHOPGUN,
+    ),
+    "herbvuoffer": (provenances.IHERB, provenances.VITACOST,),
 }
 
 DEFAULT_OFFER_COLLECTION_NAME = "mpnoffer"
 
 
 def populate_config(config: dict) -> dict:
-    offers_collection_name = next((key for key, value in provenance_to_collection_name_map.items(
-    ) if config["provenance"] in value), DEFAULT_OFFER_COLLECTION_NAME)
+    offers_collection_name = next(
+        (
+            key
+            for key, value in provenance_to_collection_name_map.items()
+            if config["provenance"] in value
+        ),
+        DEFAULT_OFFER_COLLECTION_NAME,
+    )
 
     config["offers_collection_name"] = offers_collection_name
     return config
@@ -28,9 +45,6 @@ def handle_feed(feed: list, config: dict) -> dict:
 
     _config = populate_config(config)
 
-    products = handle_products(
-        feed,
-        _config['provenance']
-    )
-    result = save_scraped_products(products, _config['offers_collection_name'])
+    products = handle_products(feed, _config["provenance"])
+    result = save_scraped_products(products, _config["offers_collection_name"])
     return result
