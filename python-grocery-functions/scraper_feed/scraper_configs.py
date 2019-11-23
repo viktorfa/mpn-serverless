@@ -6,7 +6,7 @@ configs = {
     "www.iherb.com": {"fields": {"sku": "mpn"}},
     "meny": {
         "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
-        "fields": {"sku": "ean"},
+        "fields": {"sku": "ean", "product_variant": "description"},
     },
     "kolonial": {
         "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
@@ -22,6 +22,7 @@ DEFAULT_FIELD_MAP = {
     "additionalProperties": {},
     "fields": {
         "image": "imageUrl",
+        "image_url": "imageUrl",
         "url": "href",
         "title": "title",
         "description": "description",
