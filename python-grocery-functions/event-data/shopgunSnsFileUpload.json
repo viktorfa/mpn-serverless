@@ -3,18 +3,18 @@
     {
       "EventSource": "aws:sns",
       "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed:a1330e32-82df-43cd-821e-51160c88a124",
+      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-dev-ScraperFeedCreatedTopic-GPRMMW7RT23Z:ce4f3726-9788-4b39-8a38-d96991ba7d76",
       "Sns": {
         "Type": "Notification",
-        "MessageId": "d71a775d-c85d-585d-bcb2-2337693a40ba",
-        "TopicArn": "arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed",
+        "MessageId": "bf453f1a-3cda-5d38-9f96-698b5b46b852",
+        "TopicArn": "arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-dev-ScraperFeedCreatedTopic-GPRMMW7RT23Z",
         "Subject": "Amazon S3 Notification",
-        "Message": "{\"Records\":[{\"eventVersion\":\"2.0\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2018-11-17T23:07:19.846Z\",\"eventName\":\"ObjectCreated:Copy\",\"userIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"requestParameters\":{\"sourceIPAddress\":\"84.211.29.59\"},\"responseElements\":{\"x-amz-request-id\":\"D90B2EB60470DC65\",\"x-amz-id-2\":\"g8A7kbZ5ztkQ8gWV/LJXSTvB8RuqMJT0csw1e2r6r1bfdRWBnsDTZs5oJmUxgCnoluTeQQXj6y4=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"ScrapingFeedUpload\",\"bucket\":{\"name\":\"grocery-prices\",\"ownerIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"arn\":\"arn:aws:s3:::grocery-prices\"},\"object\":{\"key\":\"shopgun_scraper_feed/shopgun_spider-latest.json\",\"size\":1798675,\"eTag\":\"29f1e1cea6d8c5512069f308a2b51799\",\"versionId\":\"2RgrIrfUxGojCvf0nt7M6.zoIhqcnIMT\",\"sequencer\":\"005BF09F27AC289591\"}}}]}",
-        "Timestamp": "2018-11-17T23:07:19.924Z",
+        "Message": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2020-01-09T17:39:40.238Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:AROAWVX3V75YJZT5RVGSZ:mpn-crawler-dev-lambdaScrape\"},\"requestParameters\":{\"sourceIPAddress\":\"18.196.135.52\"},\"responseElements\":{\"x-amz-request-id\":\"DD9833387226144D\",\"x-amz-id-2\":\"d+iT3lMAr8FWr2NlvnPcDCHHBZfM2P3cOkndgHPRRqxvZrDvN72+3mRqmKeyY1Du3fWPijvUQfA=\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"cef2e428-2f9b-49b2-8600-040a4bbc6504\",\"bucket\":{\"name\":\"python-mpn-functions-dev-scraperfeedbucket-1entu6oyghkj5\",\"ownerIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"arn\":\"arn:aws:s3:::python-mpn-functions-dev-scraperfeedbucket-1entu6oyghkj5\"},\"object\":{\"key\":\"shopgun/shopgun_catalog_spider-latest.json\",\"size\":493917,\"eTag\":\"36367b219d288fb25d8c51aef54c3d8d\",\"versionId\":\"M_7i.LJFLOftEcUrLEGC9APM1eLQIdn5\",\"sequencer\":\"005E17655C2BE8798D\"}}}]}",
+        "Timestamp": "2020-01-09T17:39:40.886Z",
         "SignatureVersion": "1",
-        "Signature": "LHak977UUw9ngXugA8myWlyvDBWvNd/EfmvSxonNh8qg3feQqArp2TNaDxZgiRwYmoad7EIBILoZxdhULQ+vNsmhC0kXHpKsIUAXgshGdK0TqWZNMVgzKCfFpPIroWNBH6HG/kOYX7BjFNyOmZdFd+L+Bx4ae1yKh9B/1pKD9aoCKuxO3l8s4HXIl0YmJJmuICSZA5wLBFJ4fw9zu1X8je4z72Q9TkYuePuqBT25Xwlj6d2MdLTMBtB2iJp7qSNhelVcjHRvJu2VxpQ0Z7eEZ6NTnPFyIu+evY9wNVuYByBuzWmOcydiQIIN7dXv6/0gqptxdic7E6Njxo9WHQk5Yg==",
-        "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem",
-        "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:459015585648:grocery-prices-scraping-feed:a1330e32-82df-43cd-821e-51160c88a124",
+        "Signature": "FSqsMiLyqjYsNwA7to/34AjDDREMQxCsuKRrIoRTk4WaI+YVLOorPV5LJMa/wIau93DRZ8YjDV2gu8LyvgD8ZyBnvXcDPJQbvaPkmteWxXIMF2qS5hsKEKbiatvcWU+cXRYzPL6IiCPiF9fl9MnUgnt9mcqzJdo6B38tdqHxeWONWEOf+d3Xin0mkeGSsiIdaKGj4vCNJkQXBkhi+JX5TNZEoc8ITkNrWbH7+qWLEQJQEfucK37ba1ai3LAfGjBJKaEkJRCiIQf6F396Nm1j+60XUFq/AkIpregRueZjdcbvDqpc+M7N2jvDOPjsVDcXQMaTB5WL4qPmHhAUTbGb/w==",
+        "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-6aad65c2f9911b05cd53efda11f913f9.pem",
+        "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-dev-ScraperFeedCreatedTopic-GPRMMW7RT23Z:ce4f3726-9788-4b39-8a38-d96991ba7d76",
         "MessageAttributes": {}
       }
     }
