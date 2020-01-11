@@ -1,0 +1,2 @@
+class NoHandleConfigError(BaseException):
+    pass

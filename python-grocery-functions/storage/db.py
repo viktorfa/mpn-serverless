@@ -8,6 +8,7 @@ from config.mongo import get_collection
 from util.helpers import get_product_uri
 from util.enums import select_methods, provenances
 from storage.helpers import meta_fields_result_to_dict, remove_protected_fields
+from util.errors import NoHandleConfigError
 
 OVERWRITE_EDIT_LIMIT_DAYS = 365
 
@@ -49,3 +50,14 @@ def save_scraped_products(products: Iterable, offers_collection_name: str):
     return bulk_upsert(
         remove_protected_fields(products, uri_field_dict), offers_collection_name, "uri"
     )
+
+
+def get_handle_config(provenance: str):
+    collection = get_collection("handleconfigs")
+    cursor = collection.find_one({"provenance": provenance})
+    if cursor:
+        return cursor
+    else:
+        raise NoHandleConfigError(
+            f"No handleconfig found for provenance: {provenance}."
+        )

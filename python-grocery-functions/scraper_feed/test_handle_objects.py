@@ -1,5 +1,5 @@
 import json
-from unittest import TestCase
+from unittest import TestCase, mock
 from pprint import pprint
 
 from util.enums import provenances
@@ -24,7 +24,14 @@ class TestWithConfig(TestCase):
             self.iherb_products = json.load(iherb_products_json)
 
     def test_meny_products(self):
-        actual = handle_products(self.meny_products, {"source": "meny"})
+        actual = handle_products(
+            self.meny_products,
+            {
+                "source": "meny",
+                "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
+                "fields": {"sku": "ean", "product_variant": "description"},
+            },
+        )
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.meny_products))
@@ -37,7 +44,14 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
 
     def test_kolonial_products(self):
-        actual = handle_products(self.kolonial_products, {"source": "kolonial"})
+        actual = handle_products(
+            self.kolonial_products,
+            {
+                "source": "kolonial",
+                "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
+                "fields": {"product_variant": "description"},
+            },
+        )
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.kolonial_products))
@@ -48,7 +62,14 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["size"])
 
     def test_europris_products(self):
-        actual = handle_products(self.europris_products, {"source": "europris"})
+        actual = handle_products(
+            self.europris_products,
+            {
+                "source": "europris",
+                "extractQuantityFields": ["description", "name"],
+                "fields": {"name": "title", "link": "href"},
+            },
+        )
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.europris_products))
@@ -94,7 +115,9 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["provenanceId"])
 
     def test_iherb_products(self):
-        actual = handle_products(self.iherb_products, {"source": "www.iherb.com"})
+        actual = handle_products(
+            self.iherb_products, {"source": "www.iherb.com", "fields": {"sku": "mpn"}}
+        )
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.iherb_products))

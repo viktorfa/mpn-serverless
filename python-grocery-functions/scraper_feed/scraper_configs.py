@@ -2,22 +2,6 @@ import pydash
 
 from amp_types.amp_product import ScraperConfig, MappingConfig
 
-configs = {
-    "www.iherb.com": {"fields": {"sku": "mpn"}},
-    "meny": {
-        "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
-        "fields": {"sku": "ean", "product_variant": "description"},
-    },
-    "kolonial": {
-        "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
-        "fields": {"product_variant": "description"},
-    },
-    "europris": {
-        "extractQuantityFields": ["description", "name"],
-        "fields": {"name": "title", "link": "href"},
-    },
-}
-
 DEFAULT_FIELD_MAP = {
     "additionalProperties": {},
     "fields": {
@@ -41,7 +25,7 @@ DEFAULT_FIELD_MAP = {
 
 def get_field_map(config: ScraperConfig) -> MappingConfig:
     try:
-        special_config = configs[config["source"]]
+        special_config = config
         new_fields = {**DEFAULT_FIELD_MAP["fields"]}
         for k, v in special_config.get("fields", {}).items():
             new_fields[k] = pydash.flatten([v, new_fields.get(k, [])])

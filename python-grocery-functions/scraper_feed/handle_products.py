@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from datetime import timedelta
 from typing import List
@@ -33,6 +34,10 @@ def handle_products(
     now = datetime.utcnow()
     one_week_ahead = now + timedelta(7)
     mapping_config = get_field_map(config)
+    logging.info("Using handle config:")
+    logging.info(config)
+    logging.info("Using mapping config:")
+    logging.info(mapping_config)
     return list(map(lambda x: transform_product(x, mapping_config, config), products))
 
 
