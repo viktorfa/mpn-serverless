@@ -30,6 +30,7 @@ provider:
     MONGO_DATABASE: ${env:MONGO_DATABASE}
     MONGO_USER: ${env:MONGO_USER}
     MONGO_PASSWORD: ${env:MONGO_PASSWORD}
+    STAGE: ${self:provider.stage}
 
   iamRoleStatements:
     - Effect: "Allow"

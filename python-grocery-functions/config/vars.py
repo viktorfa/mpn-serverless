@@ -2,7 +2,9 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=".env.production")
+dotenv_path = ".env.production" if os.getenv("STAGE") == "prod" else ".env.development"
+
+load_dotenv(dotenv_path=dotenv_path)
 
 
 MONGO_HOST = os.getenv("MONGO_HOST", "0.0.0.0")
