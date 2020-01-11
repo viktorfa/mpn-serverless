@@ -2,11 +2,17 @@ import json
 import logging
 
 import boto3
+import logging
 
 from scraper_feed.handle_feed import handle_feed
 from storage.s3 import get_s3_file_content
 
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+logging.getLogger("botocore").setLevel(logging.WARNING)
+logging.getLogger("boto3").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 s3 = boto3.client("s3")
 
 
