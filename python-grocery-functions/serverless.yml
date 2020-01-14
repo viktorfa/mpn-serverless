@@ -15,7 +15,7 @@ service: python-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: python3.7
+  runtime: python3.8
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}

@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@iarna/toml@^2.2.3":
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/@iarna/toml/-/toml-2.2.3.tgz#f060bf6eaafae4d56a7dac618980838b0696e2ab"
+  integrity sha512-FmuxfCuolpLl0AnQ2NHSzoUKWEJDFl63qXjzdoWBVyFCXzMGm1spBzk7LeHNoVCiWCF7mRVms9e6jEV9+MoPbg==
+
 appdirectory@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/appdirectory/-/appdirectory-0.1.0.tgz#eb6c816320e7b2ab16f5ed997f28d8205df56375"
@@ -55,17 +60,17 @@ core-util-is@~1.0.0:
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
   integrity sha1-tf1UIgqivFq1eqtxQMlAdUUDwac=
 
-dotenv-safe@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/dotenv-safe/-/dotenv-safe-6.1.0.tgz#df6e72ced7d5bcfd9d870c9f656962a02197337b"
-  integrity sha512-O02OUTS+XmoRNZR4kRjJ9jlUGvQoXpMeTVVEBc8hUtgvPTgVZpsZH7TOocq4RVDpPrs2xGPwj6gIWjqRX+ErHA==
+dotenv-safe@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv-safe/-/dotenv-safe-8.2.0.tgz#8d548c7318a62c09a66c4dc8c31864cc007c78ba"
+  integrity sha512-uWwWWdUQkSs5a3mySDB22UtNwyEYi0JtEQu+vDzIqr9OjbDdC2Ip13PnSpi/fctqlYmzkxCeabiyCAOROuAIaA==
   dependencies:
-    dotenv "^6.1.0"
+    dotenv "^8.2.0"
 
-dotenv@^6.1.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-6.2.0.tgz#941c0410535d942c8becf28d3f357dbd9d476064"
-  integrity sha512-HygQCKUBSFl8wKQZBSemMywRWcEDNidvNbjGVyZu3nbZ8qq9ubiPoGLMdRDpfSrpkkm9BXYFkpKxxFX38o/76w==
+dotenv@^8.2.0:
+  version "8.2.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.2.0.tgz#97e619259ada750eea3e4ea3e26bceea5424b16a"
+  integrity sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==
 
 es6-promise@~3.0.2:
   version "3.0.2"
@@ -129,10 +134,10 @@ inherits@2, inherits@~2.0.1:
   resolved "https://registry.yarnpkg.com/inherits/-/inherits-2.0.3.tgz#633c2c83e3da42a502f52466022480f4208261de"
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
 
-is-wsl@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/is-wsl/-/is-wsl-1.1.0.tgz#1f16e4aa22b04d1336b66188a66af3c600c3a66d"
-  integrity sha1-HxbkqiKwTRM2tmGIpmrzxgDDpm0=
+is-wsl@^2.0.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/is-wsl/-/is-wsl-2.1.1.tgz#4a1c152d429df3d441669498e2486d3596ebaf1d"
+  integrity sha512-umZHcSrwlDHo2TGMXv0DZ8dIUGunZ2Iv68YZnrmCiBPkZ4aaOhtv7pXJKeki9k3qJ3RJr0cDyitcl5wEH3AYog==
 
 isarray@~1.0.0:
   version "1.0.0"
@@ -188,11 +193,6 @@ lodash.values@^4.3.0:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/lodash.values/-/lodash.values-4.3.0.tgz#a3a6c2b0ebecc5c2cba1c17e6e620fe81b53d347"
   integrity sha1-o6bCsOvsxcLLocF+bmIP6BtT00c=
-
-md5-file@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/md5-file/-/md5-file-4.0.0.tgz#f3f7ba1e2dd1144d5bf1de698d0e5f44a4409584"
-  integrity sha512-UC0qFwyAjn4YdPpKaDNw6gNxRf7Mcx7jC1UGCY4boCzgvU2Aoc1mOGzTtrjjLKhM5ivsnhoKpQVxKPp+1j1qwg==
 
 minimatch@^3.0.4:
   version "3.0.4"
@@ -252,24 +252,30 @@ serverless-cloudformation-sub-variables@^0.2.1:
   resolved "https://registry.yarnpkg.com/serverless-cloudformation-sub-variables/-/serverless-cloudformation-sub-variables-0.2.1.tgz#19c188600938b9db4eba9d1e28c28c9f69c5de35"
   integrity sha512-ClknmsdUx+aUakbNo0aP4L0SwwM+Bd/HtjOdgJVDqWuNQlQsDr4ajX/nM5nABseFsIQhzyoSq5F6xgnajloWuQ==
 
-serverless-python-requirements@^4.2.5:
-  version "4.2.5"
-  resolved "https://registry.yarnpkg.com/serverless-python-requirements/-/serverless-python-requirements-4.2.5.tgz#1cb60847725c7bbcd92ffeb50391248faab3e03c"
-  integrity sha512-dmdgrSLWgJv2g/LIfFdBIkJFn2duNFRZc7De94AHf2ylZS7s+gKJ8Ga090YdaigWLhH65tMA50Ub06SUk0p6EQ==
+serverless-python-requirements@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/serverless-python-requirements/-/serverless-python-requirements-5.0.1.tgz#9f8ed82fd128090ca20387b429d38def08366378"
+  integrity sha512-FKFS93oxmLEico0GnVnnO287xrUZmCuk6vX//Tq4F/PXXn9eu1xVnjnyaGDvzQbc6OQPsBdJjCC/bBlp/U+Kdg==
   dependencies:
+    "@iarna/toml" "^2.2.3"
     appdirectory "^0.1.0"
     bluebird "^3.0.6"
     fs-extra "^7.0.0"
     glob-all "^3.1.0"
-    is-wsl "^1.1.0"
+    is-wsl "^2.0.0"
     jszip "^3.1.0"
     lodash.get "^4.4.2"
     lodash.set "^4.3.2"
     lodash.uniqby "^4.0.0"
     lodash.values "^4.3.0"
-    md5-file "^4.0.0"
     rimraf "^2.6.2"
+    sha256-file "1.0.0"
     shell-quote "^1.6.1"
+
+sha256-file@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/sha256-file/-/sha256-file-1.0.0.tgz#02cade5e658da3fbc167c3270bdcdfd5409f1b65"
+  integrity sha512-nqf+g0veqgQAkDx0U2y2Tn2KWyADuuludZTw9A7J3D+61rKlIIl9V5TS4mfnwKuXZOH9B7fQyjYJ9pKRHIsAyg==
 
 shell-quote@^1.6.1:
   version "1.6.1"
