@@ -47,6 +47,8 @@ def transform_product(
     # Still handle Shopgun offers a little differently..
     if config["source"] == provenances.SHOPGUN:
         return transform_shopgun_product(product)
+    if config["source"] == provenances.SHOPGUN_BYGG:
+        return transform_shopgun_product(product)
     result = {}
     additional_property_map = {
         x["key"]: x for x in product.get("additionalProperty", [])

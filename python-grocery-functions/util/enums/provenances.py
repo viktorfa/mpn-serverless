@@ -2,6 +2,7 @@ MENY = "meny"
 KOLONIAL = "kolonial"
 EUROPRIS = "europris"
 SHOPGUN = "shopgun"
+SHOPGUN_BYGG = "shopgun_bygg"
 
 YOOLANDO = "yoolando.com"
 GOTTEBITEN = "gittebiten.se"
