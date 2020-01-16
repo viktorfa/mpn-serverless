@@ -49,16 +49,16 @@ describe("getAutocompleteData", () => {
   it("should have correct values", () => {
     const exampleProducts = [
       {
-        heading: "pizza grandiosa mozzarella 4pk",
+        title: "pizza grandiosa mozzarella 4pk",
       },
       {
-        heading: "pizza grandiosa picante",
+        title: "pizza grandiosa picante",
       },
       {
-        heading: "apetina picante mozzarella",
+        title: "apetina picante mozzarella",
       },
       {
-        heading: "apetina picante mozzarella",
+        title: "apetina picante mozzarella",
       },
     ];
     const actual = getAutocompleteData(exampleProducts);

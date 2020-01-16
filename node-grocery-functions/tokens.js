@@ -11,7 +11,7 @@ const getBigrams = (tokens) => {
 };
 
 const preprocessHeading = (string) => {
-  let result = string;
+  let result = string || "";
   result = result.toLowerCase();
   result = result.trim();
   result = result.replace(/[.,]/gu, " ");

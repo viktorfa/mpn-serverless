@@ -18,11 +18,5 @@ module.exports = () => {
   return {
     stage: process.env.NODE_ENV === "production" ? "prod" : "dev",
     logRetentionInDays: process.env.NODE_ENV === "production" ? 30 : 1,
-    bucketName:
-      process.env.NODE_ENV === "production"
-        ? "grocery-prices"
-        : "grocery-prices-dev",
-    cloudfrontDistributionId: "EJ3SPZ8KPRUKZ",
-    mongoCollection: "groceryoffer",
   };
 };

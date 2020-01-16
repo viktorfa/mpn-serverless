@@ -10,12 +10,13 @@ const {
   invalidateCloudFrontDistribution,
 } = require("./lib");
 
-const processProducts = async () => {
-  const groceryOffersCollection = await getCollection("groceryoffer");
+const processProducts = async (collectionName, prefix) => {
+  console.info(`Processing ${collectionName} with prefix ${prefix}`);
+  const collection = await getCollection(collectionName);
 
-  const allProducts = await groceryOffersCollection
+  const allProducts = await collection
     .find({
-      run_till: {
+      validThrough: {
         $gt: new Date(),
       },
     })
@@ -29,15 +30,15 @@ const processProducts = async () => {
 
   const s3Files = [
     {
-      path: "autocomplete-data-latest.json",
+      path: `${prefix}/autocomplete-data-latest.json`,
       data: JSON.stringify(autocompleteData),
     },
     {
-      path: "product-lunr-index-latest.json",
+      path: `${prefix}/product-lunr-index-latest.json`,
       data: JSON.stringify(lunrIndex.toJSON()),
     },
     {
-      path: "product-map-latest.json",
+      path: `${prefix}/product-map-latest.json`,
       data: JSON.stringify(productMap),
     },
   ];

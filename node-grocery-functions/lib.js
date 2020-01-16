@@ -37,7 +37,7 @@ const saveToS3 = async (Bucket, Key, Body) => {
   }
 };
 
-const getLunrIndex = (products, fields = ["heading"], ref = "uri") => {
+const getLunrIndex = (products, fields = ["title"], ref = "uri") => {
   const index = lunr(function() {
     const lunrContext = this;
     lunrContext.pipeline.remove(lunr.stemmer);
@@ -65,7 +65,7 @@ const getAutocompleteData = (products) => {
   let heading_bigrams = new Set();
   const heading_fullgrams = new Set();
   products.forEach((product) => {
-    const tokens = getTokens(preprocessHeading(product.heading));
+    const tokens = getTokens(preprocessHeading(product.title));
     tokens.forEach((x) => heading_tokens.add(x));
     getBigrams(tokens).forEach((x) => heading_bigrams.add(x));
     heading_fullgrams.add(tokens.join(" "));
