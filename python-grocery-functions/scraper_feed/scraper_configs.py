@@ -33,10 +33,10 @@ def get_field_map(config: ScraperConfig) -> MappingConfig:
         result = {
             "additionalProperties": {
                 **DEFAULT_FIELD_MAP,
-                **special_config.get("additionalProperties", {}),
+                **(special_config.get("additionalProperties") or {}),
             },
             "fields": new_fields,
-            "extractQuantityFields": special_config.get("extractQuantityFields", [])
+            "extractQuantityFields": special_config.get("extractQuantityFields")
             or DEFAULT_FIELD_MAP["extractQuantityFields"],
         }
         return result

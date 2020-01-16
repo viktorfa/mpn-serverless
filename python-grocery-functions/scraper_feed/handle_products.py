@@ -51,15 +51,16 @@ def transform_product(
         return transform_shopgun_product(product)
     result = {}
     additional_property_map = {
-        x["key"]: x for x in product.get("additionalProperty", []) or []
+        x["key"]: x for x in product.get("additionalProperty") or []
     }
     for original_key, target_key in mapping_config["fields"].items():
         value = pydash.get(product, original_key)
-        if type(target_key) is str:
-            result[target_key] = value
-        elif type(target_key) is list:
-            for _tk in target_key:
-                result[_tk] = value
+        if value is not None:
+            if type(target_key) is str:
+                result[target_key] = value
+            elif type(target_key) is list:
+                for _tk in target_key:
+                    result[_tk] = value
 
     result["pricing"] = get_product_pricing({**product, **result})
     provenance_id = get_provenance_id(product)

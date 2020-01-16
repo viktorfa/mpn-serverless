@@ -22,6 +22,8 @@ class TestWithConfig(TestCase):
             self.gottebiten_products = json.load(gottebiten_products_json)
         with open("assets/iherb-scraper-feed.json") as iherb_products_json:
             self.iherb_products = json.load(iherb_products_json)
+        with open("assets/obsbygg-scraper-feed.json") as obsbygg_products_json:
+            self.obsbygg_products = json.load(obsbygg_products_json)
 
     def test_meny_products(self):
         actual = handle_products(
@@ -116,7 +118,7 @@ class TestWithConfig(TestCase):
 
     def test_iherb_products(self):
         actual = handle_products(
-            self.iherb_products, {"source": "www.iherb.com", "fields": {"sku": "mpn"}}
+            self.iherb_products, {"source": "iherb", "fields": {"sku": "mpn"}}
         )
         pprint(actual[0])
         self.assertIsInstance(actual, list)
@@ -128,3 +130,16 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["size"])
         self.assertIsNotNone(actual[0]["mpn"])
         self.assertIsNotNone(actual[0]["sku"])
+        self.assertIsNotNone(actual[0]["imageUrl"])
+
+    def test_obsbygg_products(self):
+        actual = handle_products(self.iherb_products, {"source": "obsbygg"})
+        pprint(actual[0])
+        self.assertIsInstance(actual, list)
+        self.assertEqual(len(actual), len(self.iherb_products))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["sku"])
+        self.assertIsNotNone(actual[0]["imageUrl"])
