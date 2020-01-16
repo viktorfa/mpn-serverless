@@ -51,7 +51,7 @@ def transform_product(
         return transform_shopgun_product(product)
     result = {}
     additional_property_map = {
-        x["key"]: x for x in product.get("additionalProperty", [])
+        x["key"]: x for x in product.get("additionalProperty", []) or []
     }
     for original_key, target_key in mapping_config["fields"].items():
         value = pydash.get(product, original_key)
