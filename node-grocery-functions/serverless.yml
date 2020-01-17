@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: node-grocery-functions # NOTE: update this with your service name
+service: node-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
