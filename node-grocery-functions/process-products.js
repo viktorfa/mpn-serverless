@@ -10,11 +10,11 @@ const {
   invalidateCloudFrontDistribution,
 } = require("./lib");
 
-const processProducts = async (collectionName, prefix) => {
-  console.info(`Processing ${collectionName} with prefix ${prefix}`);
-  const collection = await getCollection(collectionName);
+const processProducts = async (productCollectionName, prefix) => {
+  console.info(`Processing ${productCollectionName} with prefix ${prefix}`);
+  const productCollection = await getCollection(productCollectionName);
 
-  const allProducts = await collection
+  const allProducts = await productCollection
     .find({
       validThrough: {
         $gt: new Date(),
@@ -27,6 +27,16 @@ const processProducts = async (collectionName, prefix) => {
   const productMap = createProductObjects(allProducts);
   const lunrIndex = getLunrIndex(allProducts);
   const autocompleteData = getAutocompleteData(allProducts);
+
+  const autocompleteCollection = await getCollection("autocompletedata");
+  const autocompleteUpsertCursor = await autocompleteCollection.findOneAndUpdate(
+    { productCollection: productCollectionName },
+    { $set: { tokens: autocompleteData } },
+    { upsert: true },
+  );
+
+  console.info("Updated autocomplete data in mongo");
+  console.info(autocompleteUpsertCursor);
 
   const s3Files = [
     {
