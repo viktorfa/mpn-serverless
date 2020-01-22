@@ -7,7 +7,7 @@ import pydash
 
 from util.helpers import get_product_uri
 from util.enums import provenances
-from util.quantity_extraction import analyze_quantity
+from parsing.quantity_extraction import analyze_quantity
 from amp_types.amp_product import (
     MpnOffer,
     ScraperOffer,

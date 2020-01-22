@@ -1,12 +1,25 @@
 from typing import List
+import pydash
 
-from util.parsing import extract_number_unit_pairs, extract_unit
-from util.enums import unit_types
+from parsing.parsing import (
+    extract_number_unit_pairs,
+    extract_unit,
+    extract_numbers_with_context,
+    extract_units_from_number_context,
+)
+from parsing.enums import unit_types
 from amp_types.quantity_types import (
     QuantityField,
     ValueField,
     ItemsField,
     ExtractQuantityReturnType,
+)
+from parsing.constants import (
+    quantity_units,
+    piece_units,
+    quantity_value_units,
+    piece_value_units,
+    si_mappings,
 )
 
 
@@ -19,10 +32,96 @@ def analyze_quantity(strings: List[str]) -> ExtractQuantityReturnType:
     # TODO Also support extracting number of items. E.g. sometimes an offer describes a buy one get one free, or buy 4 for 50,00,-. The extracting currently doesn't realize this.
 
     return dict(
-        quantity=extract_quantity(strings),
-        value=extract_value(strings),
+        quantity=_extract_quantity(strings),
+        value=_extract_value(strings),
         items=extract_items(strings),
     )
+
+
+def _extract_quantity(strings: List[str]) -> QuantityField:
+    extracted_strings = []
+    for string in strings:
+        context = extract_numbers_with_context(string)
+        extracted_numbers = (
+            pydash.chain(context)
+            .map(extract_units_from_number_context)
+            .filter(lambda x: not not x)
+            .value()
+        )
+        extracted_numbers = handle_multipliers(extracted_numbers)
+
+        extracted_strings.append(extracted_numbers)
+    size = {}
+    pieces = {}
+    for string in extracted_strings:
+        for (i, number) in enumerate(string):
+            if number.get("unit") in quantity_units:
+                size_value = number.get("value")
+                size_amount = dict(min=size_value, max=size_value)
+                size_unit = dict(
+                    symbol=number.get("unit"),
+                    type=unit_types.QUANTITY,
+                    si=si_mappings.get(number.get("unit")),
+                )
+                size = dict(unit=size_unit, amount=size_amount)
+                result = dict(size=size, pieces=dict())
+            elif number.get("unit") in piece_units:
+                pieces_value = number.get("value")
+                pieces_amount = dict(min=pieces_value, max=pieces_value)
+                pieces_unit = dict(symbol=number.get("unit"), type=unit_types.PIECE)
+                pieces = dict(unit=pieces_unit, amount=pieces_amount)
+
+    result = dict(size=size, pieces=pieces)
+    return result
+
+
+def _extract_value(strings: List[str]) -> QuantityField:
+    extracted_strings = []
+    for string in strings:
+        context = extract_numbers_with_context(string)
+        extracted_numbers = (
+            pydash.chain(context)
+            .map(extract_units_from_number_context)
+            .filter(lambda x: not not x)
+            .value()
+        )
+        extracted_numbers = handle_multipliers(extracted_numbers)
+
+        extracted_strings.append(extracted_numbers)
+    size = {}
+    pieces = {}
+    for string in extracted_strings:
+        for (i, number) in enumerate(string):
+            if number.get("unit") in quantity_value_units:
+                size_value = number.get("value")
+                size_amount = dict(min=size_value, max=size_value)
+                size_unit = dict(
+                    symbol=number.get("unit"),
+                    type=unit_types.QUANTITY_VALUE,
+                    si=si_mappings.get(number.get("unit")),
+                )
+                size = dict(unit=size_unit, amount=size_amount)
+                result = dict(size=size, pieces=dict())
+            elif number.get("unit") in piece_value_units:
+                pieces_value = number.get("value")
+                pieces_amount = dict(min=pieces_value, max=pieces_value)
+                pieces_unit = dict(
+                    symbol=number.get("unit"), type=unit_types.PIECE_VALUE
+                )
+                pieces = dict(unit=pieces_unit, amount=pieces_amount)
+
+    result = dict(size=size, pieces=pieces)
+    return result
+
+
+def handle_multipliers(extracted_numbers):
+    for (i, number) in enumerate(extracted_numbers):
+        if number.get("unit") in ["x"]:
+            try:
+                extracted_numbers[i + 1]["value"] *= number.get("value")
+            except IndexError:
+                pass
+    return extracted_numbers
 
 
 def extract_quantity(strings: List[str]) -> QuantityField:

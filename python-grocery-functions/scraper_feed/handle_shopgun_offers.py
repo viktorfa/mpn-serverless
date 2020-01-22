@@ -1,4 +1,4 @@
-from util.constants import quantity_units
+from parsing.constants import quantity_units
 from util.helpers import (
     get_shopgun_href,
     json_time_to_datetime,
@@ -6,7 +6,7 @@ from util.helpers import (
 )
 from util.enums import provenances
 from scraper_feed.helpers import get_provenance_id, get_product_pricing
-from util.quantity_extraction import analyze_quantity
+from parsing.quantity_extraction import analyze_quantity
 from amp_types.amp_product import MpnOffer
 
 

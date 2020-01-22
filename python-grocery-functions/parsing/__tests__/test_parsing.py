@@ -1,7 +1,12 @@
 from unittest import TestCase
 
-from util.parsing import extract_number_unit_pairs, extract_unit
-from util.enums import unit_types
+from parsing.parsing import (
+    extract_number_unit_pairs,
+    extract_unit,
+    extract_numbers_with_context,
+    extract_units_from_number_context,
+)
+from parsing.enums import unit_types
 
 
 class ExtractUnitPairs(TestCase):
@@ -59,6 +64,7 @@ class ExtractUnitPairs(TestCase):
         string = "kr 180,77/kgHomestyle 4x130g KandaPepperburger"
         expected = [(180.77, "/kgHomestyle"), (4.0, "x"), (130.0, "gKandaPepperburger")]
         actual = extract_number_unit_pairs(string)
+        print(actual)
         self.assertIsInstance(actual, list)
         self.assertListEqual(actual, expected)
 
@@ -127,3 +133,61 @@ class ExtractUnit(TestCase):
         expected = dict(symbol="x", type=unit_types.MULTIPLIER,)
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
+
+
+class ExtractNumbersWithContext(TestCase):
+    def test_basic(self):
+        actual = extract_numbers_with_context("1,5lx8 flaske")
+        print("actual")
+        print(actual)
+        actual = extract_numbers_with_context(
+            "kr 180,77/kgHomestyle 4x130g KandaPepperburger"
+        )
+        print("actual")
+        print(actual)
+
+    def test_extract_units_from_number_context(self):
+        actual = extract_units_from_number_context(("", "1,5", "lx8 flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "1,5", "l x 8 flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("1,5l x ", "8", " flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "45", "g"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "45", " g"))
+        print("actual")
+        print(actual)
+
+
+class ExtractQuantity(TestCase):
+    def test_basic(self):
+        actual = extract_numbers_with_context("1,5lx8 flaske")
+        print("actual")
+        print(actual)
+        actual = extract_numbers_with_context(
+            "kr 180,77/kgHomestyle 4x130g KandaPepperburger"
+        )
+        print("actual")
+        print(actual)
+
+    def test_extract_units_from_number_context(self):
+        actual = extract_units_from_number_context(("", "1,5", "lx8 flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "1,5", "l x 8 flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("1,5l x ", "8", " flaske"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "45", "g"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(("", "45", " g"))
+        print("actual")
+        print(actual)

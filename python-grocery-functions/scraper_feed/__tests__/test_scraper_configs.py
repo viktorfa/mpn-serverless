@@ -10,7 +10,6 @@ class TestGetFieldMap(TestCase):
 
     def test_get_field_map(self):
         actual = get_field_map({"source": "obsbygg"})
-        print(actual)
         self.assertIn("title", actual["fields"].keys())
         self.assertIn("image", actual["fields"].keys())
         self.assertEqual(actual["fields"]["image"], "imageUrl")

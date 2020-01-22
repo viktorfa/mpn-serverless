@@ -1,5 +1,3 @@
-import logging
-
 from scraper_feed.handle_products import handle_products
 from storage.db import save_scraped_products, get_handle_config
 

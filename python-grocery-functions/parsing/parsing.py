@@ -2,17 +2,17 @@ import re
 import logging
 from typing import Optional
 
-from util.constants import (
+from parsing.constants import (
     quantity_units,
     si_mappings,
     piece_units,
     piece_value_units,
     quantity_value_units,
 )
-from util.enums import unit_types
+from parsing.enums import unit_types
 
 
-def extract_number(string: str, loader_context: dict = dict()) -> Optional[float]:
+def extract_number(string: str) -> Optional[float]:
     try:
         pattern = r"(\d+,\d+)"
         matches = re.findall(pattern, string)
@@ -21,13 +21,56 @@ def extract_number(string: str, loader_context: dict = dict()) -> Optional[float
         else:
             return None
     except AttributeError as exc:
-        logging.warning(
-            ""
-            + str(exc)
-            + "Could not extract number from: "
-            + str(loader_context.items())
-        )
+        logging.warning("" + str(exc) + "Could not extract number from: ")
         return None
+
+
+def extract_numbers_with_context(string: str) -> Optional[list]:
+    """
+    Finds numbers and returns a list of tuples with the number and its prefix and suffix.
+    """
+    number_pattern = r"(\d+(?:,\d+)?)"
+    compiled_number_pattern = re.compile(number_pattern, re.A)
+    number_matches = re.finditer(number_pattern, string)
+    number_matches = list(number_matches)
+    result = list(
+        [string[: x.span(0)[0]], x.group(0), string[x.span(0)[1] :]]
+        for x in number_matches
+    )
+    return result
+
+
+def extract_units_from_number_context(context: list) -> list:
+    """
+    Extracts likely and known units from numbers.
+    """
+    known_prefixes = []
+    known_suffixes = [
+        *list({"symbol": x} for x in piece_units),
+        *list({"symbol": x} for x in quantity_units),
+        *list({"symbol": x} for x in quantity_value_units),
+        *list({"symbol": x} for x in piece_value_units),
+        {"symbol": "x"},
+    ]
+    prefix, number, suffix = context
+    prefix = re.sub(r" $", "", prefix)
+    suffix = re.sub(r"^ ", "", suffix)
+    prefix_unit = re.split(r" ", prefix)[-1]
+    prefix_unit = re.sub(r"[^a-zA-Z]", "", prefix_unit)
+    suffix_unit = re.split(r" ", suffix)[0]
+    suffix_unit = re.sub(r"[^a-zA-Z]", "", suffix_unit)
+    result = {}
+    for x in known_suffixes:
+        if suffix_unit == x["symbol"]:
+            result["unit"] = x["symbol"]
+            result["value"] = float(format_number(number))
+            break
+    for x in known_prefixes:
+        if prefix_unit == x["symbol"]:
+            result["unit"] = x["symbol"]
+            result["value"] = float(format_number(number))
+            break
+    return result
 
 
 def extract_number_unit_pairs(string: str) -> Optional[list]:
@@ -40,6 +83,7 @@ def extract_number_unit_pairs(string: str) -> Optional[list]:
         number_matches = re.findall(number_pattern, string)
         number_matches = list(map(float, map(format_number, number_matches)))
         unit_matches = re.findall(unit_pattern, string)
+
         number_of_pairs = min(len(number_matches), len(unit_matches))
         if number_of_pairs > 0:
             return list(zip(number_matches, unit_matches))

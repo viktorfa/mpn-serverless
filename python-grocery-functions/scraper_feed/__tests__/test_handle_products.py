@@ -18,7 +18,6 @@ class TestHandleProducts(TestCase):
         scraper_config = {"source": "obsbygg"}
 
         actual = transform_product(product, mapping_config, scraper_config)
-        print(json.dumps(actual, default=str, indent=2))
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -27,7 +26,6 @@ class TestHandleProducts(TestCase):
         scraper_config = {"source": "swecandy.se"}
 
         actual = transform_product(product, mapping_config, scraper_config)
-        print(json.dumps(actual, default=str, indent=2))
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
