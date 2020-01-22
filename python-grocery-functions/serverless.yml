@@ -31,6 +31,7 @@ provider:
     MONGO_USER: ${env:MONGO_USER}
     MONGO_PASSWORD: ${env:MONGO_PASSWORD}
     STAGE: ${self:provider.stage}
+    SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -47,19 +48,22 @@ package:
     - scraper_feed/**
     - storage/**
     - util/**
+    - parsing/**
     - config/**
     - amp_types/**
   exclude:
     - ./**
 
 functions:
-  scraperFeed:
-    handler: scraper_feed_handler.scraper_feed
+  scraperFeedSns:
+    handler: scraper_feed_handler.scraper_feed_sns
     events:
       - sns:
           topicName: ScraperFeedCreated
           arn:
             Ref: ScraperFeedCreatedTopic
+  scraperFeedTrigger:
+    handler: scraper_feed_handler.trigger_scraper_feed
 
 resources:
   - ${file(../s3-sns-cloudformation.yml)}

@@ -24,15 +24,31 @@ from scraper_feed.helpers import (
 from scraper_feed.scraper_configs import get_field_map
 
 
-now = datetime.utcnow()
-one_week_ahead = now + timedelta(7)
+class MyTime(object):
+    def __init__(self):
+        self.set_time(datetime.utcnow())
+
+    def set_time(self, time):
+        self._time = time
+        self._one_week_ahead = self._time + timedelta(7)
+
+    @property
+    def time(self):
+        return self._time
+
+    @property
+    def one_week_ahead(self):
+        return self._one_week_ahead
+
+
+global time
+time = MyTime()
 
 
 def handle_products(
     products: List[ScraperOffer], config: ScraperConfig
 ) -> List[MpnOffer]:
-    now = datetime.utcnow()
-    one_week_ahead = now + timedelta(7)
+    time.set_time(config.get("scrape_time", datetime.utcnow()))
     mapping_config = get_field_map(config)
     logging.info("Using handle config:")
     logging.info(config)
@@ -83,8 +99,8 @@ def transform_product(
         k: transform_field(v) for k, v in additional_property_map.items()
     }
     result["gtins"] = get_gtins({**product, **result})
-    result["validThrough"] = one_week_ahead
-    result["validFrom"] = now
+    result["validThrough"] = time.one_week_ahead
+    result["validFrom"] = time.time
     result["dealer"] = result.get("dealer", config["source"])
 
     analyzed_quantity = analyzed_product.get("quantity", None) or {

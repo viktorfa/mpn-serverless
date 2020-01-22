@@ -14,7 +14,7 @@ def _get_handle_config(config: dict) -> dict:
     result = {}
 
     try:
-        result = {**get_handle_config(config.get("provenance"))}
+        result = {**config, **get_handle_config(config.get("provenance"))}
     except NoHandleConfigError:
         result = {**config}
         result["collection_name"] = DEFAULT_OFFER_COLLECTION_NAME

@@ -23,6 +23,13 @@ def get_s3_file_content(bucket: str, key: str):
     return s3_object["Body"].read().decode()
 
 
+def get_s3_object(bucket: str, key: str):
+    """
+    Gets an s3 object.
+    """
+    return s3.get_object(Bucket=bucket, Key=key)
+
+
 def save_to_s3(bucket: str, key: str, data):
     """
     Saves a json string as a file to S3.
