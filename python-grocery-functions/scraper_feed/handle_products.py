@@ -70,12 +70,12 @@ def transform_product(
         *list(
             v
             for k, v in product.items()
-            if k in mapping_config["extractQuantityFields"]
+            if k in mapping_config["extractQuantityFields"] and v
         ),
         *list(
             v["value"]
             for k, v in additional_property_map.items()
-            if k in mapping_config["extractQuantityFields"]
+            if k in mapping_config["extractQuantityFields"] and v
         ),
     ]
     analyzed_product = analyze_quantity(pydash.flatten(quantity_strings))

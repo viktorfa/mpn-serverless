@@ -12,7 +12,7 @@ from amp_types.amp_product import MpnOffer
 
 def transform_shopgun_product(product: dict) -> MpnOffer:
     analyzed_product = analyze_quantity(
-        list(v for k, v in product.items() if k in ["description", "heading"])
+        list(v for k, v in product.items() if k in ["description", "heading"] and v)
     )
     provenance_id = get_provenance_id(product)
     quantity = get_shopgun_quantity(product.get("quantity"))
