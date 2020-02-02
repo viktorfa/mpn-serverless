@@ -28,6 +28,7 @@ def transform_shopgun_product(product: dict) -> MpnOffer:
         href=get_shopgun_href(product),
         imageUrl=product.get("images", {}).get("zoom"),
         uri=get_product_uri("shopgun", provenance_id),
+        stores=product.get("stores", []),
         pricing=get_product_pricing(
             {
                 "price": product.get("pricing").get("price"),
