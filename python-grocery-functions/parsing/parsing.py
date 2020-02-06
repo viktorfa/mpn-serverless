@@ -56,9 +56,9 @@ def extract_units_from_number_context(context: list) -> list:
     prefix = re.sub(r" $", "", prefix)
     suffix = re.sub(r"^ ", "", suffix)
     prefix_unit = re.split(r" ", prefix)[-1]
-    prefix_unit = re.sub(r"[^a-zA-Z]", "", prefix_unit)
+    prefix_unit = re.sub(r"[^a-zA-Z/]", "", prefix_unit)
     suffix_unit = re.split(r" ", suffix)[0]
-    suffix_unit = re.sub(r"[^a-zA-Z]", "", suffix_unit)
+    suffix_unit = re.sub(r"[^a-zA-Z/]", "", suffix_unit)
     result = {}
     for x in known_suffixes:
         if suffix_unit == x["symbol"]:

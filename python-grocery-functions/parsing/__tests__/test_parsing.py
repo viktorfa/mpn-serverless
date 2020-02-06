@@ -145,6 +145,9 @@ class ExtractNumbersWithContext(TestCase):
         )
         print("actual")
         print(actual)
+        actual = extract_numbers_with_context("2 varianter. 4 x 125 g. 179,80/kg")
+        print("actual")
+        print(actual)
 
     def test_extract_units_from_number_context(self):
         actual = extract_units_from_number_context(("", "1,5", "lx8 flaske"))
@@ -160,6 +163,11 @@ class ExtractNumbersWithContext(TestCase):
         print("actual")
         print(actual)
         actual = extract_units_from_number_context(("", "45", " g"))
+        print("actual")
+        print(actual)
+        actual = extract_units_from_number_context(
+            ("2 varianter. 4 x 125 g. ", "179,80", "/kg"),
+        )
         print("actual")
         print(actual)
 

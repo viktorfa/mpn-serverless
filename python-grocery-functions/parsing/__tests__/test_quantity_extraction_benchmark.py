@@ -67,6 +67,13 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
+                ["2 varianter. 4 x 125 g. 179,80/kg"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 500),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "g"),
+                ],
+            ),
+            (
                 ["1 gressklipper M\u00f8llerens"],
                 [
                     (lambda x: pydash.get(x, "quantity.size.amount.min"), None),
@@ -271,6 +278,8 @@ class TestQuantityExtractionBenchmark(TestCase):
     def test_extract_false(self):
         input_assertions_pairs = [
             (
+                # This is tricky. It should not extract value because it's "ferdig blandet".
+                # It's way too early to worry about this now.
                 ["stort utvalg, 0,8l + pant. 2,49/l ferdig bl"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), None),
