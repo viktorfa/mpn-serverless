@@ -18,8 +18,9 @@ DEFAULT_FIELD_MAP = {
         "categories": "categories",
         "availability": "availability",
         "itemCondition": "itemCondition",
+        "subtitle": "subtitle",
     },
-    "extractQuantityFields": ["title", "description"],
+    "extractQuantityFields": ["title", "description", "subtitle"],
 }
 
 
