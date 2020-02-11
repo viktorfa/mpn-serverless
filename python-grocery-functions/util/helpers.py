@@ -32,7 +32,7 @@ def get_kolonial_image_url(url: str) -> str:
 
 
 def get_shopgun_href(product) -> str:
-    return "https://shopgun.com/publications/paged/{}/pages/{}".format(
+    return "https://etilbudsavis.no/publications/paged/{}/pages/{}".format(
         product.get("catalog_id"), product.get("catalog_page")
     )
 
