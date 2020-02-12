@@ -16,7 +16,7 @@ const getMongoUri = () => {
 };
 const mongoUri = getMongoUri();
 console.log(`Connecting to: ${mongoUri}`);
-const client = new mongodb.MongoClient(mongoUri);
+const client = new mongodb.MongoClient(mongoUri, { useUnifiedTopology: true });
 
 module.exports.getCollection = async (collectionName) => {
   await client.connect();

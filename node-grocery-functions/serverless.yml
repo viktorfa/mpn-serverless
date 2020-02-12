@@ -61,6 +61,15 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "groceryoffer"
+  processGroceryOffersSns:
+    handler: handler.processGroceryOffersSns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Fn::ImportValue: !Sub
+              - "#{Stage}-ScraperFeedHandledTopicArn"
+              - Stage: ${self:provider.stage}
 
 plugins:
   - serverless-cloudformation-sub-variables
