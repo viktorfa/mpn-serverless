@@ -20,6 +20,7 @@ from scraper_feed.helpers import (
     get_product_pricing,
     get_provenance_id,
     transform_field,
+    get_stock_status,
 )
 from scraper_feed.scraper_configs import get_field_map
 
@@ -102,6 +103,7 @@ def transform_product(
     result["validThrough"] = time.one_week_ahead
     result["validFrom"] = time.time
     result["dealer"] = result.get("dealer", config["source"])
+    result["mpnStock"] = get_stock_status(product)
 
     analyzed_quantity = analyzed_product.get("quantity", None) or {
         "size": None,

@@ -22,7 +22,7 @@ def transform_field(field):
 
 def get_gtins(offer: ScraperOffer) -> dict:
     result = {}
-    for _, v in {
+    for k, v in {
         _k: _v
         for _k, _v in offer.items()
         if _k in ["gtin", "gtin8", "gtin12", "gtin13", "upc", "ean"]
@@ -34,6 +34,8 @@ def get_gtins(offer: ScraperOffer) -> dict:
             result["gtin12"] = v
         elif len(v) == 13:
             result["gtin13"] = v
+        else:
+            result[k] = v
     return result
 
 
@@ -45,3 +47,18 @@ def get_provenance_id(product):
         urlparse(product.get("url")).path[1:],
     )
     return next(x for x in candidates if x)
+
+
+def get_stock_status(product):
+    availability = product.get("availability")
+    if not availability:
+        return "OutOfStock"
+    elif availability in [
+        "InStock",
+        "http://schema.org/InStock",
+        "https://schema.org/InStock",
+    ]:
+        return "InStock"
+    else:
+        return availability
+
