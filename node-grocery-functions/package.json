@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "aws-sdk": "^2.605.0",
+    "aws-sdk": "^2.616.0",
     "lodash": "^4.17.15",
     "lunr": "^2.3.8",
-    "mongodb": "^3.5.0"
+    "mongodb": "^3.5.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",
-    "mocha": "^7.0.0",
+    "mocha": "^7.0.1",
     "dotenv-safe": "^8.2.0",
     "serverless-cloudformation-sub-variables": "^0.2.1"
   },
