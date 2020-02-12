@@ -32,6 +32,7 @@ provider:
     MONGO_PASSWORD: ${env:MONGO_PASSWORD}
     STAGE: ${self:provider.stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
+    SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -41,6 +42,10 @@ provider:
         - "arn:aws:s3:::#{BucketName}/*"
         - BucketName:
             Ref: ScraperFeedBucket
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: !Ref ScraperFeedHandledTopic
 
 package:
   include:

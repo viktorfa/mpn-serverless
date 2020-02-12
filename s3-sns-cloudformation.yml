@@ -25,11 +25,18 @@ Resources:
             Resource: "*"
       Topics:
         - Ref: ScraperFeedCreatedTopic
+  ScraperFeedHandledTopic:
+    Type: AWS::SNS::Topic
 
 Outputs:
   ScraperFeedCreatedTopic:
     Value:
       Ref: ScraperFeedCreatedTopic
+  ScraperFeedHandledTopicArn:
+    Value:
+      Ref: ScraperFeedHandledTopic
+    Export:
+      Name: ${self:provider.stage}-ScraperFeedHandledTopicArn
   ScraperFeedBucket:
     Value:
       Ref: ScraperFeedBucket
