@@ -1,0 +1,12 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-prod-ScraperFeedHandledTopic-1X6CVLT6R8PBM:eaa9c2e9-d67a-423f-92f2-4cd6686ebe10",
+      "Sns": {
+        "Message": "{\"provenance\": \"shopgun\", \"scrape_time\": \"2020-03-21T01:21:10+00:00\", \"collection_name\": \"groceryoffer\"}"
+      }
+    }
+  ]
+}

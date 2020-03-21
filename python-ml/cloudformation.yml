@@ -1,0 +1,17 @@
+Resources:
+  MlModelsBucket:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  MlModelsBucket:
+    Value:
+      Ref: MlModelsBucket
+    Export:
+      Name: ${self:provider.stage}-MlModelsBucket
+  MlModelsBucketArn:
+    Value:
+      Fn::GetAtt:
+        - MlModelsBucket
+        - Arn
+    Export:
+      Name: ${self:provider.stage}-MlModelsBucketArn

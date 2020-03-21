@@ -1,0 +1,94 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: python-mpn-ml # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: eu-central-1
+  stage: ${self:custom.vars.stage, "dev"}
+  logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
+  profile: serverless-mpn-admin
+
+  memorySize: 2048
+  timeout: 900
+
+  environment:
+    MONGO_HOST: ${env:MONGO_HOST}
+    MONGO_PORT: ${env:MONGO_PORT}
+    MONGO_DATABASE: ${env:MONGO_DATABASE}
+    MONGO_USER: ${env:MONGO_USER}
+    MONGO_PASSWORD: ${env:MONGO_PASSWORD}
+    STAGE: ${self:provider.stage}
+    ML_MODELS_BUCKET: !Ref MlModelsBucket
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:GetObject"
+        - "s3:PutObject"
+      Resource: !Sub
+        - "arn:aws:s3:::#{BucketName}/*"
+        - BucketName:
+            Ref: MlModelsBucket
+
+package:
+  include:
+    - handler.py
+    - ml.py
+    - storage/**
+    - util/**
+    - config/**
+  exclude:
+    - ./**
+
+functions:
+  createModels:
+    handler: handler.create_models
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Fn::ImportValue: !Sub
+              - "#{Stage}-ScraperFeedHandledTopicArn"
+              - Stage: ${self:provider.stage}
+  addSimilarOffers:
+    handler: handler.add_similar_offers
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Fn::ImportValue: !Sub
+              - "#{Stage}-ScraperFeedHandledTopicArn"
+              - Stage: ${self:provider.stage}
+
+plugins:
+  - serverless-python-requirements
+  - serverless-cloudformation-sub-variables
+
+resources:
+  - ${file(./cloudformation.yml)}
+
+custom:
+  vars: ${file(./sls-config.js)}
+  pythonRequirements:
+    dockerizePip: true # Had some problem with C libs in python if using no-linux
+    slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
+    # Caching pip
+    useDownloadCache: true
+    useStaticCache: true
+    # This package has cause some problems
+    noDeploy:
+      - pkg-resources
+    fileName: requirements.txt
