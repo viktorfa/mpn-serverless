@@ -20,8 +20,9 @@ DEFAULT_FIELD_MAP = {
         "itemCondition": "itemCondition",
         "vendor": "vendor",
         "subtitle": "subtitle",
+        "shortDescription": "shortDescription",
     },
-    "extractQuantityFields": ["title", "description", "subtitle"],
+    "extractQuantityFields": ["title", "shortDescription", "subtitle"],
 }
 
 

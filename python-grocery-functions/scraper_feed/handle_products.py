@@ -58,6 +58,28 @@ def handle_products(
     return list(map(lambda x: transform_product(x, mapping_config, config), products))
 
 
+def is_integer_num(n):
+    if isinstance(n, int):
+        return True
+    if isinstance(n, float):
+        return n.is_integer()
+    return False
+
+
+def get_categories(categories, categories_limits):
+    try:
+        start_index, end_index = categories_limits
+        if is_integer_num(start_index) and not is_integer_num(end_index):
+            return categories[start_index:]
+        elif is_integer_num(end_index) and not is_integer_num(start_index):
+            return categories[:end_index]
+        elif is_integer_num(start_index) and is_integer_num(end_index):
+            return categories[start_index:end_index]
+        return categories
+    except Exception:
+        return categories
+
+
 def transform_product(
     product: ScraperOffer, mapping_config: MappingConfig, config: ScraperConfig
 ) -> MpnOffer:
@@ -67,6 +89,9 @@ def transform_product(
     if config["source"] == provenances.SHOPGUN_BYGG:
         return transform_shopgun_product(product)
     result = {}
+    ignore_fields = pydash.get(config, "additionalConfig.ignoreFields") or []
+    for field_name in ignore_fields:
+        del product[field_name]
     additional_property_map = {
         x["key"]: x for x in product.get("additionalProperty") or []
     }
@@ -83,6 +108,7 @@ def transform_product(
     provenance_id = get_provenance_id(product)
     result["uri"] = get_product_uri(config["source"], provenance_id)
     result["provenanceId"] = provenance_id
+
     quantity_strings = [
         *list(
             v
@@ -104,6 +130,10 @@ def transform_product(
     result["validFrom"] = time.time
     result["dealer"] = result.get("dealer", config["source"])
     result["mpnStock"] = get_stock_status(product)
+    result["categories"] = get_categories(
+        pydash.get(product, "categories"),
+        pydash.get(config, "additionalConfig.categoriesLimits"),
+    )
 
     analyzed_quantity = analyzed_product.get("quantity", None) or {
         "size": None,
@@ -115,4 +145,3 @@ def transform_product(
         **analyzed_product,
         **transformed_additional_properties,
     }
-
