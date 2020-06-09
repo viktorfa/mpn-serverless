@@ -50,6 +50,7 @@ provider:
 package:
   include:
     - scraper_feed_handler.py
+    - product_feed_handler.py
     - scraper_feed/**
     - storage/**
     - util/**
@@ -67,6 +68,13 @@ functions:
           topicName: ScraperFeedCreated
           arn:
             Ref: ScraperFeedCreatedTopic
+  productFeedSns:
+    handler: product_feed_handler.handle_products_sns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Ref: ScraperFeedHandledTopic
   scraperFeedTrigger:
     handler: scraper_feed_handler.trigger_scraper_feed
 

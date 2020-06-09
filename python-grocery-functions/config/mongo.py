@@ -15,8 +15,8 @@ if MONGO_USER:
 else:
     _client = pymongo.MongoClient(MONGO_HOST, int(MONGO_PORT))
 
-_db = _client[MONGO_DATABASE]
+_db = _client.get_database(MONGO_DATABASE)
 
 
-def get_collection(collection_name: str):
-    return _db[collection_name]
+def get_collection(collection_name: str) -> pymongo.collection:
+    return _db.get_collection(collection_name)
