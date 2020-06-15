@@ -91,7 +91,7 @@ def transform_product(
     result = {}
     ignore_fields = pydash.get(config, "additionalConfig.ignoreFields") or []
     for field_name in ignore_fields:
-        del product[field_name]
+        product.pop(field_name, None)
     additional_property_map = {
         x["key"]: x for x in product.get("additionalProperty") or []
     }
