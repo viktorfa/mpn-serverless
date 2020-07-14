@@ -25,10 +25,12 @@ def get_gtins(offer: ScraperOffer) -> dict:
     for k, v in {
         _k: _v
         for _k, _v in offer.items()
-        if _k in ["gtin", "gtin8", "gtin12", "gtin13", "upc", "ean"]
+        if _k in ["gtin", "gtin8", "gtin12", "gtin13", "upc", "ean", "nobb"]
         and re.match(r"^\d+$", str(_v))
     }.items():
-        if len(v) == 8:
+        if k == "nobb":
+            result["nobb"] = v
+        elif len(v) == 8:
             result["gtin8"] = v
         elif len(v) == 12:
             result["gtin12"] = v
@@ -41,7 +43,7 @@ def get_gtins(offer: ScraperOffer) -> dict:
 
 def get_provenance_id(product):
     candidates = (
-        product.get("provenance_id"),
+        product.get("provenanceId"),
         product.get("sku"),
         product.get("id"),
         urlparse(product.get("url")).path[1:],

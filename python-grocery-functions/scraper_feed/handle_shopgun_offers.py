@@ -14,10 +14,10 @@ def transform_shopgun_product(product: dict) -> MpnOffer:
     analyzed_product = analyze_quantity(
         list(v for k, v in product.items() if k in ["description", "heading"] and v)
     )
-    provenance_id = get_provenance_id(product)
+    provenanceId = get_provenance_id(product)
     quantity = get_shopgun_quantity(product.get("quantity"))
     return dict(
-        provenanceId=provenance_id,
+        provenanceId=provenanceId,
         provenance=provenances.SHOPGUN,
         validFrom=json_time_to_datetime(product.get("run_from")),
         validThrough=json_time_to_datetime(product.get("run_till")),
@@ -27,7 +27,7 @@ def transform_shopgun_product(product: dict) -> MpnOffer:
         brand=product.get("brand"),
         href=get_shopgun_href(product),
         imageUrl=product.get("images", {}).get("zoom"),
-        uri=get_product_uri("shopgun", provenance_id),
+        uri=get_product_uri("shopgun", provenanceId),
         stores=product.get("stores", []),
         pricing=get_product_pricing(
             {

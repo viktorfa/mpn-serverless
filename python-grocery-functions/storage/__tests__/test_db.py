@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from config.mongo import get_collection
 from storage.db import get_handle_config
 
 

@@ -26,6 +26,8 @@ class TestWithConfig(TestCase):
             self.obsbygg_products = json.load(obsbygg_products_json)
         with open("assets/byggmax-scraper-feed.json") as byggmax_products_json:
             self.byggmax_products = json.load(byggmax_products_json)
+        with open("assets/monter-scraper-feed.json") as monter_products_json:
+            self.monter_products = json.load(monter_products_json)
 
     def test_meny_products(self):
         actual = handle_products(
@@ -43,7 +45,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
 
@@ -63,7 +65,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
 
     def test_europris_products(self):
         actual = handle_products(
@@ -92,7 +94,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
 
     def test_swecandy_products(self):
         actual = handle_products(self.swecandy_products, {"source": "swecandy.se"})
@@ -103,7 +105,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["categories"])
 
     def test_gottebiten_products(self):
@@ -115,7 +117,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["provenanceId"])
 
     def test_iherb_products(self):
@@ -129,7 +131,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["size"])
+        self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["mpn"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["imageUrl"])
@@ -151,6 +153,21 @@ class TestWithConfig(TestCase):
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.byggmax_products))
+        self.assertIsNotNone(actual[0]["title"])
+        self.assertIsNotNone(actual[0]["pricing"])
+        self.assertIsNotNone(actual[0]["href"])
+        self.assertIsNotNone(actual[0]["uri"])
+        self.assertIsNotNone(actual[0]["sku"])
+        self.assertIsNotNone(actual[0]["imageUrl"])
+
+    def test_monter_products(self):
+        actual = handle_products(self.monter_products, {"source": "monter.no", "additionalProperties": {"NOBB": "nobb"}})
+        pprint(actual[0])
+        self.assertIsInstance(actual, list)
+        self.assertEqual(len(actual), len(self.monter_products))
+        self.assertEqual(len(actual), len(self.monter_products))
+        self.assertIsNotNone(actual[0]["gtins"])
+        self.assertIsNotNone(actual[0]["gtins"]["nobb"])
         self.assertIsNotNone(actual[0]["title"])
         self.assertIsNotNone(actual[0]["pricing"])
         self.assertIsNotNone(actual[0]["href"])

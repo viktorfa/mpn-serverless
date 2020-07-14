@@ -43,7 +43,7 @@ class AmpProduct(TypedDict):
     provenance: str
     brand: str
     uri: str
-    provenance_id: str
+    provenanceId: str
     dealer: str
     type: str
     is_discounted: bool
@@ -52,7 +52,7 @@ class AmpProduct(TypedDict):
     is_promoted: bool
     stock_status: str
     is_active: bool
-    additionalProperties: Dict[str, AdditionalProperty]
+    additionalProperties: List[AdditionalProperty]
     # Whether to show before the offer starts (useful for one day offers etc)
     showBeforeValid: bool
     categories: List[str]
@@ -83,7 +83,7 @@ class MpnOffer(TypedDict):
     selectMethod: str
     isPromoted: bool
     availability: str
-    additionalProperty: Dict[str, AdditionalProperty]
+    additionalProperty: List[AdditionalProperty]
     categories: List[str]
     categories2: List[str]
     gtin: str
@@ -93,17 +93,23 @@ class MpnOffer(TypedDict):
 class ScraperOffer(TypedDict):
     title: str
     price: float
+    prePrice: float
     priceCurrency: str
+    priceUnit: str
     description: str
+    shortDescription: str
     image: str
     url: str
     provenance: str
     brand: str
-    provenance_id: str
+    vendor: str
+    variant: str
+    model: str
+    provenanceId: str
     dealer: str
     availability: str
     itemCondition: str
-    additionalProperty: Dict[str, AdditionalProperty]
+    additionalProperty: List[AdditionalProperty]
     categories: List[str]
     categories2: List[str]
     gtin: str

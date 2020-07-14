@@ -5,7 +5,7 @@ from typing import List
 
 import pydash
 
-from util.helpers import get_product_uri
+from util.helpers import get_product_uri, is_integer_num
 from util.enums import provenances
 from parsing.quantity_extraction import analyze_quantity
 from amp_types.amp_product import (
@@ -49,6 +49,9 @@ time = MyTime()
 def handle_products(
     products: List[ScraperOffer], config: ScraperConfig
 ) -> List[MpnOffer]:
+    """
+    Transforms products straight from the scraper feed into MpnOffers.
+    """
     time.set_time(config.get("scrape_time", datetime.utcnow()))
     mapping_config = get_field_map(config)
     logging.info("Using handle config:")
@@ -58,15 +61,11 @@ def handle_products(
     return list(map(lambda x: transform_product(x, mapping_config, config), products))
 
 
-def is_integer_num(n):
-    if isinstance(n, int):
-        return True
-    if isinstance(n, float):
-        return n.is_integer()
-    return False
-
-
 def get_categories(categories, categories_limits):
+    """
+    Potentially shaves off the first or last or both entries in a product's category list, according
+    to the handle config, since breadcrumbs often include the product name and the root category like "Home".
+    """
     try:
         start_index, end_index = categories_limits
         if is_integer_num(start_index) and not is_integer_num(end_index):
@@ -88,13 +87,21 @@ def transform_product(
         return transform_shopgun_product(product)
     if config["source"] == provenances.SHOPGUN_BYGG:
         return transform_shopgun_product(product)
+    # Start here for everything not Shopgun offer.
     result = {}
     ignore_fields = pydash.get(config, "additionalConfig.ignoreFields") or []
     for field_name in ignore_fields:
         product.pop(field_name, None)
+
     additional_property_map = {
         x["key"]: x for x in product.get("additionalProperty") or []
     }
+    for from_key, to_key in mapping_config.get("additionalProperties").items():
+        prop = additional_property_map.get(from_key)
+        result[to_key] = pydash.get(prop, ["value"])
+
+    # Some scraper items that scrape json don't bother to change names of its fields, so
+    # we just map them according to the config here.
     for original_key, target_key in mapping_config["fields"].items():
         value = pydash.get(product, original_key)
         if value is not None:
@@ -104,10 +111,10 @@ def transform_product(
                 for _tk in target_key:
                     result[_tk] = value
 
+    provenanceId = get_provenance_id(product)
+    result["provenanceId"] = provenanceId
+    result["uri"] = get_product_uri(config["source"], provenanceId)
     result["pricing"] = get_product_pricing({**product, **result})
-    provenance_id = get_provenance_id(product)
-    result["uri"] = get_product_uri(config["source"], provenance_id)
-    result["provenanceId"] = provenance_id
 
     quantity_strings = [
         *list(
@@ -135,13 +142,8 @@ def transform_product(
         pydash.get(config, "additionalConfig.categoriesLimits"),
     )
 
-    analyzed_quantity = analyzed_product.get("quantity", None) or {
-        "size": None,
-        "pieces": None,
-    }
     return {
         **result,
-        **analyzed_quantity,
         **analyzed_product,
         **transformed_additional_properties,
     }

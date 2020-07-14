@@ -11,7 +11,7 @@ DEFAULT_FIELD_MAP = {
         "title": "title",
         "description": "description",
         "sku": "sku",
-        "provenance_id": "provenanceId",
+        "provenanceId": "provenanceId",
         "provenance": "provenance",
         "dealer": "dealer",
         "brand": "brand",
@@ -35,7 +35,7 @@ def get_field_map(config: ScraperConfig) -> MappingConfig:
 
         result = {
             "additionalProperties": {
-                **DEFAULT_FIELD_MAP,
+                **DEFAULT_FIELD_MAP.get("additionalProperties"),
                 **(special_config.get("additionalProperties") or {}),
             },
             "fields": new_fields,

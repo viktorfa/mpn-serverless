@@ -1,0 +1,22 @@
+{
+  "Records": [
+    {
+      "EventSource": "aws:sns",
+      "EventVersion": "1.0",
+      "EventSubscriptionArn": "arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-prod-ScraperFeedCreatedTopic-1UBN4T98NTA3D:dbf472ad-3cb2-4104-ba69-1ace7029f930",
+      "Sns": {
+        "Type": "Notification",
+        "MessageId": "e46ff5dd-fc82-5d5e-b1ec-a37d01be4ed1",
+        "TopicArn": "arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-prod-ScraperFeedCreatedTopic-1UBN4T98NTA3D",
+        "Subject": "Amazon S3 Notification",
+        "Message": "{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2020-01-21T13:22:02.757Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:AROAWVX3V75YCRIIWTLOS:387b769a-c2b0-4a40-bcbd-7554d32fd036\"},\"requestParameters\":{\"sourceIPAddress\":\"3.125.6.180\"},\"responseElements\":{\"x-amz-request-id\":\"744D270E0DDED8EC\",\"x-amz-id-2\":\"ge1LVlsyFruB6jKaiYi4+Fi8/Gl01NTzw0qi3b7YzCyOT7h9iyuWg82xmopzCWM+Q6TWPZDi1j2/prSKcDeUJYwz9Pm3+eya\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"7bd78d0c-f7cc-46cf-847f-836905e3d569\",\"bucket\":{\"name\":\"python-mpn-functions-prod-scraperfeedbucket-dh5qh3lt7446\",\"ownerIdentity\":{\"principalId\":\"ADIMF5OXLVQH\"},\"arn\":\"arn:aws:s3:::python-mpn-functions-prod-scraperfeedbucket-dh5qh3lt7446\"},\"object\":{\"key\":\"byggmax.no/byggmax_spider-latest.json\",\"size\":6342096,\"eTag\":\"72f6e332c7d3ae1385d0dea5c2b60c70\",\"versionId\":\"FPENmFtwjy8BTsMOGSJENBtcL0n_SLu0\",\"sequencer\":\"005E26FAFB242CA5C8\"}}}]}",
+        "Timestamp": "2020-01-21T13:22:04.554Z",
+        "SignatureVersion": "1",
+        "Signature": "XQNjjLAL/dIq7WDdQk2Yw9nC+0SmeiGatocFZy4J7Q8atuw+2YWJVRbSJZffKe+IqT/iYj3/HW03XaJR5fhhfZrAfZHNCOVa6grPhD9H83gSI4iB3CUMBEv78RqGoG8+Hzxo0sWM9RRDSB/LZL4IKtosRcA7sHhJCY0dTpuetCXiVTs+cQ9TT+25oqWof4D1vjNRg/n/hWPPxFgK6aYrCY8L8Oy3ZXDAbhxeQXrfw2+Vga+VSh+Cxn4tLV8gxcM1ZTSaUlCyNYft9PVbkXccRt9qcsnQ5ViSbPMxgnck1jkncEraOh+uW/vy70zdw/L3C4J9gtUNUQGwBOVDWR9hww==",
+        "SigningCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+        "UnsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:459015585648:python-mpn-functions-prod-ScraperFeedCreatedTopic-1UBN4T98NTA3D:dbf472ad-3cb2-4104-ba69-1ace7029f930",
+        "MessageAttributes": {}
+      }
+    }
+  ]
+}

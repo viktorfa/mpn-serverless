@@ -31,11 +31,11 @@ def analyze_quantity(strings: List[str]) -> ExtractQuantityReturnType:
 
     # TODO Also support extracting number of items. E.g. sometimes an offer describes a buy one get one free, or buy 4 for 50,00,-. The extracting currently doesn't realize this.
 
-    return dict(
-        quantity=_extract_quantity(strings),
-        value=_extract_value(strings),
-        items=extract_items(strings),
-    )
+    quantity = _extract_quantity(strings)
+    value = _extract_value(strings)
+    items = extract_items(strings)
+    quantity["items"] = items
+    return dict(quantity=quantity, value=value)
 
 
 def _extract_quantity(strings: List[str]) -> QuantityField:

@@ -24,6 +24,14 @@ def get_nested(gettable, path: Union[list, str], default=None):
         return default
 
 
+def is_integer_num(n):
+    if isinstance(n, int):
+        return True
+    if isinstance(n, float):
+        return n.is_integer()
+    return False
+
+
 def get_kolonial_image_url(url: str) -> str:
     if url[0] == "/":
         return "https://kolonial.no" + url.replace("list", "detail")
