@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "aws-sdk": "^2.616.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "lunr": "^2.3.8",
     "mongodb": "^3.5.3"
   },
