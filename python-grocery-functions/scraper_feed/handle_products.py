@@ -20,6 +20,7 @@ from scraper_feed.helpers import (
     get_product_pricing,
     get_provenance_id,
     transform_field,
+    transform_key,
     get_stock_status,
 )
 from scraper_feed.scraper_configs import get_field_map
@@ -130,7 +131,7 @@ def transform_product(
     ]
     analyzed_product = analyze_quantity(pydash.flatten(quantity_strings))
     transformed_additional_properties = {
-        k: transform_field(v) for k, v in additional_property_map.items()
+        transform_key(k): transform_field(v) for k, v in additional_property_map.items()
     }
     result["gtins"] = get_gtins({**product, **result})
     result["validThrough"] = time.one_week_ahead

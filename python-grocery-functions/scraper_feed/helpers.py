@@ -20,6 +20,11 @@ def transform_field(field):
         return field
 
 
+def transform_key(key: str) -> str:
+    """Removes characters that can't be stored as keys in mongo db."""
+    return re.sub(r"\.", "", key)
+
+
 def get_gtins(offer: ScraperOffer) -> dict:
     result = {}
     for k, v in {

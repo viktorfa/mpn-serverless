@@ -4,6 +4,7 @@ import json
 from scraper_feed.handle_products import handle_products
 from storage.db import save_scraped_products, get_handle_config
 from util.helpers import json_handler
+from util.utils import log_traceback
 
 
 from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
@@ -43,7 +44,11 @@ def handle_feed(feed: list, config: dict) -> dict:
         {**product, "siteCollection": _config["collection_name"]}
         for product in products
     )
-    result = save_scraped_products(products, _config["collection_name"])
+    try:
+        result = save_scraped_products(products, _config["collection_name"])
+    except Exception as e:
+        log_traceback(e)
+        raise e
     # To allow event-driven behaviour, we publish an sns topic when products are saved successfully.
     sns_message_data = {
         **config,
