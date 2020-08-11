@@ -156,7 +156,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ["7x6-pk 29,90/stk"],
                 [
                     (lambda x: pydash.get(x, "value.pieces.amount.min"), 29.9),
-                    (lambda x: pydash.get(x, "value.pieces.unit.symbol"), "stk"),
+                    (lambda x: pydash.get(x, "value.pieces.unit.symbol"), "/stk"),
                 ],
             ),
             (
@@ -219,7 +219,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ["200 g Fra 150,00/kg. 1 pose 39,90"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), 150.0),
-                    (lambda x: pydash.get(x, "value.size.unit.symbol"), "kg"),
+                    (lambda x: pydash.get(x, "value.size.unit.symbol"), "/kg"),
                 ],
             ),
             (
@@ -233,7 +233,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ["175 g. Pr kg 285,14"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), 285.14),
-                    (lambda x: pydash.get(x, "value.size.unit.symbol"), "kg"),
+                    (lambda x: pydash.get(x, "value.size.unit.symbol"), "/kg"),
                 ],
             ),
             (
@@ -250,6 +250,41 @@ class TestQuantityExtractionBenchmark(TestCase):
                     (lambda x: pydash.get(x, "value.size.amount.min"), 0.2053),
                     (lambda x: pydash.get(x, "value.size.amount.max"), 0.4106),
                     (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "m"),
+                ],
+            ),
+            (
+                ["6x0,5 liter, 3 l"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 3),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "l"),
+                ],
+            ),
+            (
+                ["u/Sukker 0,9l Lerum"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 0.9),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "l"),
+                ],
+            ),
+            (
+                ["Sukker 0,9l Lerum"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 0.9),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "l"),
+                ],
+            ),
+            (
+                ["FUGESAND HERREGÅRD 25 KG"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 25),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "kg"),
+                ],
+            ),
+            (
+                ["kr\u00a05\u00a0647,06/kg"],
+                [
+                    (lambda x: pydash.get(x, "value.size.amount.min"), 647.06),
+                    (lambda x: pydash.get(x, "value.size.unit.symbol"), "/kg"),
                 ],
             ),
         ]
@@ -276,6 +311,9 @@ class TestQuantityExtractionBenchmark(TestCase):
         )
 
     def test_extract_false(self):
+        """
+        Test strings that seem to have a value, but is not the number we want.
+        """
         input_assertions_pairs = [
             (
                 # This is tricky. It should not extract value because it's "ferdig blandet".
@@ -349,8 +387,8 @@ class TestQuantityExtractionBenchmark(TestCase):
                     self.assertEqual(f(result), expected)
                 except AssertionError as e:
                     print("Extracted wrong:")
-                    print(e)
                     print(_input)
+                    print(e)
                     if correct is True:
                         errors.append((_input, expected))
                     correct = False
