@@ -1,0 +1,28 @@
+from urllib.parse import quote
+
+
+def encode_uri_component(x: str) -> str:
+    return quote(x, safe="")
+
+
+def add_byggmax_affiliate_link(product: dict) -> dict:
+    if "track.adtraction.com" in product["href"]:
+        return product
+    escaped_original_href = encode_uri_component(product["href"])
+    new_href = f"https://track.adtraction.com/t/t?a=708216731&as=1532500727&t=2&tk=1&url={escaped_original_href}"
+    return {**product, "href": new_href}
+
+
+affiliate_handlers = {"byggmax.no": add_byggmax_affiliate_link}
+
+
+def add_affilite_link_to_product(product: dict) -> dict:
+    handler = affiliate_handlers.get(product["provenance"], None)
+    if handler is None:
+        return product
+    else:
+        return handler(product)
+
+
+def add_affiliate_links(products: list) -> list:
+    return list(add_affilite_link_to_product(product) for product in products)

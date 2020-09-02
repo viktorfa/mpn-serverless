@@ -10,6 +10,7 @@ from util.utils import log_traceback
 from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
 from util.enums import provenances
 from util.errors import NoHandleConfigError
+from scraper_feed.affiliate_links import add_affiliate_links
 
 DEFAULT_OFFER_COLLECTION_NAME = "mpnoffer"
 
@@ -44,6 +45,9 @@ def handle_feed(feed: list, config: dict) -> dict:
         {**product, "siteCollection": _config["collection_name"]}
         for product in products
     )
+
+    products = add_affiliate_links(products)
+
     try:
         result = save_scraped_products(products, _config["collection_name"])
     except Exception as e:
