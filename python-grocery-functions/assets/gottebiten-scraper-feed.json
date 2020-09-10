@@ -17,7 +17,7 @@
     "description": "Anthon Berg Luxury Gold 400 gram \u00e4r en lyxig chokladask. Den \u00e4r fylld med h\u00e4rliga praliner f\u00f6r alla smaker,  bl.a. marsipan, nougat, mjuk kola och kokos. Perfekt att ge bort present, eller varf\u00f6r inte unna dig sj\u00e4lv en god smakupplevelse!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se",
     "prePrice": 129.95
@@ -40,7 +40,7 @@
     "description": "Mindes Spesial \u00e4r en liten hasseln\u00f6tskr\u00e4m fylld chokladbit.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -62,7 +62,7 @@
     "description": "En vit choklad som \u00e4r vegansk, glutenfri och ekologisk.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -84,7 +84,7 @@
     "description": "Skull Energy Zero \u00e4r en helt ny sockerfri energidryck med en h\u00e4rlig smak av klassisk energidryck. Perfekt n\u00e4r du beh\u00f6ver extra energi eller bara helt enkelt \u00e4r sugen p\u00e5 energidryck!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -106,7 +106,7 @@
     "description": "Mentos Choco 6-pack, \u00e4r en storpack med pastiller inneh\u00e5llande en s\u00f6t och kr\u00e4mig chokladfyllning. Perfekt att dela n\u00e5gon man tycker om!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -128,7 +128,7 @@
     "description": "Chokladklyftor med apelsinsmak.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -150,7 +150,7 @@
     "description": "Marabou Premium Seasalt & Pecan \u00e4r en m\u00f6rkchoklad med 70% h\u00f6g kakaohalt, i den har man \u00e4ven tillsatt h\u00e4rligt karamelliserad pekann\u00f6tter och en touch av havssalt!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -172,7 +172,7 @@
     "description": "Marabou Premium 86% \u00e4r en m\u00f6rkchoklad f\u00f6r den som gillar n\u00e4r chokladen har en extra h\u00f6g kakaosmak.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -194,7 +194,7 @@
     "description": "Marabou Premium 70% \u00e4r en m\u00f6rkchoklad med h\u00f6g kakaohalt. Den \u00e4r tunn och spr\u00f6d precis som man vill ha den, en riktigt mums bit f\u00f6r alla finsmakare!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -216,7 +216,7 @@
     "description": "S\u00f6tsaksblandning med fruktsmak.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -238,7 +238,7 @@
     "description": "De klassiskar aporna fr\u00e5n Malaco. Gel\u00e9 med smak av tuttifrutti.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -260,7 +260,7 @@
     "description": "Fazer Marianne \u00e4r pepparmyntkaramell med chokladfyllning.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -282,7 +282,7 @@
     "description": "Vegansk godis som har en h\u00e4rligt god smak av persika och dragerad med socker. Utm\u00e4rkt godis f\u00f6r dig som \u00e4ter en vegansk kost!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -304,7 +304,7 @@
     "description": "Skum med vingummi.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -326,7 +326,7 @@
     "description": "Top Fruit \u00e4r sm\u00e5 f\u00e4rgglada plastfrukter fyllda med h\u00e4rligt s\u00f6t fruktsmakande pulver. Godisen \u00e4r en favorit bland barnen som gillar den goda smaken och de roliga f\u00e4rgerna.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -348,7 +348,7 @@
     "description": "Oemotst\u00e5ndligt mjuk och kr\u00e4mig klassisk fudge med smak av vanilj och kola.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -370,7 +370,7 @@
     "description": "Veganskt godis som h\u00e4rlig gel\u00e9 med god fruktsmak i olika f\u00e4rger. Om du letat efter vegansk gel\u00e9godis s\u00e5 \u00e4r detta godiset f\u00f6r dig!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -392,7 +392,7 @@
     "description": "Surkanderad kr\u00e4mfylld godis med colasmak.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -414,7 +414,7 @@
     "description": "Toms Lossepladsen \u00e4r en hink med blandade smaker av h\u00e5rda karameller fr\u00e5n Toms. Denna hink med BonBon Lossepladsen kommer garanterat r\u00e4cka till hela familjen!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -436,7 +436,7 @@
     "description": [],
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -458,7 +458,7 @@
     "description": "Werthers's Soft Caramels \u00e4r h\u00e4rlig mjuka gr\u00e4ddkolor tillverkade p\u00e5 \u00e4kta sm\u00f6r och gr\u00e4dde.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -480,7 +480,7 @@
     "description": "Sockerdragerade kolor.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -502,7 +502,7 @@
     "description": [],
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -524,7 +524,7 @@
     "description": "Werther's Original \u00e4r en enast\u00e5ende gr\u00e4ddkaramell som varit med i m\u00e5nga generationer. Karamellerna g\u00f6rs efter ett speciellt recept med \u00e4kta sm\u00f6r och gr\u00e4dde!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -546,7 +546,7 @@
     "description": "Werther's Original Sockerfri \u00e4r en gr\u00e4ddkaramell helt utan socker.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -568,7 +568,7 @@
     "description": "Trolli Gummi World \u00e4r ett fantastiskt urval av godis i olika smaker och former i en och samma f\u00f6rpackning. H\u00e4r finner du gel\u00e9- och skumgodis. Denna p\u00e5sen brukar vara popul\u00e4r att ha n\u00e4r det vankas barnkalas!",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   },
@@ -590,7 +590,7 @@
     "description": "Werther's Original Sockerfri \u00e4r gr\u00e4ddkarameller helt utan socker.",
     "availability": [],
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": [],
     "provenance": "gottebiten.se"
   }

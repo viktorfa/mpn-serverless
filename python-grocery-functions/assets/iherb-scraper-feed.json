@@ -17,7 +17,7 @@
     "description": "World's Best-Tasting Stevia  Non-GMO Project Verified  Zero Calories  Zero Carbs  Non-Glycemic Response  No Bitterness or Aftertaste  No Artificial Ingredients  Kosher Parve  Best Replacement For Sugar and Artificial Sweeteners  Each Packet as Sweet as 2 Tbs of Sugar            \u00a0      SweetLeaf      Sugar      Splenda      Equal      Sweet' N Low              Calories      0      32      0      0      0              Net Carbohydrates      0      8 g      1 g      1 g      1 g              Dietary Fiber      0 g      0 g      0 g      0 g      0 g              Glycemic Index      0      70      80      80      80              (N)atural/ (A)rtificial      N      N      A      A      A      SweetLeaf: the body-friendly sweetenerOur stevia extract is made from high-grade stevia leaves and purified water; natural, from leaf to packet. No erythritol, no methanol, no aspartame, no sucralose, no maltodextrin, no dextrose, no additives, period. Non-GMO, allergen-free and gluten-free.SweetLeaf Stevia Sweetener, a stevia-based tabletop sweetener, has zero calories, zero carbs, a non-glycemic response, is gluten-free and is made with premium quality ingredients. Sweetleaf is the stevia brand with numerous international awards for taste and innovation.Whether it is for hydration, weight management, or just enjoying a delectable meal or drink, enjoy exceptional taste without the guilt!Our stevia is produced by an ideal balance of nature and science using high-quality, non-GMO stevia plants. We use only the finest, purest stevia leaves, making SweetLeaf delicious, sweeter than sugar, and a smart solution for people trying to reduce dietary sugars and calories.Let SweetLeaf help you meet your daily challenges with delightful pleasure.Save on calories...not taste.Making the world a sweeter place...one packet at a time. The original and world's finest since 1982.Enjoy SweetLeaf Stevia Sweetener in your favorite hot or cold coffees, teas, lemonade or any beverage. It is great sprinkled on hot or cold cereal or mixed in pies, puddings, or other desserts, as well as yogurt, muffins and cookies. It's delicious sprinkled on sweet potatoes, berries, or any fruit.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$0.08/Count",
         "key": "unitPrice",
@@ -62,7 +62,7 @@
     "description": "Made from  Nature  Cooks and  Bakes like Sugar  Non GMO  Project Verified  Zero  Calories  Zero  Glycemic  Non GMO  Zero  Additives  Vegan  Gluten Free  Zero  Aftertaste  1:1 Sugar  Replacement  Kosher Check  Tastes like SugarOver a  Thousand Years AgoIn the remote  mountain highlands of Asia, a group of Buddhist monks called the Luohan  achieved enlightenment through meditation, prayer and pure living. On the  slopes of a primeval forest, the monks discovered and cultivated a rare fruit  prized for its sweetness. This scared fruit was named Monk Fruit, or Luohan  Guo, after its devoted caretakers and was used in elixirs to increase chi, or  life energy.Monk Fruit was used for centuries in eastern traditional herbalism to   increase chi and well-being, earning it the nickname \"The Immortals'   Fruit\". We still grow and harvest Monk Fruit for Lakanto in the same pristine area and according to traditional and environmental methods.Born from a  proprietary mixture of the high-purity Monk Fruit extract and Non GMO  Erythritol, Lakanto is a delicious zero calorie, zero glycemic sweetener with  the sumptuous rich taste of sugar.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$0.58/oz",
         "key": "unitPrice",
@@ -107,7 +107,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -152,7 +152,7 @@
     "description": "0 Calories   0 Sugars  Non-GMO  Add A Few Drops To Your Favorite Food or Beverage   Herbal Supplement NuNaturals NuStevia is a premium plant-based herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-based natural flavors are added to make NuStevia products the best-tasting ones available.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$4.80/fl oz",
         "key": "unitPrice",
@@ -197,7 +197,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan Non-GMO",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -242,7 +242,7 @@
     "description": "Now 50% More*  Made with the World's Best Tasting Stevia  0 Calories or Sugars  48 Servings  No Artificial Sweeteners  Gluten Free  Kosher Parve  Non-GMO Project Verified  The Stevia Brand Consistently Winning International Taste Awards  BPA FreeSweetLeaf WaterDrops are a convenient, sugar-free, and gluten-free water enhancer. Squirt into water for hydration and a delicious refreshment with a crisp burst of flavor.*Servings.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$2.14/fl oz",
         "key": "unitPrice",
@@ -290,7 +290,7 @@
     "description": "Sugar Free  Non GMO Project Verified  USDA Organic  Kosher  Certified Organic by Organic Certifiers",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$2.22/fl oz",
         "key": "unitPrice",
@@ -335,7 +335,7 @@
     "description": "Monkfruit Sweetened  2 Net Carbs  Keto  No Artificial Sweeteners  Vegan  Sugar Free  Sweet ResponsibilityOver A Thousand Years AgoIn remote mountain highlands of Asia. Buddhist monks achieved enlightenment through meditation, prayer and pure living. The monks discovered a rare fruit prized for its sweetness. This sacred fruit was named Monk Fruit and was used in elixirs to increase chi, or life energy. Now you can enjoy this guilt-free sweetness in our Chocolate Syrup and other Lakanto products!Discover Your ChiLakanto makes the sweet life healthy, nutritious and guilt free.Indulge You Love For ChocolateLakanto sugar-free Chocolate Syrup originates from premium cocoa extracted from some of the world's finest cocoa beans. We blend in the perfect amount of Lakanto sugar-free, non-GMO Monkfruit Sweetener, for a deliciously balanced syrup to top your favorite desserts and fruits. Low in carbs and high in satisfaction!Net Carbs: Subtract Fiber and Sugar Alcohol from Total Carbohydrate",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$0.50/fl oz",
         "key": "unitPrice",
@@ -380,7 +380,7 @@
     "description": "Zero-Calorie Liquid Sweetener   USDA Organic   Non-GMO   Gluten-Free   Vegan   Keto Friendly   Certified Organic by QAI",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$6.59/fl oz",
         "key": "unitPrice",
@@ -425,7 +425,7 @@
     "description": "Sugar Free Drops  Zero Calories  Zero Glycemic  262 Servings  Ketogenic - 0 Carbs  No Bitter Aftertaste  3-4 Drops = 1 Teaspoon of Sugar  23X Sweeter than Sugar  Great in Coffee & Tea  Pure Monk FruitWhat Is Monk Fruit?Unlike most fruits, whose sweetness comes from fructose. Monk Fruit's sweetness comes from natural mogrosides that are 300 times sweeter than sugar. Modern research shows that Monk Fruit Extract does not elevate blood sugar or insulin, making it a perfect sweetener for blood sugar and weight management.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$5.18/oz",
         "key": "unitPrice",
@@ -470,7 +470,7 @@
     "description": "0 Calories - 0 Sugar- Non-GMO  Add a Few Drops to Your Favorite Food or Beverage  Herbal Supplement NuNaturals NuStevia is a premium plant-based  herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-Based natural flavors are added to make NuStevia products the best-tasting ones available.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$6.00/fl oz",
         "key": "unitPrice",
@@ -515,7 +515,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten-Free  Vegan  Kosher  Non-GMO",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -560,7 +560,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -605,7 +605,7 @@
     "description": "Better Taste & 40% More Free*  Zero Calorie Sweetener Blend  Zero Glycemic Impact - No Artificial Ingredients  Mindfully Delicious   USDA Organic  Non GMO Project Verified  Equals 340 Teaspoons of Sugar  Gluten Free  Naturally Vegan  Kosher Certified  Certified Organic by Quality Assurance International  1/4 Tsp Organic Stevia = 2 Tsp SugarWe're bringing sweetness back! At Wholesome, we have a passion for real food, and we never compromise on taste. If you are avoiding sugar and artificial sweeteners, but crave deliciously sweet drinks and breakfast withou the guilt, then Wholesome Organic Stevia was made for you. Our blend is perfect for coffee, tea, smoothies or cereal.*Compared to Wholesome! Organic Stevia powered blend and 4.2 oz jar",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$1.22/oz",
         "key": "unitPrice",
@@ -650,7 +650,7 @@
     "description": "0 Calories  0 Sugars  Non-GMO  Add a Few Drops to Your Favorite Food or Beverage  Herbal SupplementNuNaturals NuStevia is a premium plant-based herbal extract that comes from the Stevia leaf, an herb native to South America. Plant-based natural flavors are added to make NuStevia products the best-tasting ones available.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$5.66/fl oz",
         "key": "unitPrice",
@@ -695,7 +695,7 @@
     "description": "Zero-Calorie Liquid Sweetener   USDA Organic  Non-GMO Project Verified  Gluten Free   Kosher   Vegan   Certified Organic by QAI",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$2.27/fl oz",
         "key": "unitPrice",
@@ -740,7 +740,7 @@
     "description": "Family Farms to Family Tables  The Original Stevia Sweetener  Non GMO  Certified Kosher  USDA Organic  500 Servings  Delicious Sweetness  Zero Calories  Allergen-Free  Zero Carbs  Vegan  Sustainable  Gluten-Free  Certified Organic by: BCS OKO-Garantie GMBH",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.86/fl oz",
         "key": "unitPrice",
@@ -785,7 +785,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten Free  VeganNon-GMO",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -830,7 +830,7 @@
     "description": "Family Farms to Family Tablets   The Original Stevia Sweetener   Non GMO   Kosher   USDA Organic   200 Servings   Delicious Sweetness   Zero Calories   Allergen-Free   Zero Carbs   Vegan   Sustainable   Gluten-Free   Certified Organic by BCS",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$4.72/fl oz",
         "key": "unitPrice",
@@ -875,7 +875,7 @@
     "description": "Zero-Calorie Liquid Sweetener  Gluten Free  Vegan  Kosher  Non-GMONOW\u00a0BetterStevia\u00a0is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW\u00a0BetterStevia\u00a0contains a certified organic\u00a0stevia extract. NOW Foods takes special measures to preserve Stevia\u2019s natural qualities in this unique, better-tasting Stevia.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",
@@ -920,7 +920,7 @@
     "description": "Raw & Gluten Free  Superherbs  Use in Smoothies, Teas & Yogurt, Deserts & Baking  Green Stevia  Not Refined  A Zero Glycemic Natural Sweetener  Sustainably Grown and Harvested  Demeter Biodynamic Certified  Zero Glycemic\u2021  Ready to Use  Zero Calories  Certified Organic by: Ecocert SA  USDA Organic  Gluten-Free  Kosher  Resealable  Stevia Rebaudiana\u2021Although Stevia is one of the sweetest substances in nature, it has one of the lowest glycemic scores with no effect on blood sugar.Stevia Leaf PowderStevia, also commonly known as Sweet Leaf of Sugar Leaf, is a natural sweetener indigenous to the Amazon. For centuries the Guarani people of Paraguay, Brazil and Bolivia used fresh stevia leaves to sweeten recipes, teas and medicinal preparations. Stevia is ideal for anyone on a carbohydrate-cautious diet for although it is one of the sweetest substances in nature, it has one of the lowest glycemic scores with no effect on blood sugar.Organic Nutrition From Around The WorldAt Organic Traditions we provide nutrient dense superfoods from many healing traditions. We are committed to supporting farmers who are dedicated to the principles of sustainable and fair trade agriculture. Now more than ever we need to nourish ourselves with superfoods, herbs, seeds and fruits packed with the nutrition needed to support the challenges that come with living in a fast paced world. Be adventurous. These superfoods are versatile. Incorporate them into recipes in any creative way you see fit. At every meal you have the opportunity to choose dense nutrition. Food is powerful. Make choices for a better you and a better planet.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$1.57/oz",
         "key": "unitPrice",
@@ -959,7 +959,7 @@
     "description": "The Original and Authentic Stevia Company  From Our Brazilian Farms to Your Family Table  Calorie Free  Tooth Friendly Xylitol  Guaranteed 100% Quality  The Original Stevia Sweetener   Quality You Can Taste  Certified Kosher  Non GMO  40% More Than Leading Brands  No Gluten  No Trans Fat  No Allergens  Fair Labor  Eco Friendly  No Artificial IngredientsEach packet has the sweetness of 3 teaspoons of sugar.The Stevita StoryStevia is dedicated to offering you the highest quality and best tasting stevia, supported by a long tradition in the stevia business;  Farmers in Maringa, Brazil, in the early 80's formed a cooperative to harvest stevia leaves. Maringa is in Southwestern Brazil, the native habitat of the stevia plant;  In the mid 80's these farmers turned it into a company to farm the plants and extract the sweet crystals from the stevia leaves;  In the 1987 the extraction factory was completed;  In 1988 the Stevita brand, the first stevia table top sweetener in the world, was introduced in the local market.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$0.10/Count",
         "key": "unitPrice",
@@ -1004,7 +1004,7 @@
     "description": "Sugar Free  Made with Vanilla Flavor  Non GMO Project Verified  USDA Organic  Kosher  Certified Organic by Organic Certifiers",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$2.22/fl oz",
         "key": "unitPrice",
@@ -1049,7 +1049,7 @@
     "description": "0 Sugar  0 Calories  Non GMO Project Verified  Chocolate Sweetener Perfect for Your Favorite Food or Beverage  Fair Trade Certified CocoaNuNaturals NuStevia is a premium plant-based herbal sweetener that comes from the Stevia leaf, an herb native to South America. NuStevia syrups are concentrated sweeteners designed to maximize flavor.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$0.90/fl oz",
         "key": "unitPrice",
@@ -1094,7 +1094,7 @@
     "description": "Gluten-Free  Vegan Kosher  Non GMO Project VerifiedNOW BetterStevia is a zero-calorie, low glycemic, natural sweetener that makes a perfectly healthy substitute for table sugar and artificial sweeteners. Unlike chemical sweeteners, NOW BetterStevia contains pure Stevia extract.",
     "availability": "http://schema.org/InStock",
     "itemCondition": "http://schema.org/NewCondition",
-    "additionalProperty": [
+    "additionalProperties": [
       {
         "value": "$3.56/fl oz",
         "key": "unitPrice",

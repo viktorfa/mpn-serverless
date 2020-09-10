@@ -1,6 +1,7 @@
 from typing_extensions import TypedDict
 from typing import Dict, Any, TypeVar, List, Mapping, Any
 from datetime import datetime
+from enum import Enum
 
 from amp_types.quantity_types import QuantityField, ValueField, ItemsField, Quantity
 
@@ -83,7 +84,7 @@ class MpnOffer(TypedDict):
     selectMethod: str
     isPromoted: bool
     availability: str
-    additionalProperty: List[AdditionalProperty]
+    additionalProperties: Mapping[str, AdditionalProperty]
     categories: List[str]
     categories2: List[str]
     gtin: str
@@ -109,7 +110,8 @@ class ScraperOffer(TypedDict):
     dealer: str
     availability: str
     itemCondition: str
-    additionalProperty: List[AdditionalProperty]
+    additionalProperties: List[AdditionalProperty]
+    additionalPropertyDict: Mapping[str, AdditionalProperty]
     categories: List[str]
     categories2: List[str]
     gtin: str
@@ -122,12 +124,29 @@ class ScraperOffer(TypedDict):
     mpn: str
 
 
-class MappingConfig(TypedDict):
-    additionalProperties: Mapping[str, str]
-    fields: Mapping[str, str]
-    extractQuantityFields: List[str]
+class ReplaceType(Enum):
+    fixed = 1
+    key = 2
+    ignore = 3
+
+
+class MappingConfigField(TypedDict):
+    value_type: str
+    replace_type: ReplaceType
+    replace_value: Any
+    source: str
+    destination: str
+    text: str
+    force_replace: bool
 
 
 class ScraperConfig(TypedDict):
-    source: str
+    provenance: str
 
+
+class HandleConfig(TypedDict):
+    fieldMapping: List[MappingConfigField]
+    extractQuantityFields: List[str]
+    categoriesLimits: List[int]
+    provenance: str
+    collection_name: str

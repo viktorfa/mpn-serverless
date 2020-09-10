@@ -5,25 +5,23 @@ from typing import List
 
 import pydash
 
+from transform.transform import transform_fields
+from transform.offer import get_field_from_scraper_offer
 from util.helpers import get_product_uri, is_integer_num
 from util.enums import provenances
 from parsing.quantity_extraction import analyze_quantity
 from amp_types.amp_product import (
+    HandleConfig,
     MpnOffer,
     ScraperOffer,
-    ScraperConfig,
-    MappingConfig,
 )
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
     get_gtins,
     get_product_pricing,
     get_provenance_id,
-    transform_field,
-    transform_key,
     get_stock_status,
 )
-from scraper_feed.scraper_configs import get_field_map
 
 
 class MyTime(object):
@@ -48,18 +46,15 @@ time = MyTime()
 
 
 def handle_products(
-    products: List[ScraperOffer], config: ScraperConfig
+    products: List[ScraperOffer], config: HandleConfig
 ) -> List[MpnOffer]:
     """
     Transforms products straight from the scraper feed into MpnOffers.
     """
     time.set_time(config.get("scrape_time", datetime.utcnow()))
-    mapping_config = get_field_map(config)
     logging.info("Using handle config:")
     logging.info(config)
-    logging.info("Using mapping config:")
-    logging.info(mapping_config)
-    return list(map(lambda x: transform_product(x, mapping_config, config), products))
+    return list(transform_product(x, config) for x in products)
 
 
 def get_categories(categories, categories_limits):
@@ -80,71 +75,37 @@ def get_categories(categories, categories_limits):
         return categories
 
 
-def transform_product(
-    product: ScraperOffer, mapping_config: MappingConfig, config: ScraperConfig
-) -> MpnOffer:
+def transform_product(product: ScraperOffer, config: HandleConfig) -> MpnOffer:
     # Still handle Shopgun offers a little differently..
-    if config["source"] == provenances.SHOPGUN:
+    if config["provenance"] == provenances.SHOPGUN:
         return transform_shopgun_product(product)
-    if config["source"] == provenances.SHOPGUN_BYGG:
+    if config["provenance"] == provenances.SHOPGUN_BYGG:
         return transform_shopgun_product(product)
     # Start here for everything not Shopgun offer.
-    result = {}
-    ignore_fields = pydash.get(config, "additionalConfig.ignoreFields") or []
-    for field_name in ignore_fields:
-        product.pop(field_name, None)
-
-    additional_property_map = {
-        x["key"]: x for x in product.get("additionalProperty") or []
-    }
-    for from_key, to_key in mapping_config.get("additionalProperties").items():
-        prop = additional_property_map.get(from_key)
-        result[to_key] = pydash.get(prop, ["value"])
-
-    # Some scraper items that scrape json don't bother to change names of its fields, so
-    # we just map them according to the config here.
-    for original_key, target_key in mapping_config["fields"].items():
-        value = pydash.get(product, original_key)
-        if value is not None:
-            if type(target_key) is str:
-                result[target_key] = value
-            elif type(target_key) is list:
-                for _tk in target_key:
-                    result[_tk] = value
+    product = transform_fields(product, config["fieldMapping"])
+    result: MpnOffer = {}
 
     provenanceId = get_provenance_id(product)
     result["provenanceId"] = provenanceId
-    result["uri"] = get_product_uri(config["source"], provenanceId)
+    result["uri"] = get_product_uri(config["provenance"], provenanceId)
     result["pricing"] = get_product_pricing({**product, **result})
 
-    quantity_strings = [
-        *list(
-            v
-            for k, v in product.items()
-            if k in mapping_config["extractQuantityFields"] and v
-        ),
-        *list(
-            v["value"]
-            for k, v in additional_property_map.items()
-            if k in mapping_config["extractQuantityFields"] and v
-        ),
-    ]
-    analyzed_product = analyze_quantity(pydash.flatten(quantity_strings))
-    transformed_additional_properties = {
-        transform_key(k): transform_field(v) for k, v in additional_property_map.items()
-    }
+    quantity_strings = list(
+        get_field_from_scraper_offer(product, key)
+        for key in config["extractQuantityFields"]
+    )
+    analyzed_product = analyze_quantity(list(x for x in quantity_strings if x))
     result["gtins"] = get_gtins({**product, **result})
     result["validThrough"] = time.one_week_ahead
     result["validFrom"] = time.time
-    result["dealer"] = result.get("dealer", config["source"])
+    result["dealer"] = result.get("dealer", config["provenance"])
     result["mpnStock"] = get_stock_status(product)
     result["categories"] = get_categories(
-        pydash.get(product, "categories"),
-        pydash.get(config, "additionalConfig.categoriesLimits"),
+        pydash.get(product, "categories"), config["categoriesLimits"],
     )
 
     return {
+        **product,
         **result,
         **analyzed_product,
-        **transformed_additional_properties,
     }

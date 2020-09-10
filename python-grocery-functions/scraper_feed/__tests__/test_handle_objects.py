@@ -1,8 +1,9 @@
+from amp_types.amp_product import HandleConfig
 import json
-from unittest import TestCase, mock
+from unittest import TestCase
 from pprint import pprint
 
-from util.enums import provenances
+from scraper_feed.handle_config import generate_handle_config
 from scraper_feed.handle_products import handle_products
 
 
@@ -30,14 +31,23 @@ class TestWithConfig(TestCase):
             self.monter_products = json.load(monter_products_json)
 
     def test_meny_products(self):
-        actual = handle_products(
-            self.meny_products,
+        config = generate_handle_config(
             {
-                "source": "meny",
+                "provenance": "meny",
+                "collection_name": "groceryoffer",
+                "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
-                "fields": {"sku": "ean", "product_variant": "description"},
-            },
+                "fieldMapping": [
+                    {"source": "sku", "destination": "ean", "replace_type": "key"},
+                    {
+                        "source": "product_variant",
+                        "destination": "description",
+                        "replace_type": "key",
+                    },
+                ],
+            }
         )
+        actual = handle_products(self.meny_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.meny_products))
@@ -50,14 +60,22 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
 
     def test_kolonial_products(self):
-        actual = handle_products(
-            self.kolonial_products,
+        config = generate_handle_config(
             {
-                "source": "kolonial",
+                "provenance": "kolonial",
+                "collection_name": "groceryoffer",
+                "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
-                "fields": {"product_variant": "description"},
-            },
+                "fieldMapping": [
+                    {
+                        "source": "product_variant",
+                        "destination": "description",
+                        "replace_type": "key",
+                    },
+                ],
+            }
         )
+        actual = handle_products(self.kolonial_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.kolonial_products))
@@ -68,14 +86,19 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["quantity"]["size"])
 
     def test_europris_products(self):
-        actual = handle_products(
-            self.europris_products,
+        config = generate_handle_config(
             {
-                "source": "europris",
+                "provenance": "kolonial",
+                "collection_name": "groceryoffer",
+                "categoriesLimits": [],
                 "extractQuantityFields": ["description", "name"],
-                "fields": {"name": "title", "link": "href"},
-            },
+                "fieldMapping": [
+                    {"source": "name", "destination": "title", "replace_type": "key",},
+                    {"source": "link", "destination": "href", "replace_type": "key",},
+                ],
+            }
         )
+        actual = handle_products(self.europris_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.europris_products))
@@ -86,7 +109,10 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["sku"])
 
     def test_shopgun_products(self):
-        actual = handle_products(self.shopgun_products, {"source": "shopgun"})
+        config = generate_handle_config(
+            {"provenance": "shopgun", "collection_name": "groceryoffer",}
+        )
+        actual = handle_products(self.shopgun_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.shopgun_products))
@@ -97,7 +123,10 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["quantity"]["size"])
 
     def test_swecandy_products(self):
-        actual = handle_products(self.swecandy_products, {"source": "swecandy.se"})
+        config = generate_handle_config(
+            {"provenance": "swecandy", "collection_name": "groceryoffer",}
+        )
+        actual = handle_products(self.swecandy_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.swecandy_products))
@@ -109,7 +138,10 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["categories"])
 
     def test_gottebiten_products(self):
-        actual = handle_products(self.gottebiten_products, {"source": "gottebiten.se"})
+        config = generate_handle_config(
+            {"provenance": "gottebiten.se", "collection_name": "groceryoffer",}
+        )
+        actual = handle_products(self.gottebiten_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.gottebiten_products))
@@ -121,9 +153,16 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["provenanceId"])
 
     def test_iherb_products(self):
-        actual = handle_products(
-            self.iherb_products, {"source": "iherb", "fields": {"sku": "mpn"}}
+        config = generate_handle_config(
+            {
+                "provenance": "iherb",
+                "collection_name": "iherboffers",
+                "fieldMapping": [
+                    {"source": "sku", "destination": "mpn", "replace_type": "key",},
+                ],
+            }
         )
+        actual = handle_products(self.iherb_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.iherb_products))
@@ -137,7 +176,10 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["imageUrl"])
 
     def test_obsbygg_products(self):
-        actual = handle_products(self.obsbygg_products, {"source": "obsbygg"})
+        config = generate_handle_config(
+            {"provenance": "obsbygg", "collection_name": "byggoffers",}
+        )
+        actual = handle_products(self.obsbygg_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.obsbygg_products))
@@ -149,7 +191,10 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["imageUrl"])
 
     def test_byggmax_products(self):
-        actual = handle_products(self.byggmax_products, {"source": "byggmax.no"})
+        config = generate_handle_config(
+            {"provenance": "byggmax.no", "collection_name": "byggoffers",}
+        )
+        actual = handle_products(self.byggmax_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.byggmax_products))
@@ -161,7 +206,16 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["imageUrl"])
 
     def test_monter_products(self):
-        actual = handle_products(self.monter_products, {"source": "monter.no", "additionalProperties": {"NOBB": "nobb"}})
+        config = generate_handle_config(
+            {
+                "provenance": "monter.no",
+                "collection_name": "byggoffers",
+                "fieldMapping": [
+                    {"source": "NOBB", "destination": "nobb", "replace_type": "key",},
+                ],
+            }
+        )
+        actual = handle_products(self.monter_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.monter_products))

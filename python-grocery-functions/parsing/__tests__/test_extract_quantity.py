@@ -24,10 +24,14 @@ class TestExtractQuantity(TestCase):
 
     def test_with_full_string_unit(self):
         actual = extract_quantity(["0,5 liter"])
+        print("actual")
+        print(actual)
         self.assertEqual(pydash.get(actual, "size.amount.min"), 0.5)
         self.assertEqual(pydash.get(actual, "size.unit.symbol"), "l")
 
     def test_with_multiplier_last(self):
         actual = extract_quantity(["1,5lx8 flaske"])
+        print("actual")
+        print(actual)
         self.assertEqual(pydash.get(actual, "size.amount.min"), 12)
         self.assertEqual(pydash.get(actual, "size.unit.symbol"), "l")

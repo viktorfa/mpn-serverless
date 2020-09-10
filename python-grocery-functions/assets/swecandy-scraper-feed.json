@@ -17,7 +17,7 @@
     "description": "Utl\u00f8psdato: 12 December 2019\r\n\r\nFrasig klassiker med chokladyta.\u00a0Maltesers skapades f\u00f6r f\u00f6rsta g\u00e5ngen redan 1936 och har sedan dess varit en storfavorit bland m\u00e5nga godis\u00e4lskare. De frasiga bollarna \u00e4r gjorda av malt och honung och doppas sedan i vansinnigt god mj\u00f6lkchoklad.\u00a0\r\n\r\nsocker, SKUMMJ\u00d6LKSPULVER, kakaosm\u00f6r, glukossirap, KORNMALTEXTRAKT, kakaomassa, MJ\u00d6LKFETT, LAKTOS, vasslepulver (fr\u00e5n MJ\u00d6LK), palmfett, VETEMJ\u00d6L, emulgeringsmedel (SOJALECITIN), j\u00e4sningsmedel (E341, E500, E501), ytbehandlingsmedel (pektin), salt, naturligt vaniljexstrakt.",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad"],
     "provenance": "swecandy.se",
     "prePrice": 25.0
@@ -40,7 +40,7 @@
     "description": "HOCKEYPULVER FIZZYBUBBLE - 5 st",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Kul godis"],
     "provenance": "swecandy.se"
   },
@@ -62,7 +62,7 @@
     "description": "Dubbel Co-Co 60g x 30 st",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad", "Sjokolade - stor pakke"],
     "provenance": "swecandy.se"
   },
@@ -84,7 +84,7 @@
     "description": "Lakrits doppad i choklad som sedan \u00e4r rullad i fruktpulver.\u200b\r\n\r\nIngredienser: Socker, melass, kakaosm\u00f6r, helmj\u00f6lkspulver, laktos, skummj\u00f6lkspulver, glukossirap, vetemj\u00f6l, vegetabiliskt fett (kokos, palm), vasslepulver (av mj\u00f6lk), mj\u00f6lkfett, lakritsextrakt, ammoniumklorid(salmiak), sorbitol, glycerol, (sojalecitin), torkad hallonpulver, vanillin, f\u00e4rg\u00e4mne (E153) och andra EU godk\u00e4nda matf\u00e4rg\u00e4mnen, glucos - fruktossirap, salt.\u200bKan inneh\u00e5lla sp\u00e5r avnbsp;n\u00f6tter (Ej jordn\u00f6t).\u200bProducerad i Sverigenbsp;",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad"],
     "provenance": "swecandy.se"
   },
@@ -106,7 +106,7 @@
     "description": "Red Heart 450g\r\n\r\ningredienser/ainekset/ingredients: Glukossirap/glukoosisiirappia/glucose syrup, socker/sokeria/suger, gelatin/liivatetta, surhetsreglerande medel/happamuudens\u00e4\u00e4t\u00f6aineet/acidity regulator E330, stabiliseringsmedel/stabilointiaineet/stabiliser E406, f\u00e4rg\u00e4mnen/farvestoffer/v\u00e4riaine/colorings E120, aromer/aromeja/flavoring",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Exklusivt"],
     "provenance": "swecandy.se"
   },
@@ -128,7 +128,7 @@
     "description": "Utl\u00f8psdato: 24 June 2019\r\n\r\nFinlandia ask 500g\r\n\r\nIngredienser: socker/sukker, glukossirap, vatten/vand, glukos-fruktossirap, geleringsmedel (E440), surhetsreglerande medel (E337, E330), aromer, f\u00e4rg\u00e4mne/farvestof (E141)",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad"],
     "provenance": "swecandy.se",
     "prePrice": 79.0
@@ -151,7 +151,7 @@
     "description": "Noblesse Original- 150g\r\n\r\niingredienser: Socker, kakaosm\u00f6r, kakaomassa, sm\u00f6rfett/sm\u00f8rolie, vassle-/ vallepulver (mj\u00f6lk), skummj\u00f6lkspulver/skummetm\u00e6lkspulver, 4% rostade majsflingor/ ristede majsflager (majs, salt, socker), vassle-/ valleprodukt (mj\u00f6lk), emulgeringsmedel/ emulgator (sojalecitiner), havssalt (0,2%), aromer. kan inneh\u00e5lla n\u00f6tter/ n\u00f8dder. Minst 36% kakao/ kataot\u00f8rstof",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad"],
     "provenance": "swecandy.se"
   },
@@ -173,7 +173,7 @@
     "description": "JUMBO BUBBLIZZ LUTTI 3KG\r\n\r\nIngredienser: Glukos-fruktossirap, Socker, Gelatin, Syror (Citronsyra, \u00c4pplesyra), Surhetsreglerande medel (Natriummalat), F\u00e4rg\u00e4mnen (E120, E133, E170, Arom\u00e4mne.  glutenfri",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Storpack"],
     "provenance": "swecandy.se"
   },
@@ -195,7 +195,7 @@
     "description": "BUBBLIZZ FIZZ SK\u00c5 - 2 kg\r\n\r\nIngredienser: Glukos-fruktossirap, Socker, Gelatin, Syror (Citronsyra, \u00c4pplesyra), Surhetsreglerande medel (Natriummalat), F\u00e4rg\u00e4mnen (E120, E133, E170), Arom\u00e4mne.  glutenfri",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Storpack"],
     "provenance": "swecandy.se"
   },
@@ -217,7 +217,7 @@
     "description": "NICKS KEXBAR - 40g\r\n\r\nVegetabilisk olja (shea, kokos), glutenfri MJ\u00d6Lmix (majsst\u00e4rkelse, potatisst\u00e4rkelse, majsmj\u00f6l), s\u00f6tningsmedel: erytritol, polydextros (fiber), kakaosm\u00f6r, skumMJ\u00d6LKspulver, vasslepulver, helMJ\u00d6LKspulver, kakaomassa, SOJAmj\u00f6l, vegetabilisk olja (solros), kakaopulver, naturlig vaniljarom, emulgeringsmedel: solroslecitin, SOJAlecitin, salt, bakpulver: natriumbikarbonat, ammoniumbikarbonat, s\u00f6tningsmedel: steviolglykosider.",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Choklad"],
     "provenance": "swecandy.se"
   },
@@ -239,7 +239,7 @@
     "description": "Utl\u00f8psdato: 31 May 2019\r\n\r\nKlassiska cubapraliner fr\u00e5n Carletti.\u00a0\r\n\r\nM\u00f6rk choklad: min 50% kakao.nbsp;Socker, kakaomassa, glukossirap, vegetabiliskt fett (Shea, kokosolja, solrosolja), kakaosm\u00f6r, glukos, emulgeringsmedel (sojalcitin, polyglycerolpolyesternolat), smak, stabilisator (invertas), surhetsregulator (citronsyra).nbsp;Sp\u00e5r av valn\u00f6tter, pekann\u00f6tter, pistaschmandlar, mandel och vete.",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "P\u00e5skegodteri"],
     "provenance": "swecandy.se",
     "prePrice": 199.01
@@ -262,7 +262,7 @@
     "description": "SMAKIS P\u00c4RON KRAV BRICK 25CL - 27 st\r\n\r\nVatten, p\u00e4ronjuice fr\u00e5n koncentrat* (20%), socker* (6,5%), syra (citronsyra, askorbinsyra), naturlig p\u00e4ronarom.  *krav-ekologisk ingrediens",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Dryck"],
     "provenance": "swecandy.se"
   },
@@ -284,7 +284,7 @@
     "description": "VEGO BEARS LICORICE 50G - 15PACK\r\n\r\nIngredienser: Glukossirap*, socker/sukker*, st\u00e4rkelse/stivelse*, geleringsmedel: karragenan, syra: citronsyra, surhetsreglerande medel: natriumcitrat, naturlig lakrits smak/smag, karamelliserad sockersirap/sukkersirup*, solrosolja/ solsikkeolje*, ytbehandlingsmedel/ overflatebehandlingsmiddel: karnaubavax*.  vetest\u00e4rkelse/hvetestivelse.   *Fr\u00e5n ekologiskt/\u00f8kologisk jordbruk",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Godteri", "Vegan"],
     "provenance": "swecandy.se"
   },
@@ -306,7 +306,7 @@
     "description": "FESTIS APELSIN  Eko. 3P 20CL BRIK - 10st",
     "availability": "https://schema.org/InStock",
     "itemCondition": [],
-    "additionalProperty": [],
+    "additionalProperties": [],
     "categories": ["Hjem", "Dryck"],
     "provenance": "swecandy.se"
   }

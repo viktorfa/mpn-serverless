@@ -1,44 +1,25 @@
 import boto3
 import json
 
+
+from scraper_feed.handle_config import fetch_handle_config
 from scraper_feed.handle_products import handle_products
-from storage.db import save_scraped_products, get_handle_config
+from storage.db import save_scraped_products
 from util.helpers import json_handler
 from util.utils import log_traceback
-
-
+from amp_types.amp_product import ScraperConfig
 from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
-from util.enums import provenances
-from util.errors import NoHandleConfigError
 from scraper_feed.affiliate_links import add_affiliate_links
 
-DEFAULT_OFFER_COLLECTION_NAME = "mpnoffer"
 
-
-def _get_handle_config(config: dict) -> dict:
-    """
-    Finds a handle config from a database or uses a default one.
-    """
-    result = {}
-
-    try:
-        result = {**config, **get_handle_config(config.get("provenance"))}
-    except NoHandleConfigError:
-        result = {**config}
-        result["collection_name"] = DEFAULT_OFFER_COLLECTION_NAME
-    result["source"] = config.get("provenance")
-    _result = {k: v for k, v in result.items() if v is not None}
-    return _result
-
-
-def handle_feed(feed: list, config: dict) -> dict:
+def handle_feed(feed: list, config: ScraperConfig) -> dict:
     """
     Handles a feed from Scrapy according to the provided config.
     """
 
     sns_client = boto3.client("sns")
 
-    _config = _get_handle_config(config)
+    _config = fetch_handle_config(config)
 
     products = handle_products(feed, _config)
     products = list(

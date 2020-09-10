@@ -1,47 +1,19 @@
-import pydash
+from typing import List
 
-from amp_types.amp_product import ScraperConfig, MappingConfig
+from amp_types.amp_product import MappingConfigField
 
-DEFAULT_FIELD_MAP = {
-    "additionalProperties": {},
-    "fields": {
-        "image": "imageUrl",
-        "image_url": "imageUrl",
-        "url": "href",
-        "title": "title",
-        "description": "description",
-        "sku": "sku",
-        "provenanceId": "provenanceId",
-        "provenance": "provenance",
-        "dealer": "dealer",
-        "brand": "brand",
-        "categories": "categories",
-        "availability": "availability",
-        "itemCondition": "itemCondition",
-        "vendor": "vendor",
-        "subtitle": "subtitle",
-        "shortDescription": "shortDescription",
-    },
-    "extractQuantityFields": ["title", "shortDescription", "subtitle"],
-}
+DEFAULT_EXTRACT_QUANTITY_FIELDS = ["title", "shortDescription", "subtitle"]
+
+DEFAULT_FIELD_MAPPING = [
+    {"source": "image", "destination": "imageUrl", "replace_type": "key",},
+    {"source": "image_url", "destination": "imageUrl", "replace_type": "key",},
+    {"source": "url", "destination": "href", "replace_type": "key",},
+]
 
 
-def get_field_map(config: ScraperConfig) -> MappingConfig:
-    try:
-        special_config = config
-        new_fields = {**DEFAULT_FIELD_MAP["fields"]}
-        for k, v in special_config.get("fields", {}).items():
-            new_fields[k] = pydash.flatten([v, new_fields.get(k, [])])
+def get_field_mapping(
+    config_fields: List[MappingConfigField] = [],
+) -> List[MappingConfigField]:
+    result = [*DEFAULT_FIELD_MAPPING, *config_fields]
+    return result
 
-        result = {
-            "additionalProperties": {
-                **DEFAULT_FIELD_MAP.get("additionalProperties"),
-                **(special_config.get("additionalProperties") or {}),
-            },
-            "fields": new_fields,
-            "extractQuantityFields": special_config.get("extractQuantityFields")
-            or DEFAULT_FIELD_MAP["extractQuantityFields"],
-        }
-        return result
-    except KeyError:
-        return DEFAULT_FIELD_MAP

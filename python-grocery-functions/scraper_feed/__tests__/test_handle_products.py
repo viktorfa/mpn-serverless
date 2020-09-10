@@ -2,7 +2,7 @@ from unittest import TestCase
 import json
 
 from scraper_feed.handle_products import transform_product
-from scraper_feed.scraper_configs import get_field_map
+from scraper_feed.scraper_configs import get_field_mapping
 
 
 class TestHandleProducts(TestCase):
@@ -14,18 +14,26 @@ class TestHandleProducts(TestCase):
 
     def test_transform_product(self):
         product = self.obsbygg_products[0]
-        mapping_config = get_field_map({"source": "obsbygg"})
-        scraper_config = {"source": "obsbygg"}
+        config = {
+            "provenance": "obsbygg",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": ["title"],
+        }
 
-        actual = transform_product(product, mapping_config, scraper_config)
+        actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
         product = self.swecandy_products[0]
-        mapping_config = get_field_map({"source": "swecandy.se"})
-        scraper_config = {"source": "swecandy.se"}
+        config = {
+            "provenance": "swecandy.se",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": ["title"],
+        }
 
-        actual = transform_product(product, mapping_config, scraper_config)
+        actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
