@@ -1,15 +1,11 @@
 import json
 import logging
-import os
 
 import boto3
-from typing import Dict, Any, TypeVar, List, Mapping, Any
-from typing_extensions import TypedDict
+from typing import TypedDict
 
 
-from scraper_feed.handle_feed import handle_feed
 from storage.db import get_collection
-from storage.s3 import get_s3_file_content, get_s3_object
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()

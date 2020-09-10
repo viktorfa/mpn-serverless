@@ -10,6 +10,7 @@ from parsing.constants import (
     piece_units,
     piece_value_units,
     quantity_value_units,
+    alt_unit_map,
 )
 from parsing.enums import unit_types
 
@@ -126,12 +127,15 @@ def extract_unit(string: str) -> Optional[dict]:
     quantity_unit_matches = re.findall(quantity_unit_pattern, string)
     if quantity_unit_matches:
         unit = quantity_unit_matches[0]
+        unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
         return dict(symbol=unit, type=unit_types.QUANTITY, si=get_si(unit))
 
     quantity_value_pattern = r"^({})".format(r"|".join(quantity_value_units))
     quantity_value_matches = re.findall(quantity_value_pattern, string)
     if quantity_value_matches:
         unit = extract_quantity_unit(quantity_value_matches[0])
+        unit = unit.replace("/", "")
+        unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
         return dict(symbol=unit, type=unit_types.QUANTITY_VALUE, si=get_si(unit))
 
     piece_unit_pattern = r"^({})".format(r"|".join(piece_units))
@@ -144,6 +148,7 @@ def extract_unit(string: str) -> Optional[dict]:
     piece_value_matches = re.findall(piece_value_pattern, string)
     if piece_value_matches:
         unit = extract_piece_unit(piece_value_matches[0])
+        unit = unit.replace("/", "")
         return dict(symbol=unit, type=unit_types.PIECE_VALUE)
 
     if string == "x":
@@ -165,4 +170,5 @@ def extract_piece_unit(string: str) -> Optional[str]:
 
 
 def get_si(unit: str) -> Optional[dict]:
+    unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
     return si_mappings[unit] if unit in si_mappings.keys() else None

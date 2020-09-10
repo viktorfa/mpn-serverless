@@ -9,7 +9,11 @@ from transform.transform import transform_fields
 from transform.offer import get_field_from_scraper_offer
 from util.helpers import get_product_uri, is_integer_num
 from util.enums import provenances
-from parsing.quantity_extraction import analyze_quantity
+from parsing.quantity_extraction import (
+    analyze_quantity,
+    parse_quantity,
+    standardize_quantity,
+)
 from amp_types.amp_product import (
     HandleConfig,
     MpnOffer,
@@ -76,36 +80,39 @@ def get_categories(categories, categories_limits):
 
 
 def transform_product(product: ScraperOffer, config: HandleConfig) -> MpnOffer:
+    result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
     if config["provenance"] == provenances.SHOPGUN:
-        return transform_shopgun_product(product)
-    if config["provenance"] == provenances.SHOPGUN_BYGG:
-        return transform_shopgun_product(product)
-    # Start here for everything not Shopgun offer.
-    product = transform_fields(product, config["fieldMapping"])
-    result: MpnOffer = {}
+        result = transform_shopgun_product(product)
+    elif config["provenance"] == provenances.SHOPGUN_BYGG:
+        result = transform_shopgun_product(product)
+    else:
+        # Start here for everything not Shopgun offer.
+        product = transform_fields(product, config["fieldMapping"])
+        result: MpnOffer = {}
 
-    provenanceId = get_provenance_id(product)
-    result["provenanceId"] = provenanceId
-    result["uri"] = get_product_uri(config["provenance"], provenanceId)
-    result["pricing"] = get_product_pricing({**product, **result})
+        provenanceId = get_provenance_id(product)
+        result["provenanceId"] = provenanceId
+        result["uri"] = get_product_uri(config["provenance"], provenanceId)
+        result["pricing"] = get_product_pricing({**product, **result})
+        result["validThrough"] = time.one_week_ahead
+        result["validFrom"] = time.time
+        result["dealer"] = result.get("dealer", config["provenance"])
+        result["gtins"] = get_gtins({**product, **result})
 
-    quantity_strings = list(
-        get_field_from_scraper_offer(product, key)
-        for key in config["extractQuantityFields"]
-    )
-    analyzed_product = analyze_quantity(list(x for x in quantity_strings if x))
-    result["gtins"] = get_gtins({**product, **result})
-    result["validThrough"] = time.one_week_ahead
-    result["validFrom"] = time.time
-    result["dealer"] = result.get("dealer", config["provenance"])
-    result["mpnStock"] = get_stock_status(product)
-    result["categories"] = get_categories(
-        pydash.get(product, "categories"), config["categoriesLimits"],
-    )
+        quantity_strings = list(
+            get_field_from_scraper_offer(product, key)
+            for key in config["extractQuantityFields"]
+        )
+        analyzed_product = parse_quantity(list(x for x in quantity_strings if x))
+        result["mpnStock"] = get_stock_status(product)
+        result["categories"] = get_categories(
+            pydash.get(product, "categories"), config["categoriesLimits"],
+        )
+        result = {**result, **analyzed_product}
 
-    return {
-        **product,
-        **result,
-        **analyzed_product,
-    }
+    result = analyze_quantity(result)
+    result = standardize_quantity(result)
+    quantity = result.get("quantity")
+
+    return {**product, **result, **quantity}

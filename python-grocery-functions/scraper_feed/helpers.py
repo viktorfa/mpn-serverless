@@ -5,11 +5,12 @@ from util.enums import currency_codes
 from amp_types.amp_product import ScraperOffer, PricingField
 
 
-def get_product_pricing(product: dict) -> PricingField:
+def get_product_pricing(product: ScraperOffer) -> PricingField:
     return dict(
         price=product.get("price"),
         currency=product.get("priceCurrency", currency_codes.NOK),
         prePrice=product.get("prePrice"),
+        priceUnit=product.get("priceUnit", "pcs"),
     )
 
 

@@ -1,9 +1,4 @@
-"""Using some typing_extensions some of which will be part of Python from 3.8.
-https://github.com/python/typing/blob/master/typing_extensions/README.rst
-"""
-
-# TypedDict: https://www.python.org/dev/peps/pep-0589/
-from typing_extensions import TypedDict
+from typing import TypedDict
 
 
 class QuantityAmount(TypedDict):
@@ -11,30 +6,26 @@ class QuantityAmount(TypedDict):
     max: float
 
 
+class SiConfig(TypedDict):
+    factor: float
+    symbol: str
+
+
 class QuantityUnit(TypedDict):
     symbol: str
     type: str
+    si: SiConfig
 
 
 class Quantity(TypedDict):
     unit: QuantityUnit
     amount: QuantityAmount
+    standard: QuantityAmount
 
 
 class QuantityField(TypedDict):
-    size = (Quantity,)
-    pieces = Quantity
-
-
-class Value(TypedDict):
-    unit: QuantityUnit
-    amount: QuantityAmount
-    currency: str
-
-
-class ValueField(TypedDict):
-    size: Value
-    pieces: Value
+    size: Quantity
+    pieces: Quantity
 
 
 class ItemsField(TypedDict):
@@ -42,6 +33,7 @@ class ItemsField(TypedDict):
 
 
 class ExtractQuantityReturnType(TypedDict):
-    quantity: QuantityField
-    value: ValueField
+    size: Quantity
+    pieces: Quantity
+    value: QuantityField
     items: ItemsField

@@ -1,18 +1,20 @@
+from amp_types.amp_product import MpnOffer
 from typing import List
 import pydash
 
 from parsing.parsing import (
-    extract_number_unit_pairs,
-    extract_unit,
     extract_numbers_with_context,
+    extract_unit,
     extract_units_from_number_context,
+    get_si,
 )
 from parsing.enums import unit_types
+from amp_types.amp_product import MpnOffer
 from amp_types.quantity_types import (
     QuantityField,
-    ValueField,
     ItemsField,
     ExtractQuantityReturnType,
+    SiConfig,
 )
 from parsing.constants import (
     quantity_units,
@@ -20,10 +22,85 @@ from parsing.constants import (
     quantity_value_units,
     piece_value_units,
     si_mappings,
+    alt_unit_map,
 )
 
 
-def analyze_quantity(strings: List[str]) -> ExtractQuantityReturnType:
+def get_standard_si_amount(si_config: SiConfig, value: float, invert=False):
+    return (value * si_config["factor"]) ** (-1 if invert is True else 1)
+
+
+def standardize_quantity(offer: MpnOffer):
+    for quantity_type in ("quantity.size", "value.size"):
+        try:
+            standardized = {
+                key: get_standard_si_amount(
+                    pydash.get(offer, quantity_type)["unit"]["si"],
+                    value,
+                    quantity_type == "value.size",
+                )
+                for key, value in pydash.get(offer, quantity_type)["amount"].items()
+            }
+            pydash.get(offer, quantity_type)["standard"] = standardized
+        except Exception as e:
+            continue
+    return offer
+
+
+def analyze_quantity(offer: MpnOffer) -> MpnOffer:
+    quantity_amount = offer.get("quantityAmount")
+    quantity_unit = offer.get("quantityUnit")
+    if quantity_amount and quantity_unit:
+        unit = extract_unit(quantity_unit)
+        try:
+            amount = float(str(quantity_amount).replace(",", "."))
+            offer["quantity"]["size"] = {
+                "amount": {"min": amount, "max": amount},
+                "unit": unit,
+            }
+        except Exception:
+            pass
+    price_unit_string: str = offer["pricing"].get("priceUnit")
+    if price_unit_string:
+        price_unit = extract_unit(price_unit_string)
+        if price_unit:
+            if not pydash.get(offer, ["quantity", "size", "amount"]):
+                offer["quantity"]["size"] = {
+                    "amount": {"min": 1, "max": 1},
+                    "unit": price_unit,
+                }
+    size_amount = pydash.get(offer, ["quantity", "size", "amount"])
+    if size_amount and not pydash.get(offer, ["value", "size", "amount"]):
+        # Has quantity but not value. Let's calculate value.
+        try:
+            price = offer["pricing"]["price"]
+            offer["value"]["size"] = {
+                "amount": {
+                    "min": price / size_amount["min"],
+                    "max": price / size_amount["max"],
+                },
+                "unit": pydash.get(offer, ["quantity", "size", "unit"]),
+            }
+        except Exception:
+            pass
+    value_amount = pydash.get(offer, ["value", "size", "amount"])
+    if value_amount and not size_amount:
+        # Has value but not quantity. Let's calculate quantity.
+        try:
+            price = offer["pricing"]["price"]
+            offer["quantity"]["size"] = {
+                "amount": {
+                    "min": size_amount["min"] / price,
+                    "max": size_amount["max"] / price,
+                },
+                "unit": pydash.get(offer, ["value", "size", "unit"]),
+            }
+        except Exception:
+            pass
+    return offer
+
+
+def parse_quantity(strings: List[str]) -> ExtractQuantityReturnType:
     """Returns a dict describing the quantity and value with unitsextracted from strings.
     Quantity can be denominated in both size (kg, l, grams, etc.) or pieces (packs, bags, etc.)
     It also extracts value which is price divided by quantity. It does this only by parsing text, not by using the price then dividing it by the extracted quantity.
@@ -36,8 +113,8 @@ def analyze_quantity(strings: List[str]) -> ExtractQuantityReturnType:
     quantity = extract_quantity(_strings)
     value = extract_value(_strings)
     items = extract_items(_strings)
-    quantity["items"] = items
-    return dict(quantity=quantity, value=value)
+
+    return dict(quantity=quantity, value=value, items=items)
 
 
 def extract_quantity(strings: List[str]) -> QuantityField:
@@ -53,20 +130,20 @@ def extract_quantity(strings: List[str]) -> QuantityField:
     pieces = {}
     for string in extracted_strings:
         for (i, number) in enumerate(string):
-            if number.get("unit") in quantity_units:
+            unit = number.get("unit")
+            unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
+            if unit in quantity_units:
                 size_value = number.get("value")
                 size_amount = dict(min=size_value, max=size_value)
                 size_unit = dict(
-                    symbol=number.get("unit"),
-                    type=unit_types.QUANTITY,
-                    si=si_mappings.get(number.get("unit")),
+                    symbol=unit, type=unit_types.QUANTITY, si=get_si(unit),
                 )
                 size = dict(unit=size_unit, amount=size_amount)
                 result = dict(size=size, pieces=dict())
-            elif number.get("unit") in piece_units:
+            elif unit in piece_units:
                 pieces_value = number.get("value")
                 pieces_amount = dict(min=pieces_value, max=pieces_value)
-                pieces_unit = dict(symbol=number.get("unit"), type=unit_types.PIECE)
+                pieces_unit = dict(symbol=unit, type=unit_types.PIECE)
                 pieces = dict(unit=pieces_unit, amount=pieces_amount)
 
     result = dict(size=size, pieces=pieces)

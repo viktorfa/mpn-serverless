@@ -1,7 +1,7 @@
 from unittest import TestCase
 import pydash
 
-from parsing.quantity_extraction import analyze_quantity
+from parsing.quantity_extraction import parse_quantity
 
 
 """
@@ -90,7 +90,7 @@ class TestQuantityExtractionBenchmark(TestCase):
         ]
         errors = []
         for _input, assertions in input_assertions_pairs:
-            result = analyze_quantity(_input)
+            result = parse_quantity(_input)
             correct = True
             for f, expected in assertions:
                 try:
@@ -290,7 +290,7 @@ class TestQuantityExtractionBenchmark(TestCase):
         ]
         errors = []
         for _input, assertions in input_assertions_pairs:
-            result = analyze_quantity(_input)
+            result = parse_quantity(_input)
             correct = True
             for f, expected in assertions:
                 try:
@@ -380,7 +380,7 @@ class TestQuantityExtractionBenchmark(TestCase):
         ]
         errors = []
         for _input, assertions in input_assertions_pairs:
-            result = analyze_quantity(_input)
+            result = parse_quantity(_input)
             correct = True
             for f, expected in assertions:
                 try:

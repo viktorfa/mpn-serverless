@@ -6,12 +6,12 @@ from util.helpers import (
 )
 from util.enums import provenances
 from scraper_feed.helpers import get_provenance_id, get_product_pricing
-from parsing.quantity_extraction import analyze_quantity
+from parsing.quantity_extraction import parse_quantity
 from amp_types.amp_product import MpnOffer
 
 
 def transform_shopgun_product(product: dict) -> MpnOffer:
-    analyzed_product = analyze_quantity(
+    analyzed_product = parse_quantity(
         list(v for k, v in product.items() if k in ["description", "heading"] and v)
     )
     provenanceId = get_provenance_id(product)
@@ -36,7 +36,7 @@ def transform_shopgun_product(product: dict) -> MpnOffer:
                 "priceCurrency": product.get("pricing").get("currency"),
             }
         ),
-        **{**analyzed_product, **quantity.get("quantity"), **quantity,},
+        **{**analyzed_product, **quantity,},
     )
 
 
