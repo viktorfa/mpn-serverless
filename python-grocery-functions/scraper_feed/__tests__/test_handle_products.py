@@ -1,7 +1,7 @@
 from unittest import TestCase
 import json
 
-from scraper_feed.handle_products import transform_product
+from scraper_feed.handle_products import transform_product, get_categories
 from scraper_feed.scraper_configs import get_field_mapping
 
 
@@ -36,4 +36,27 @@ class TestHandleProducts(TestCase):
         actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
+
+
+class TestGetCategories(TestCase):
+    def test_get_categories_remove_first(self):
+        categories = ["Hjem", "Grønnsaker", "Bananer"]
+        categories_limits = [1, None]
+
+        actual = get_categories(categories, categories_limits)
+        self.assertListEqual(actual, categories[1:])
+
+    def test_get_categories_no_config(self):
+        categories = ["Hjem", "Grønnsaker", "Bananer"]
+        categories_limits = None
+
+        actual = get_categories(categories, categories_limits)
+        self.assertListEqual(actual, categories)
+
+    def test_get_categories_remove_first_and_last(self):
+        categories = ["Hjem", "Grønnsaker", "Bananer"]
+        categories_limits = [1, -1]
+
+        actual = get_categories(categories, categories_limits)
+        self.assertListEqual(actual, ["Grønnsaker"])
 

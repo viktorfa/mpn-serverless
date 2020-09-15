@@ -63,6 +63,9 @@ def transform_fields(
             value = get_field_from_scraper_offer(offer, field_config["source"])
             result = add_to_destination(result, value, field_config)
         elif field_config["replace_type"] == "ignore":
-            del result[field_config["destination"]]
+            try:
+                del result[field_config["destination"]]
+            except KeyError:
+                pass
 
     return result

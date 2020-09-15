@@ -1,6 +1,6 @@
 import boto3
 import json
-
+from pymongo.results import BulkWriteResult
 
 from scraper_feed.handle_config import fetch_handle_config
 from scraper_feed.handle_products import handle_products
@@ -12,7 +12,7 @@ from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
 from scraper_feed.affiliate_links import add_affiliate_links
 
 
-def handle_feed(feed: list, config: ScraperConfig) -> dict:
+def handle_feed(feed: list, config: ScraperConfig) -> BulkWriteResult:
     """
     Handles a feed from Scrapy according to the provided config.
     """

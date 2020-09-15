@@ -88,7 +88,7 @@ class TestWithConfig(TestCase):
     def test_europris_products(self):
         config = generate_handle_config(
             {
-                "provenance": "kolonial",
+                "provenance": "europris",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["description", "name"],

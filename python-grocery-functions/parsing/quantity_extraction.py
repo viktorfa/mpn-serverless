@@ -27,7 +27,11 @@ from parsing.constants import (
 
 
 def get_standard_si_amount(si_config: SiConfig, value: float, invert=False):
-    return (value * si_config["factor"]) ** (-1 if invert is True else 1)
+    return (
+        (value / si_config["factor"])
+        if invert is True
+        else (value * si_config["factor"])
+    )
 
 
 def standardize_quantity(offer: MpnOffer):

@@ -93,6 +93,42 @@ class TestStandarizeQuantity(TestCase):
             pydash.get(actual, ["quantity", "size", "standard", "max"]), 0.1
         )
 
+    def test_value_basic_2(self):
+        offer = {
+            "items": {"max": 1, "min": 1},
+            "pieces": {},
+            "pricing": {
+                "price": 10,
+                "currency": "NOK",
+                "prePrice": 34.9,
+                "priceUnit": "pcs",
+            },
+            "value": {},
+            "quantity": {
+                "size": {
+                    "unit": {
+                        "symbol": "g",
+                        "type": "quantity",
+                        "si": {"symbol": "kg", "factor": 0.001},
+                    },
+                    "amount": {"min": 500, "max": 500},
+                    "standard": {"min": 0.5, "max": 0.5},
+                },
+                "pieces": {},
+            },
+        }
+        analyzed = analyze_quantity(offer)
+        print("analyzed")
+        print(analyzed)
+        actual = standardize_quantity(analyzed)
+        print("actual")
+        print(actual)
+        self.assertIsInstance(actual, dict)
+        self.assertEqual(pydash.get(actual, ["value", "size", "amount", "min"]), 0.02)
+        self.assertEqual(pydash.get(actual, ["value", "size", "amount", "max"]), 0.02)
+        self.assertEqual(pydash.get(actual, ["value", "size", "standard", "min"]), 20)
+        self.assertEqual(pydash.get(actual, ["value", "size", "standard", "max"]), 20)
+
     def test_value_basic(self):
         offer = {
             "items": {"max": 1, "min": 1},
@@ -121,5 +157,7 @@ class TestStandarizeQuantity(TestCase):
 
         actual = standardize_quantity(offer)
         self.assertIsInstance(actual, dict)
+        self.assertEqual(pydash.get(actual, ["value", "size", "amount", "min"]), 1)
+        self.assertEqual(pydash.get(actual, ["value", "size", "amount", "max"]), 1)
         self.assertEqual(pydash.get(actual, ["value", "size", "standard", "min"]), 1000)
         self.assertEqual(pydash.get(actual, ["value", "size", "standard", "max"]), 1000)
