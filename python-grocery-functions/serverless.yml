@@ -57,6 +57,7 @@ package:
     - parsing/**
     - config/**
     - amp_types/**
+    - transform/**
   exclude:
     - ./**
 
@@ -69,7 +70,7 @@ functions:
           arn:
             Ref: ScraperFeedCreatedTopic
   productFeedSns:
-    handler: product_feed_handler.handle_products_sns
+    handler: offer_feed.offer_handler.offer_feed_sns
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -77,6 +78,8 @@ functions:
             Ref: ScraperFeedHandledTopic
   scraperFeedTrigger:
     handler: scraper_feed_handler.trigger_scraper_feed
+  offerFeedTrigger:
+    handler: offer_feed.offer_handler.offer_feed_trigger
 
 resources:
   - ${file(../s3-sns-cloudformation.yml)}

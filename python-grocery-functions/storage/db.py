@@ -1,8 +1,8 @@
-from typing import Iterable
+from typing import Iterable, List
 from datetime import datetime
 from datetime import timedelta
-
-from pymongo import UpdateOne
+from bson.objectid import ObjectId
+from pymongo import UpdateOne, InsertOne
 
 from config.mongo import get_collection
 from util.helpers import get_product_uri
@@ -61,3 +61,93 @@ def get_handle_config(provenance: str):
         raise NoHandleConfigError(
             f"No handleconfig found for provenance: {provenance}."
         )
+
+
+def get_offers_with_product(
+    provenance: str,
+    collection_name: str,
+    target_collection_name: str,
+    relation_collection_name: str,
+    limit: int = 0,
+) -> Iterable[dict]:
+    collection = get_collection(collection_name)
+    pipeline = [
+        # {"$match": {"provenance": provenance,}},
+        {"$match": {"gtins": {"$ne": None},}},
+        {"$addFields": {"gtin_list": {"$objectToArray": "$gtins"},},},
+        {
+            "$lookup": {
+                "from": target_collection_name,
+                # "localField": "gtin_list",
+                # "foreignField": "gtins",
+                "let": {"source_gtin_list": "$gtin_list"},
+                "pipeline": [
+                    {"$addFields": {"gtin_list": {"$objectToArray": "$gtins"},},},
+                    {
+                        "$addFields": {
+                            "same_gtins": {
+                                "$setIntersection": [
+                                    "$$source_gtin_list",
+                                    "$gtin_list",
+                                ]
+                            },
+                        },
+                    },
+                    {"$match": {"$expr": {"$gt": ["$same_gtins", []]}},},
+                    {"$project": {"_id": 1, "provenance": 1, "same_gtins": 1,}},
+                ],
+                "as": "gtin_products",
+            },
+        },
+        {
+            "$lookup": {
+                "from": relation_collection_name,
+                "let": {"source_id": "$_id"},
+                "pipeline": [
+                    {"$match": {"$expr": {"$eq": ["$$source_id", "$offer"]}}},
+                    {"$project": {"_id": 1, "product": 1}},
+                ],
+                # "localField": "_id",
+                # "foreignField": "offer",
+                "as": "product_relations",
+            }
+        },
+    ]
+    if limit > 0:
+        pipeline.append({"$limit": limit})
+    return collection.aggregate(pipeline)
+
+
+def get_update_product_with_offer(offer, product_relation) -> UpdateOne:
+    return UpdateOne(
+        {"_id": product_relation["product"]}, {"$set": {"updatedAt": datetime.now()}},
+    )
+
+
+def get_insert_product_has_offer(
+    offer_id: ObjectId, product_id: ObjectId, reason: str
+) -> InsertOne:
+    now = datetime.now()
+    return InsertOne(
+        {
+            "offer": offer_id,
+            "product": product_id,
+            "updatedAt": now,
+            "createdAt": now,
+            "type": "auto",
+            "reason": reason,
+        }
+    )
+
+
+def get_new_product_from_offer(offer) -> dict:
+    result = {**offer}
+    del result["_id"]
+    del result["product_relations"]
+    del result["gtin_products"]
+    return result
+
+
+def get_insert_product_with_offer(offer) -> List[InsertOne]:
+    return InsertOne({**get_new_product_from_offer(offer), "offers": [offer["_id"]]})
+
