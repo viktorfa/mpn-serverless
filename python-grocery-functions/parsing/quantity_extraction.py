@@ -52,22 +52,14 @@ def standardize_quantity(offer: MpnOffer):
 
 
 def analyze_quantity(offer: MpnOffer) -> MpnOffer:
-    quantity_amount = offer.get("quantityAmount")
-    quantity_unit = offer.get("quantityUnit")
-    if quantity_amount and quantity_unit:
-        unit = extract_unit(quantity_unit)
-        try:
-            amount = float(str(quantity_amount).replace(",", "."))
-            offer["quantity"]["size"] = {
-                "amount": {"min": amount, "max": amount},
-                "unit": unit,
-            }
-        except Exception:
-            pass
+    # Use price unit as size when the product price is denominated as a unit.
     price_unit_string: str = offer["pricing"].get("priceUnit")
     if price_unit_string:
         price_unit = extract_unit(price_unit_string)
-        if price_unit:
+        if price_unit and price_unit["type"] in (
+            unit_types.QUANTITY,
+            unit_types.QUANTITY_VALUE,
+        ):
             if not pydash.get(offer, ["quantity", "size", "amount"]):
                 offer["quantity"]["size"] = {
                     "amount": {"min": 1, "max": 1},
@@ -171,7 +163,8 @@ def extract_value(strings: List[str]) -> QuantityField:
     pieces = {}
     for string in extracted_strings:
         for (i, number) in enumerate(string):
-            if number.get("unit") in quantity_value_units:
+            unit = extract_unit(number.get("unit"))
+            if unit["symbol"] in quantity_value_units:
                 size_value = number.get("value")
                 size_amount = dict(min=size_value, max=size_value)
                 size_unit = dict(
@@ -181,7 +174,7 @@ def extract_value(strings: List[str]) -> QuantityField:
                 )
                 size = dict(unit=size_unit, amount=size_amount)
                 result = dict(size=size, pieces=dict())
-            elif number.get("unit") in piece_value_units:
+            elif unit["symbol"] in piece_value_units:
                 pieces_value = number.get("value")
                 pieces_amount = dict(min=pieces_value, max=pieces_value)
                 pieces_unit = dict(

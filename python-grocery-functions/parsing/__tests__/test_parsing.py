@@ -134,6 +134,12 @@ class ExtractUnit(TestCase):
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
+    def test_with_ambiguous_unit(self):
+        string = "m"
+        expected = dict(symbol="m", type=unit_types.QUANTITY,)
+        actual = extract_unit(string)
+        self.assertDictContainsSubset(expected, actual)
+
 
 class ExtractNumbersWithContext(TestCase):
     def test_basic(self):

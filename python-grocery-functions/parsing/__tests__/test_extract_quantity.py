@@ -46,6 +46,28 @@ class TestAnalyzeQuantity(TestCase):
         self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 1)
         self.assertEqual(pydash.get(actual, "quantity.size.unit.symbol"), "m")
 
+    def test_basic_without_size_and_non_si_unit(self):
+        offer = {
+            "items": {"max": 1, "min": 1},
+            "pricing": {"price": 44, "priceUnit": "/lm"},
+            "pieces": {},
+            "quantity": {"size": {},},
+        }
+        actual = analyze_quantity(offer)
+        self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 1)
+        self.assertEqual(pydash.get(actual, "quantity.size.unit.symbol"), "m")
+
+    def test_basic_without_size_and_piece_unit(self):
+        offer = {
+            "items": {"max": 1, "min": 1},
+            "pricing": {"price": 44, "priceUnit": "/stk"},
+            "pieces": {},
+            "quantity": {"size": {},},
+        }
+        actual = analyze_quantity(offer)
+        self.assertIsNone(pydash.get(actual, "quantity.size.amount.min"))
+        self.assertIsNone(pydash.get(actual, "quantity.size.unit.symbol"))
+
     def test_basic_with_size(self):
         offer = {
             "items": {"max": 1, "min": 1},

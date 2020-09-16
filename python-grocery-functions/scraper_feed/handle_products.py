@@ -100,16 +100,29 @@ def transform_product(product: ScraperOffer, config: HandleConfig) -> MpnOffer:
         result["dealer"] = result.get("dealer", config["provenance"])
         result["gtins"] = get_gtins({**product, **result})
 
-        quantity_strings = list(
+        # Handle quantity from scraper by parsing it like a string
+        extra_quantity_string = " ".join(
+            (
+                str(product[key])
+                for key in ("rawQuantity", "quantityValue", "quantityUnit")
+                if product.get(key)
+            ),
+        )
+
+        parse_quantity_strings = list(
             get_field_from_scraper_offer(product, key)
             for key in config["extractQuantityFields"]
         )
-        analyzed_product = parse_quantity(list(x for x in quantity_strings if x))
+        if extra_quantity_string:
+            parse_quantity_strings.append(extra_quantity_string)
+
+        parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x))
+
         result["mpnStock"] = get_stock_status(product)
         result["categories"] = get_categories(
             pydash.get(product, "categories"), config["categoriesLimits"],
         )
-        result = {**result, **analyzed_product}
+        result = {**result, **parsed_quantity}
 
     result = analyze_quantity(result)
     result = standardize_quantity(result)

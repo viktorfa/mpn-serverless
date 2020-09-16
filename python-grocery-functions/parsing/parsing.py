@@ -1,3 +1,4 @@
+from amp_types.quantity_types import MpnUnit
 import re
 import logging
 from typing import Optional
@@ -121,7 +122,7 @@ def format_number(string: str, loader_context: dict = dict()) -> Optional[str]:
         return None
 
 
-def extract_unit(string: str) -> Optional[dict]:
+def extract_unit(string: str) -> Optional[MpnUnit]:
     string = string.lower()
     quantity_unit_pattern = r"^({})".format(r"|".join(quantity_units))
     quantity_unit_matches = re.findall(quantity_unit_pattern, string)

@@ -11,9 +11,12 @@ class SiConfig(TypedDict):
     symbol: str
 
 
-class QuantityUnit(TypedDict):
+class MpnUnit(TypedDict):
     symbol: str
     type: str
+
+
+class QuantityUnit(MpnUnit):
     si: SiConfig
 
 

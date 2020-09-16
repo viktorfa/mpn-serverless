@@ -20,9 +20,13 @@ def generate_handle_config(config: dict) -> HandleConfig:
         config, ["additionalConfig", "categoriesLimits"], []
     )
     result["fieldMapping"] = get_field_mapping(config.get("fieldMapping", []))
+    extract_quantity_fields = config.get(
+        "extractQuantityFields", DEFAULT_EXTRACT_QUANTITY_FIELDS
+    )
     result["extractQuantityFields"] = (
-        config.get("extractQuantityFields", DEFAULT_EXTRACT_QUANTITY_FIELDS)
-        or DEFAULT_EXTRACT_QUANTITY_FIELDS
+        extract_quantity_fields
+        if type(extract_quantity_fields) is list
+        else DEFAULT_EXTRACT_QUANTITY_FIELDS
     )
     return result
 
