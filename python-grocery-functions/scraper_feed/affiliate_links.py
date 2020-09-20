@@ -23,6 +23,7 @@ def add_staypro_affiliate_link(product: dict) -> dict:
 
 affiliate_handlers = {
     "byggmax.no": add_byggmax_affiliate_link,
+    "www.byggmax.no": add_byggmax_affiliate_link,
     "www.staypro.no": add_staypro_affiliate_link,
 }
 
