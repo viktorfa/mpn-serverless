@@ -114,5 +114,6 @@ class HandleConfig(TypedDict):
     fieldMapping: List[MappingConfigField]
     extractQuantityFields: List[str]
     categoriesLimits: List[int]
+    ignore_none: bool
     provenance: str
     collection_name: str

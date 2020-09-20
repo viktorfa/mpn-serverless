@@ -25,6 +25,7 @@ from scraper_feed.helpers import (
     get_product_pricing,
     get_provenance_id,
     get_stock_status,
+    remove_none_fields,
 )
 
 
@@ -79,48 +80,52 @@ def get_categories(categories, categories_limits):
         return categories
 
 
-def transform_product(product: ScraperOffer, config: HandleConfig) -> MpnOffer:
+def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
     if config["provenance"] == provenances.SHOPGUN:
-        result = transform_shopgun_product(product)
+        result = transform_shopgun_product(offer)
     elif config["provenance"] == provenances.SHOPGUN_BYGG:
-        result = transform_shopgun_product(product)
+        result = transform_shopgun_product(offer)
     else:
         # Start here for everything not Shopgun offer.
-        product = transform_fields(product, config["fieldMapping"])
+        offer = transform_fields(offer, config["fieldMapping"])
         result: MpnOffer = {}
 
-        provenanceId = get_provenance_id(product)
+        provenanceId = get_provenance_id(offer)
         result["provenanceId"] = provenanceId
-        result["uri"] = get_product_uri(config["provenance"], provenanceId)
-        result["pricing"] = get_product_pricing({**product, **result})
+        result["uri"] = get_product_uri(
+            offer.get("dealer", config["provenance"]), provenanceId
+        )
+        result["pricing"] = get_product_pricing({**offer, **result})
         result["validThrough"] = time.one_week_ahead
         result["validFrom"] = time.time
-        result["dealer"] = result.get("dealer", config["provenance"])
-        result["gtins"] = get_gtins({**product, **result})
+        result["dealer"] = offer.get("dealer", config["provenance"])
+        result["gtins"] = get_gtins({**offer, **result})
 
         # Handle quantity from scraper by parsing it like a string
         extra_quantity_string = " ".join(
             (
-                str(product[key])
+                str(offer[key])
                 for key in ("rawQuantity", "quantityValue", "quantityUnit")
-                if product.get(key)
+                if offer.get(key)
             ),
         )
 
         parse_quantity_strings = list(
-            get_field_from_scraper_offer(product, key)
+            get_field_from_scraper_offer(offer, key)
             for key in config["extractQuantityFields"]
         )
         if extra_quantity_string:
             parse_quantity_strings.append(extra_quantity_string)
 
         parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x))
+        if config["ignore_none"]:
+            parsed_quantity = remove_none_fields(parsed_quantity)
 
-        result["mpnStock"] = get_stock_status(product)
+        result["mpnStock"] = get_stock_status(offer)
         result["categories"] = get_categories(
-            pydash.get(product, "categories"), config["categoriesLimits"],
+            pydash.get(offer, "categories"), config["categoriesLimits"],
         )
         result = {**result, **parsed_quantity}
 
@@ -128,4 +133,9 @@ def transform_product(product: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result = standardize_quantity(result)
     quantity = result.get("quantity")
 
-    return {**product, **result, **quantity}
+    final_result = {**offer, **result, **quantity}
+
+    if config["ignore_none"]:
+        final_result = remove_none_fields(final_result)
+
+    return final_result

@@ -70,3 +70,10 @@ def get_stock_status(product):
     else:
         return availability
 
+
+def remove_none_fields(offer: dict) -> dict:
+    result = {}
+    for k, v in offer.items():
+        if v and v != {} and v != []:
+            result[k] = v
+    return result

@@ -28,6 +28,7 @@ def generate_handle_config(config: dict) -> HandleConfig:
         if type(extract_quantity_fields) is list
         else DEFAULT_EXTRACT_QUANTITY_FIELDS
     )
+    result["ignore_none"] = get(config, ["additionalConfig", "ignoreNone"], False)
     return result
 
 
