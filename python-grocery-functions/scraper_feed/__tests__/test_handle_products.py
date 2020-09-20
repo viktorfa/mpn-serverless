@@ -19,6 +19,7 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
+            "ignore_none": False,
         }
 
         actual = transform_product(product, config)
@@ -31,11 +32,27 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
+            "ignore_none": False,
         }
 
         actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
+
+    def test_transform_product_with_dealer(self):
+        product = self.obsbygg_products[0]
+        config = {
+            "provenance": "obsbygg",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": ["title"],
+            "ignore_none": False,
+        }
+
+        product["dealer"] = "HALLA"
+
+        actual = transform_product(product, config)
+        self.assertIn("HALLA", actual["uri"])
 
 
 class TestGetCategories(TestCase):
