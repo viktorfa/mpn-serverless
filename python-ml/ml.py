@@ -1,17 +1,10 @@
 import pandas as pd
-import json
-import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from datetime import datetime
 from time import time
-import pickle
-from pprint import pprint
-import pydash
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_union
 
-import pymongo
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.preprocessing import Normalizer
 from sklearn.base import TransformerMixin, BaseEstimator
@@ -91,9 +84,6 @@ def get_vec_pipe(column, num_comp=0, reducer="svd"):
 
 def get_pipeline() -> FeatureUnion:
     pipeline_1 = get_vec_pipe("title")
-    pipeline_2 = get_vec_pipe("subtitle")
-    pipeline_3 = get_vec_pipe("description")
-    pipeline_4 = get_vec_pipe("categoriesString")
     pipeline_5 = get_vec_pipe("combinedText")
     combined_pipeline = make_union(pipeline_1, pipeline_5)
 
@@ -139,7 +129,8 @@ def get_combined_text(row: pd.Series):
     values = [
         row.get("title", ""),
         row.get("subtitle", ""),
-        row.get("description", ""),
+        row.get("shortDescription", ""),
+        # row.get("description", ""), Don't use this to save on compute load
         categories_string,
     ]
     result = " ".join(str(x) for x in values)

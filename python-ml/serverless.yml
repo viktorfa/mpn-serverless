@@ -21,7 +21,7 @@ provider:
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
 
-  memorySize: 2048
+  memorySize: 3008
   timeout: 900
 
   environment:
@@ -52,7 +52,7 @@ package:
 
 functions:
   createModels:
-    handler: handler.create_models
+    handler: handler.create_models_sns
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -60,8 +60,12 @@ functions:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
               - Stage: ${self:provider.stage}
+
+  createModelsTrigger:
+    handler: handler.create_models_trigger
+
   addSimilarOffers:
-    handler: handler.add_similar_offers
+    handler: handler.add_similar_offers_sns
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -69,6 +73,10 @@ functions:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
               - Stage: ${self:provider.stage}
+
+  addSimilarOffersTrigger:
+    handler: handler.add_similar_offers_trigger
+
 
 plugins:
   - serverless-python-requirements
