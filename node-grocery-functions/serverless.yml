@@ -22,11 +22,7 @@ provider:
   profile: serverless-mpn-admin
 
   environment:
-    MONGO_HOST: ${env:MONGO_HOST}
-    MONGO_PORT: ${env:MONGO_PORT}
-    MONGO_DATABASE: ${env:MONGO_DATABASE}
-    MONGO_USER: ${env:MONGO_USER}
-    MONGO_PASSWORD: ${env:MONGO_PASSWORD}
+    MONGO_URI: ${env:MONGO_URI}
     BUCKET_NAME: !ImportValue StaticAssetsBucket
     CLOUD_FRONT_DISTRIBUTION_ID: !ImportValue StaticAssetsDistribution
     STAGE: ${self:provider.stage}
