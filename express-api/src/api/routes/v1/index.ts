@@ -15,4 +15,3 @@ router.get("/echo/:message", validate(echoValidation), (req, res) =>
 router.use("/offers", offerRoutes);
 
 export default router;
-s;

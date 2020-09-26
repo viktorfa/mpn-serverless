@@ -9,7 +9,10 @@ const connectToMongo = async (): Promise<MongoClient> => {
     console.log(`Connecting to: ${mongoUri}`);
     client = await mongodb.MongoClient.connect(mongoUri, {
       useUnifiedTopology: true,
+      keepAlive: true,
     });
+  } else {
+    console.log(`Using cached mongo connection.`);
   }
   return client;
 };
