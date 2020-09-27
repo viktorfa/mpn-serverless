@@ -11,6 +11,8 @@ provider:
   environment:
     MONGO_URI: ${env:MONGO_URI}
     MONGO_DATABASE: ${env:MONGO_DATABASE}
+    ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
+    ELASTIC_URL: ${env:ELASTIC_URL}
 
 functions:
   api:
@@ -26,12 +28,7 @@ functions:
           cors: true
 
 package:
-  include:
-    - dist/**
-    - node_modules/**
-    - .env.example
-  exclude:
-    - ./**
+  artifact: artifact.zip
 
 plugins:
   - serverless-offline
