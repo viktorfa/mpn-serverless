@@ -1,6 +1,6 @@
 const { assert } = require("chai");
 const _ = require("lodash");
-const allProducts = require("../assets/all-products.json");
+const allProducts = require("../../assets/all-products.json");
 const {
   createProductObjects,
   getLunrIndex,

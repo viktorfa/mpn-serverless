@@ -1,0 +1,5 @@
+{
+  "mongoCollection": "byggoffers",
+  "storeInS3": false,
+  "limit": 1024
+}

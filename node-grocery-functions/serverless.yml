@@ -20,12 +20,16 @@ provider:
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
+  timeout: 600
+  memorySize: 1024
 
   environment:
     MONGO_URI: ${env:MONGO_URI}
     BUCKET_NAME: !ImportValue StaticAssetsBucket
     CLOUD_FRONT_DISTRIBUTION_ID: !ImportValue StaticAssetsDistribution
     STAGE: ${self:provider.stage}
+    ELASTIC_URL: ${env:ELASTIC_URL}
+    ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -43,7 +47,7 @@ provider:
           DistributionId: !ImportValue StaticAssetsDistribution
 functions:
   processGroceryOffers:
-    handler: handler.processGroceryOffers
+    handler: tokens/handler.processGroceryOffers
     events:
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
@@ -57,8 +61,14 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "groceryoffer"
+            
+  migrateOffersToElastic:
+    handler: elastic/handler.migrateOffersToElastic
+  searchElastic:
+    handler: elastic/handler.search
+
   processGroceryOffersSns:
-    handler: handler.processGroceryOffersSns
+    handler: tokens/handler.processGroceryOffersSns
     events:
       - sns:
           topicName: ScraperFeedHandled

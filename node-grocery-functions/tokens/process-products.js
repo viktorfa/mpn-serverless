@@ -1,7 +1,7 @@
-const { getCollection } = require("./config/mongo");
+const get = require("lodash/get");
 
-const { bucketName, cloudFrontDistributionId } = require("./config/vars");
-
+const { getCollection } = require("../config/mongo");
+const { bucketName, cloudFrontDistributionId } = require("../config/vars");
 const {
   getAutocompleteData,
   saveToS3,
@@ -20,9 +20,46 @@ const updateAutocompleteInMongo = async (
   );
   console.info("Updated autocomplete data in mongo");
   console.info(autocompleteUpsertCursor);
+  return autocompleteUpsertCursor;
+};
+const updateAutocompleteTermsInMongo = async (
+  autocompleteData,
+  productCollectionName,
+) => {
+  const now = new Date();
+  const collection = await getCollection("autocompleteterms");
+  console.info("Updating autocomplete terms in mongo");
+  const termUpserts = get(autocompleteData, ["heading_tokens"], []).map(
+    (term) => {
+      return {
+        updateOne: {
+          filter: {
+            term,
+            tokenType: "headingToken",
+            productCollection: productCollectionName,
+          },
+          update: {
+            $set: {
+              term,
+              tokenType: "headingToken",
+              productCollection: productCollectionName,
+              updatedAt: now,
+            },
+          },
+          upsert: true,
+        },
+      };
+    },
+  );
+
+  const bulkWriteResult = await collection.bulkWrite(termUpserts);
+  console.info("Updated autocomplete terms in mongo");
+  console.info(bulkWriteResult);
+  return bulkWriteResult;
 };
 
 const updateAutocompleteInS3 = async (autocompleteData, prefix) => {
+  console.info("Updating autocomplete data in S3");
   const s3Files = [
     {
       path: `${prefix}/autocomplete-data-latest.json`,
@@ -51,6 +88,7 @@ const processProducts = async (
   productCollectionName,
   prefix,
   storeInS3 = false,
+  limit = 2 ** 20,
 ) => {
   console.info(`Processing ${productCollectionName} with prefix ${prefix}`);
   const productCollection = await getCollection(productCollectionName);
@@ -61,6 +99,7 @@ const processProducts = async (
         $gt: new Date(),
       },
     })
+    .limit(limit)
     .toArray();
 
   console.info(`Fetched ${allProducts.length} products from database`);
@@ -70,13 +109,19 @@ const processProducts = async (
     autocompleteData,
     productCollectionName,
   );
+  const mongoUpdateTermsPromise = updateAutocompleteTermsInMongo(
+    autocompleteData,
+    productCollectionName,
+  );
+  const promises = [mongoUpdatePromise, mongoUpdateTermsPromise];
   if (storeInS3 === true) {
-    return Promise.all([
-      updateAutocompleteInS3(autocompleteData, prefix),
-      mongoUpdatePromise,
-    ]);
+    promises.push(updateAutocompleteInS3(autocompleteData, prefix));
   }
-  return mongoUpdatePromise;
+  const fulfilledPromises = await Promise.all(promises);
+  await productCollection.close();
+  console.info("Promises fulfilled");
+  console.info(promises);
+  return fulfilledPromises;
 };
 
 module.exports = {

@@ -1,10 +1,14 @@
 const { processProducts } = require("./process-products");
 
-const { stage } = require("./config/vars");
+const { stage } = require("../config/vars");
 
+/**
+ *
+ * @param {import("@/types").HandleOffersEvent} event
+ */
 module.exports.processGroceryOffers = async (event) => {
   try {
-    const { mongoCollection } = event;
+    const { mongoCollection, storeInS3 = true, limit = 2 ** 20 } = event;
     if (!mongoCollection || typeof mongoCollection !== "string") {
       throw new Error(
         `mongoCollection argument has to be a string. Was ${mongoCollection}`,
@@ -13,7 +17,8 @@ module.exports.processGroceryOffers = async (event) => {
     const result = await processProducts(
       mongoCollection,
       `${stage}-${mongoCollection}`,
-      true,
+      storeInS3,
+      limit,
     );
     return {
       message: "Go Serverless v1.0! Your function executed successfully!",
@@ -29,6 +34,10 @@ module.exports.processGroceryOffers = async (event) => {
   }
 };
 
+/**
+ *
+ * @param {import("@/types").SnsEvent<{collection_name:string}>} event
+ */
 module.exports.processGroceryOffersSns = async (event) => {
   try {
     console.log("event");
