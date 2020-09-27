@@ -1,5 +1,10 @@
 import { router } from "typera-express";
 
-import { list, search } from "@/api/controllers/offers.controller";
+import { list } from "@/api/controllers/offers.controller";
+import {
+  search,
+  querySuggestion,
+  registerClick,
+} from "@/api/controllers/search.controller";
 
-export default router(list, search).handler();
+export default router(list, search, querySuggestion, registerClick).handler();

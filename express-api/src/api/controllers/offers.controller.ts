@@ -1,9 +1,5 @@
-import { Parser, Response, Route, URL, route } from "typera-express";
-import * as t from "io-ts";
+import { Response, Route, route } from "typera-express";
 import { getOffersCollection } from "@/api/services/offers";
-import { search as searchElastic } from "@/api/services/search";
-
-const searchQueryParams = t.type({ query: t.string });
 
 export const list: Route<Response.Ok<MpnOffer[]>> = route
   .get("/")
@@ -15,14 +11,4 @@ export const list: Route<Response.Ok<MpnOffer[]>> = route
       .limit(16)
       .toArray();
     return Response.ok(offers);
-  });
-export const search: Route<
-  Response.Ok<MpnOffer[]> | Response.BadRequest<string>
-> = route
-  .get("/search")
-  .use(Parser.query(searchQueryParams))
-  .handler(async (request) => {
-    const query = request.query.query;
-    const searchResults = await searchElastic(query);
-    return Response.ok(searchResults);
   });

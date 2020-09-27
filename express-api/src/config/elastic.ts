@@ -2,16 +2,28 @@ import AppSearchClient from "@elastic/app-search-node";
 
 import { elasticUrl, elasticApiKey } from "@/config/vars";
 
+import { SearchParams, SuggestParams } from "elasticsearch";
+
 const baseUrlFn = () => elasticUrl;
 
 let client: AppSearchClient | null = null;
+
+interface IElasticClient {
+  post(path: string, params: object);
+}
 
 interface IAppSearchClient {
   search<T>(
     engineName: string,
     query: string,
-    options?: object,
+    options?: SearchParams,
   ): ElasticResponse<T>;
+  querySuggestion(
+    engineName: string,
+    query: string,
+    options?: SuggestParams,
+  ): ElasticQuerySuggestionResponse;
+  client: IElasticClient;
 }
 
 interface ElasticResponse<T> {
@@ -28,6 +40,12 @@ interface ElasticResponse<T> {
     request_id: string;
   };
   results: T[];
+}
+interface ElasticQuerySuggestionResponse {
+  meta: {
+    request_id: string;
+  };
+  results: { documents: { ["suggestion"]: string }[] };
 }
 
 export const getElasticClient = async (): Promise<IAppSearchClient> => {
