@@ -1,5 +1,6 @@
 const get = require("lodash/get");
 
+const { reverseString } = require("../utils");
 const { getCollection } = require("../config/mongo");
 const { bucketName, cloudFrontDistributionId } = require("../config/vars");
 const {
@@ -41,6 +42,7 @@ const updateAutocompleteTermsInMongo = async (
           update: {
             $set: {
               term,
+              reverseTerm: reverseString(term),
               tokenType: "headingToken",
               productCollection: productCollectionName,
               updatedAt: now,
