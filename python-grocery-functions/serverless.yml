@@ -25,7 +25,7 @@ provider:
   timeout: 180
 
   environment:
-    MONGO_USER: ${env:MONGO_URI}
+    MONGO_URI: ${env:MONGO_URI}
     MONGO_DATABASE: ${env:MONGO_DATABASE}
     STAGE: ${self:provider.stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
@@ -48,6 +48,7 @@ package:
   include:
     - scraper_feed_handler.py
     - product_feed_handler.py
+    - offer_feed/**
     - scraper_feed/**
     - storage/**
     - util/**

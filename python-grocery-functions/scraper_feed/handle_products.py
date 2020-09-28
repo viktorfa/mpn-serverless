@@ -35,7 +35,7 @@ class MyTime(object):
 
     def set_time(self, time):
         self._time = time
-        self._one_week_ahead = self._time + timedelta(7)
+        self._one_week_ahead = self._time + timedelta(days=7, hours=4)
 
     @property
     def time(self):
@@ -121,8 +121,12 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 
         parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x))
         if config["ignore_none"]:
-            parsed_quantity = remove_none_fields(parsed_quantity)
-
+            for k, v in parsed_quantity.items():
+                if remove_none_fields(v):
+                    parsed_quantity[k] = v
+                else:
+                    parsed_quantity[k] = {}
+            # parsed_quantity = remove_none_fields(parsed_quantity)
         result["mpnStock"] = get_stock_status(offer)
         result["categories"] = get_categories(
             pydash.get(offer, "categories"), config["categoriesLimits"],

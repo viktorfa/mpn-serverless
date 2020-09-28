@@ -36,7 +36,7 @@ class TestWithConfig(TestCase):
                 "provenance": "meny",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
-                "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
+                "extractQuantityFields": ["unit_price_raw", "subtitle", "title"],
                 "fieldMapping": [
                     {"source": "sku", "destination": "ean", "replace_type": "key"},
                     {
@@ -228,3 +228,43 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["uri"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["imageUrl"])
+
+    def test_single_meny_product(self):
+        config = generate_handle_config(
+            {
+                "provenance": "meny",
+                "collection_name": "groceryoffer",
+                "categoriesLimits": [],
+                "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],
+                "fieldMapping": [
+                    {"source": "sku", "destination": "ean", "replace_type": "key"},
+                    {
+                        "source": "product_variant",
+                        "destination": "description",
+                        "replace_type": "key",
+                    },
+                ],
+            }
+        )
+        scraper_offer = {
+            "price": 3.0,
+            "title": "Tomat stykk",
+            "unit_price_raw": "kr\u00a039,90/kg",
+            "unit_raw": "80\u00a0g",
+            "quantity_info": "80\u00a0g",
+            "image_url": "https://res.cloudinary.com/norgesgruppen/image/upload/c_pad,b_white,f_auto,h_320,q_50,w_320/v1558839429/Product/2000406400006.png",
+            "product_url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "meny_id": "2000406400006",
+            "provenance": "meny",
+            "url_fingerprint": "460cae747c054fc03fac9a0a88d8a9ef172c279d",
+            "url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "canonical_url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "sku": "2000406400006",
+            "gtin13": "2000406400006",
+            "provenanceId": "2000406400006",
+            "priceCurrency": "NOK",
+        }
+        result = handle_products([scraper_offer], config)
+        # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
+        self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 37.5)
+

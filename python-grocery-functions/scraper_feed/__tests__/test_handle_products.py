@@ -54,6 +54,20 @@ class TestHandleProducts(TestCase):
         actual = transform_product(product, config)
         self.assertIn("HALLA", actual["uri"])
 
+    def test_transform_product_with_ignore_none_fields(self):
+        product = self.obsbygg_products[0]
+        config = {
+            "provenance": "obsbygg",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": [],
+            "ignore_none": True,
+        }
+
+        actual = transform_product(product, config)
+        self.assertIsNone(actual.get("quantity"))
+        self.assertIn("obsbygg", actual["uri"])
+
 
 class TestGetCategories(TestCase):
     def test_get_categories_remove_first(self):

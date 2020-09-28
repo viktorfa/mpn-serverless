@@ -160,6 +160,13 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
+                ["kr 39,90/kg"],
+                [
+                    (lambda x: pydash.get(x, "value.size.amount.min"), 39.9),
+                    (lambda x: pydash.get(x, "value.pieces.unit.symbol"), "/kg"),
+                ],
+            ),
+            (
                 ["7x6-pk 29,90/stk"],
                 [(lambda x: pydash.get(x, "quantity.pieces.amount.min"), 42),],
             ),
