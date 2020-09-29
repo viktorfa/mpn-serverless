@@ -14,6 +14,8 @@ DEFAULT_FIELD_MAPPING = [
 def get_field_mapping(
     config_fields: List[MappingConfigField] = [],
 ) -> List[MappingConfigField]:
+    if not config_fields:
+        config_fields = []
     result = [*DEFAULT_FIELD_MAPPING, *config_fields]
     return result
 
