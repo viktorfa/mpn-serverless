@@ -2,10 +2,11 @@
 
 yarn
 yarn build
-mv node_modules _node_modules
-yarn --prod
-rm artifact.zip
-zip -rq artifact.zip node_modules dist # recursive, quiet
-rm -rf node_modules
-mv _node_modules node_modules
+mkdir .temp || true
+yarn --prod --modules-folder .temp/node_modules
+rm artifact.zip || true
+cd .temp
+zip -rq ../artifact.zip node_modules # recursive, quiet
+cd ..
+zip -rq artifact.zip dist .env.example # recursive, quiet
 sls deploy

@@ -1,21 +1,67 @@
-import { Parser, Response, Route, route } from "typera-express";
+import { Parser, Response, Route, route, URL } from "typera-express";
 import * as t from "io-ts";
 import {
   search as searchElastic,
   querySuggestion as querySuggestionElastic,
   registerClick as registerClickElastic,
 } from "@/api/services/search";
+import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
 
-const searchQueryParams = t.type({ query: t.string });
+export const getEngineName = (productCollectionName: string): string => {
+  if (productCollectionName.endsWith("s")) {
+    return productCollectionName;
+  } else {
+    return `${productCollectionName}s`;
+  }
+};
+
+const productCollectionQueryParams = t.type({
+  productCollection: t.union([t.string, t.undefined]),
+});
+const productCollectionAndLimitQueryParams = t.type({
+  productCollection: t.union([t.string, t.undefined]),
+  limit: t.union([t.number, t.undefined]),
+});
+const searchQueryParams = t.type({
+  query: t.string,
+  productCollection: t.union([t.string, t.undefined]),
+  limit: t.union([t.number, t.undefined]),
+});
 
 export const search: Route<
-  Response.Ok<MpnOffer[]> | Response.BadRequest<string>
+  Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
 > = route
   .get("/search")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
-    const query = request.query.query;
-    const searchResults = await searchElastic(query);
+    const {
+      limit = 256,
+      query,
+      productCollection = DEFAULT_PRODUCT_COLLECTION,
+    } = request.query;
+    const searchResults = await searchElastic(
+      query,
+      getEngineName(productCollection),
+      limit,
+    );
+    return Response.ok(searchResults);
+  });
+export const searchPathParam: Route<
+  Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
+> = route
+  .get("/search/", URL.str("query"))
+  .use(Parser.query(productCollectionAndLimitQueryParams))
+  .handler(async (request) => {
+    const query = request.routeParams.query;
+    const {
+      productCollection = DEFAULT_PRODUCT_COLLECTION,
+      limit = 256,
+    } = request.query;
+    const searchResults = await searchElastic(
+      query,
+      getEngineName(productCollection),
+      limit,
+    );
     return Response.ok(searchResults);
   });
 
@@ -25,8 +71,12 @@ export const querySuggestion: Route<
   .get("/search/hint")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
+    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
     const query = request.query.query;
-    const searchResults = await querySuggestionElastic(query);
+    const searchResults = await querySuggestionElastic(
+      query,
+      getEngineName(productCollection),
+    );
     return Response.ok(searchResults);
   });
 
@@ -37,16 +87,19 @@ const registerClickBody = t.type({
   tags: t.union([t.array(t.string), t.undefined]),
 });
 
-type RegisterClickBody = t.TypeOf<typeof registerClickBody>;
-
 export const registerClick: Route<
   Response.NoContent | Response.BadRequest<string>
 > = route
   .post("/search/click")
+  .use(Parser.query(productCollectionQueryParams))
   .use(Parser.body(registerClickBody))
   .handler(async (request) => {
+    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
     try {
-      const elasticResponse = await registerClickElastic(request.body);
+      await registerClickElastic(
+        request.body,
+        getEngineName(productCollection),
+      );
       return Response.noContent();
     } catch (e) {
       console.error(e);

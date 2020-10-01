@@ -1,40 +1,45 @@
+import { elasticOfferToMpnOffer } from "@/api/models/mpnOffer.model";
 import { getElasticClient } from "@/config/elastic";
-
-const DEFAULT_ENGINE_NAME = "groceryoffers";
+import APIError from "../utils/APIError";
 
 export const search = async (
   query: string,
-  engineName: string = DEFAULT_ENGINE_NAME,
-): Promise<MpnOffer[]> => {
+  engineName: string,
+  limit = 32,
+): Promise<MpnResultOffer[]> => {
   const elasticClient = await getElasticClient();
   console.log(`Searching for ${query} on engine ${engineName}.`);
-  const searchResponse = await elasticClient.search<MpnOffer>(
+  const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
     engineName,
     query,
+    { page: { size: limit } },
   );
-  console.log("searchResponse");
-  console.log(searchResponse.meta);
 
-  return searchResponse.results;
+  try {
+    const mpnResults = searchResponse.results.map((x) => {
+      return elasticOfferToMpnOffer(x);
+    });
+    return mpnResults;
+  } catch (e) {
+    console.error(e);
+    throw new APIError({
+      status: 500,
+      message: `Could not search for ${query}`,
+    });
+  }
 };
 
-export const querySuggestion = async (
-  query,
-  engineName = DEFAULT_ENGINE_NAME,
-): Promise<string[]> => {
+export const querySuggestion = async (query, engineName): Promise<string[]> => {
   const elasticClient = await getElasticClient();
   console.log(`Getting querySuggestion for ${query} on engine ${engineName}.`);
   const searchResponse = await elasticClient.querySuggestion(engineName, query);
-  console.log("querySuggestionResponse");
-  console.log(searchResponse.meta);
-  console.log(searchResponse.results.documents);
 
   return searchResponse.results.documents.map(({ suggestion }) => suggestion);
 };
 
 export const registerClick = async (
   registerClickArgs,
-  engineName = DEFAULT_ENGINE_NAME,
+  engineName,
 ): Promise<void> => {
   const elasticClient = await getElasticClient();
   console.log(
@@ -44,7 +49,5 @@ export const registerClick = async (
     `engines/${encodeURIComponent(engineName)}/click`,
     registerClickArgs,
   );
-  console.log("searchResponse for register click");
-  console.log(searchResponse);
   return;
 };

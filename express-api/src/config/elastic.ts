@@ -2,7 +2,7 @@ import AppSearchClient from "@elastic/app-search-node";
 
 import { elasticUrl, elasticApiKey } from "@/config/vars";
 
-import { SearchParams, SuggestParams } from "elasticsearch";
+import { SuggestParams } from "elasticsearch";
 
 const baseUrlFn = () => elasticUrl;
 
@@ -12,11 +12,15 @@ interface IElasticClient {
   post(path: string, params: object);
 }
 
+interface AppSearchParams {
+  page?: { size?: number; current?: number };
+}
+
 interface IAppSearchClient {
   search<T>(
     engineName: string,
     query: string,
-    options?: SearchParams,
+    options?: AppSearchParams,
   ): ElasticResponse<T>;
   querySuggestion(
     engineName: string,
