@@ -1,6 +1,6 @@
 #!/bin/bash
 
-yarn
+yarn --prod=false
 yarn build
 mkdir .temp || true
 yarn --prod --modules-folder .temp/node_modules

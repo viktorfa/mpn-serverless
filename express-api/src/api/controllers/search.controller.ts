@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { Parser, Response, Route, route, URL } from "typera-express";
 import * as t from "io-ts";
 import {
@@ -6,14 +7,24 @@ import {
   registerClick as registerClickElastic,
 } from "@/api/services/search";
 import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
+import { stage } from "@/config/vars";
 
 export const getEngineName = (productCollectionName: string): string => {
+  let result = "";
   if (productCollectionName.endsWith("s")) {
-    return productCollectionName;
+    result = productCollectionName;
   } else {
-    return `${productCollectionName}s`;
+    result = `${productCollectionName}s`;
+  }
+  if (stage === "prod") {
+    return result;
+  } else {
+    return `${result}-dev`;
   }
 };
+
+const filterDuplicateOffers = (offers: MpnResultOffer[]): MpnResultOffer[] =>
+  _.uniqBy(offers, (x) => x.dealer + x.pricing.price + x.title);
 
 const productCollectionQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -44,7 +55,7 @@ export const search: Route<
       getEngineName(productCollection),
       limit,
     );
-    return Response.ok(searchResults);
+    return Response.ok(filterDuplicateOffers(searchResults));
   });
 export const searchPathParam: Route<
   Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
@@ -62,7 +73,7 @@ export const searchPathParam: Route<
       getEngineName(productCollection),
       limit,
     );
-    return Response.ok(searchResults);
+    return Response.ok(filterDuplicateOffers(searchResults));
   });
 
 export const querySuggestion: Route<

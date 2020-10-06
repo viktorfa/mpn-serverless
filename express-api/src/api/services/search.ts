@@ -1,5 +1,6 @@
 import { elasticOfferToMpnOffer } from "@/api/models/mpnOffer.model";
 import { getElasticClient } from "@/config/elastic";
+import { getNowDate } from "../utils/helpers";
 import APIError from "../utils/APIError";
 
 export const search = async (
@@ -9,10 +10,11 @@ export const search = async (
 ): Promise<MpnResultOffer[]> => {
   const elasticClient = await getElasticClient();
   console.log(`Searching for ${query} on engine ${engineName}.`);
+  const now = getNowDate();
   const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
     engineName,
     query,
-    { page: { size: limit } },
+    { page: { size: limit }, filters: { valid_through: { from: now } } },
   );
 
   try {
