@@ -20,7 +20,7 @@ provider:
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
-  timeout: 600
+  timeout: 900
   memorySize: 1024
 
   environment:
@@ -63,9 +63,16 @@ functions:
             mongoCollection: "groceryoffer"
             
   migrateOffersToElastic:
-    handler: elastic/handler.migrateOffersToElastic
-  searchElastic:
-    handler: elastic/handler.search
+    handler: elastic/handler.handleTriggerMigrateEvent
+  migrateOffersToElasticSns:
+    handler: elastic/handler.handleSnsMigrateEvent
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Fn::ImportValue: !Sub
+              - "#{Stage}-ScraperFeedHandledTopicArn"
+              - Stage: ${self:provider.stage}
 
   processGroceryOffersSns:
     handler: tokens/handler.processGroceryOffersSns

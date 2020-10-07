@@ -1,6 +1,7 @@
 const { processProducts } = require("./process-products");
 
 const { stage } = require("../config/vars");
+const { getMessageFromSnsEvent } = require("../utils");
 
 /**
  *
@@ -42,9 +43,7 @@ module.exports.processGroceryOffersSns = async (event) => {
   try {
     console.log("event");
     console.log(event);
-    console.log("event.Records[0].Sns");
-    console.log(event.Records[0].Sns);
-    const snsMessage = JSON.parse(event.Records[0].Sns.Message);
+    const snsMessage = getMessageFromSnsEvent(event);
     const { collection_name: mongoCollection } = snsMessage;
     if (!mongoCollection || typeof mongoCollection !== "string") {
       throw new Error(

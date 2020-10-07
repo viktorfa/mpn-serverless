@@ -1,69 +1,138 @@
-const { getElasticClient } = require("../config/elastic");
-const { getCollection } = require("../config/mongo");
-const snakeCase = require("lodash/snakeCase");
 const _ = require("lodash");
 
-const defaultEngineName = "byggoffers";
+const { getElasticClient } = require("../config/elastic");
+const { getCollection } = require("../config/mongo");
+const { mpnOfferToElasticOffer } = require("./helpers");
+const { stage } = require("../config/vars");
+const { getMessageFromSnsEvent } = require("../utils");
 
-const search = async (event) => {
-  const { query, engineName = defaultEngineName } = event;
-  console.log(`Searching for ${query}`);
-
-  const client = await getElasticClient();
-  const result = await client.search(engineName, query);
-
-  console.log(`Results`);
-  return { result };
-};
+const UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE = 100;
 
 const includeFields = [
   "title",
   "subtitle",
   "shortDescription",
   "description",
+  "brand",
+
+  "href",
+  "imageUrl",
+  "uri",
+
   "validFrom",
   "validThrough",
-  "categories",
-  "brand",
-  "dealer",
-  "provenance",
+
   "pricing",
   "quantity",
   "value",
+
+  "categories",
+  "dealer",
   "gtins",
-  "href",
-  "imageUrl",
+  "provenance",
+  "mpnStock",
 ];
-const mongoOfferToElasticOffer = (offer) => {
-  const result = {};
-  includeFields.forEach((key) => {
-    result[snakeCase(key)] = offer[key];
-  });
-  result["id"] = offer.uri;
-  return result;
+
+/**
+ * Gets a valid engine name or an empty string.
+ *
+ * @param {string} engineName
+ * @returns {string}
+ */
+const getEngineName = (engineName) => {
+  let result = "";
+  if (engineName.startsWith("grocery")) {
+    result = "groceryoffers";
+  } else if (engineName.startsWith("bygg")) {
+    result = "byggoffers";
+  } else {
+    return "";
+  }
+  if (stage === "prod") {
+    return result;
+  } else {
+    return `${result}-dev`;
+  }
 };
 
 /**
  *
  * @param {import("@/types").MigrateElasticEvent} event
  */
-const migrateOffersToElastic = async (event) => {
-  const ELASTIC_INDEX_CHUNK_SIZE = 32;
-  const { mongoCollection, engineName, limit = 2 ** 20 } = event;
+const handleTriggerMigrateEvent = (event) => {
+  const {
+    mongoCollection,
+    engineName: _engineName,
+    limit = 2 ** 20,
+    mongoFilter = {},
+  } = event;
 
   if (!mongoCollection) {
     throw new Error(`Need mongoCollection input. Was ${mongoCollection}`);
   }
+  const engineName = getEngineName(_engineName);
   if (!engineName) {
     throw new Error(`Need engineName input. Was ${engineName}`);
   }
+  return migrateOffersToElastic(
+    mongoCollection,
+    engineName,
+    limit,
+    mongoFilter,
+  );
+};
+/**
+ *
+ * @param {import("@/types").SnsEvent<{provenance: string, collection_name: string}>} event
+ */
+const handleSnsMigrateEvent = (event) => {
+  const snsMessage = getMessageFromSnsEvent(event);
+  const { collection_name: mongoCollection, provenance } = snsMessage;
 
-  const _mongoCollection = await getCollection(mongoCollection);
+  if (!mongoCollection) {
+    throw new Error(`Need mongoCollection input. Was ${mongoCollection}`);
+  }
+  if (!provenance) {
+    throw new Error(`Need provenance input. Was ${provenance}`);
+  }
+  const mongoFilter = { provenance };
+  const engineName = getEngineName(mongoCollection);
+  if (!engineName) {
+    throw new Error(`Need engineName input. Was ${engineName}`);
+  }
+  return migrateOffersToElastic(
+    mongoCollection,
+    engineName,
+    2 ** 20,
+    mongoFilter,
+  );
+};
+
+/**
+ *
+ * @param {string} mongoCollectionName
+ * @param {string} engineName
+ * @param {number} limit
+ * @param {object} mongoFilter
+ * @param {number} chunkSize
+ */
+const migrateOffersToElastic = async (
+  mongoCollectionName,
+  engineName,
+  limit,
+  mongoFilter = {},
+  chunkSize = UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE,
+) => {
+  const mongoCollection = await getCollection(mongoCollectionName);
 
   const now = new Date();
 
-  const offers = await _mongoCollection
-    .find({ validThrough: { $gte: now } })
+  /** @var {import("@/types/offers").MpnOffer[]} */
+  const offers = await mongoCollection
+    .find({ validThrough: { $gte: now }, ...mongoFilter })
+    .project(
+      includeFields.reduce((acc, current) => ({ ...acc, [current]: true }), {}),
+    )
     .limit(limit)
     .toArray();
 
@@ -84,8 +153,8 @@ const migrateOffersToElastic = async (event) => {
     console.info(`Found existing engine ${engineName}.`);
   }
   const elasticPromises = _.chain(offers)
-    .map(mongoOfferToElasticOffer)
-    .chunk(ELASTIC_INDEX_CHUNK_SIZE)
+    .map(mpnOfferToElasticOffer)
+    .chunk(chunkSize)
     .value();
 
   const elasticResult = [];
@@ -104,7 +173,7 @@ const migrateOffersToElastic = async (event) => {
   console.info(`Errors from elastic indexing: ${errors.length}`);
   console.info(`Indexed documents to elastic: ${elasticResult.length}`);
 
-  await _mongoCollection.close();
+  await mongoCollection.close();
   return {
     result: elasticResult.length,
   };
@@ -114,4 +183,4 @@ const indexElasticDocuments = async (documents, engineName, client) => {
   return client.indexDocuments(engineName, documents);
 };
 
-module.exports = { search, migrateOffersToElastic };
+module.exports = { handleSnsMigrateEvent, handleTriggerMigrateEvent };

@@ -4,6 +4,7 @@ export interface MigrateElasticEvent {
   mongoCollection: string;
   engineName: string;
   limit?: number;
+  mongoFilter?: Record<string, string | number | object>;
 }
 export interface HandleOffersEvent {
   mongoCollection: string;
