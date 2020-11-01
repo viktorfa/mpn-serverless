@@ -2,6 +2,7 @@ interface Pricing {
   price: number;
   prePrice?: number;
   currency: string;
+  text?: string;
 }
 
 interface QuantityAmount {
@@ -80,21 +81,26 @@ interface ElasticMpnOffer {
   description: string;
   brand: string;
 
-  valid_from: string;
-  valid_through: string;
+  image_url: string;
+  href: string;
+  id: string;
+
+  valid_from: Date;
+  valid_through: Date;
 
   price: number;
   pre_price?: number;
   price_currency: string;
-  standard_value: number;
-  standard_value_unit: string;
-  standard_size: number;
-  standard_size_unit: string;
+  price_text?: string;
+  standard_value?: number;
+  standard_value_unit?: string;
+  standard_size?: number;
+  standard_size_unit?: string;
 
   categories: string[];
   dealer: string;
   provenance: string;
-  gtins: string[];
+  gtins: Record<string, string>;
   mpn_stock: string;
 }
 

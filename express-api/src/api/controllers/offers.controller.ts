@@ -12,6 +12,7 @@ import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getNowDate } from "../utils/helpers";
 import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
 import { getEngineName } from "@/api/controllers/search.controller";
+import { indexDocuments } from "../services/elastic";
 
 const offersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -34,6 +35,34 @@ export const list: Route<
       .limit(16)
       .toArray();
     return Response.ok(offers);
+  });
+
+export const addToElastic: Route<
+  Response.NoContent | Response.NotFound<string> | Response.BadRequest<string>
+> = route
+  .put("/elastic/", URL.str("id"))
+  .use(Parser.query(offersQueryParams))
+  .handler(async (request) => {
+    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+
+    let offer: FullMpnOffer;
+    try {
+      offer = await findOneFull(request.routeParams.id, productCollection);
+      if (!offer) {
+        throw new Error();
+      }
+    } catch (e) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+    const indexResult = await indexDocuments(
+      [offer],
+      getEngineName(productCollection),
+    );
+    console.log("indexResult");
+    console.log(indexResult);
+    return Response.noContent();
   });
 
 const similarOffersQueryParams = t.type({
@@ -134,7 +163,7 @@ export const promoted: Route<
         validThrough: { $gte: now },
       })
       .sort({ select_method: -1 }) // Get offers with manual select method first
-      .limit(32)
+      .limit(64)
       .toArray();
 
     const strippedProductCollection = productCollection.endsWith("s")
@@ -161,7 +190,7 @@ export const promoted: Route<
       manualPromotionIdStrings.includes(offer._id.toString()) ? -1 : 1,
     );
 
-    return Response.ok(result);
+    return Response.ok(_.take(result, 32));
   });
 
 export const find: Route<

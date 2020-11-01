@@ -5,6 +5,7 @@ import {
   find,
   promoted,
   similar,
+  addToElastic,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -17,6 +18,7 @@ export default router(
   list,
   promoted,
   similar,
+  addToElastic,
   search,
   querySuggestion,
   registerClick,

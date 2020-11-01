@@ -32,6 +32,10 @@ interface IAppSearchClient {
   client: IElasticClient;
   listEngines(): Promise<{ results: AppSearchEngine[] }>;
   createEngine(engineName: string, options: { language: string | null });
+  indexDocuments(
+    engineName: string,
+    documents: ElasticMpnOffer[],
+  ): Promise<any>;
 }
 
 interface ElasticResponse<T> {

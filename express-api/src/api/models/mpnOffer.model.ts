@@ -1,5 +1,13 @@
 import get from "lodash/get";
 
+const requriedElasticOfferFields = [
+  "title",
+  "valid_from",
+  "valid_through",
+  "provenance",
+  "id",
+  "pricing",
+];
 const defaultOfferFields = [
   "title",
   "description",
@@ -17,6 +25,8 @@ const defaultOfferFields = [
   "quantity",
   "gtins",
   "mpnStock",
+  "validFrom",
+  "validThrough",
 ];
 
 export const defaultOfferProjection = defaultOfferFields.reduce(
@@ -63,4 +73,56 @@ export const elasticOfferToMpnOffer = (
 
     score: elasticOffer._meta.score,
   };
+};
+
+export const mpnOfferToElasticOffer = (
+  offer: FullMpnOffer,
+): ElasticMpnOffer => {
+  const result = {
+    title: offer.title,
+    subtitle: offer.subtitle || "",
+    short_description: offer.shortDescription || "",
+    description: offer.description || "",
+    brand: offer.brand || "",
+
+    image_url: offer.imageUrl || "",
+    href: offer.href || "",
+    id: offer.uri,
+
+    valid_from: offer.validFrom,
+    valid_through: offer.validThrough,
+
+    price: offer.pricing.price || null,
+    price_text: offer.pricing.text || "",
+    pre_price: offer.pricing.prePrice || null,
+    price_currency: offer.pricing.currency || "",
+    standard_value: get(offer, ["value", "size", "standard", "min"], null),
+    standard_value_unit: get(
+      offer,
+      ["value", "size", "unit", "si", "symbol"],
+      null,
+    ),
+    standard_size: get(offer, ["quantity", "size", "standard", "min"], null),
+    standard_size_unit: get(
+      offer,
+      ["quantity", "size", "unit", "si", "symbol"],
+      null,
+    ),
+
+    categories: get(offer, ["categories"], []),
+    dealer: offer.dealer || "",
+    provenance: offer.provenance,
+    gtins: get(offer, ["gtins"], {}),
+    mpn_stock: offer.mpnStock || "",
+
+    pricing: offer.pricing || {},
+    value: offer.value || {},
+    quantity: offer.quantity || {},
+  };
+  requriedElasticOfferFields.forEach((key) => {
+    if (!result[key]) {
+      throw new Error(`Cannot add elastic offer without required field ${key}`);
+    }
+  });
+  return result;
 };

@@ -1,6 +1,28 @@
 import _ from "lodash";
 import { getElasticClient } from "@/config/elastic";
 
+export const schemaConfig = {
+  title: "text",
+  subtitle: "text",
+  short_description: "text",
+  description: "text",
+  brand: "text",
+
+  valid_from: "date",
+  valid_through: "date",
+
+  price: "number",
+  pre_price: "number",
+
+  dealer: "text",
+
+  standard_value: "number",
+  standard_size: "number",
+
+  gtins: "text",
+  categories: "text",
+};
+
 export const getSchemaElasticClient = async (): Promise<
   ISchemaElasticClient
 > => {
@@ -52,27 +74,7 @@ export const ensureEngineExists = async (engineName: string) => {
 
 export const ensureOfferSchema = async (engineName: string) => {
   const elasticClient = await getSchemaElasticClient();
-  const schemaConfig = {
-    title: "text",
-    subtitle: "text",
-    short_description: "text",
-    description: "text",
-    brand: "text",
 
-    valid_from: "date",
-    valid_through: "date",
-
-    price: "number",
-    pre_price: "number",
-
-    dealer: "text",
-
-    standard_value: "number",
-    standard_size: "number",
-
-    gtins: "text",
-    categories: "text",
-  };
   const settingsConfig = {
     title: { weight: 3 },
     categories: { weight: 2 },
