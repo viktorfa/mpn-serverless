@@ -161,8 +161,8 @@ export const promoted: Route<
     const promotions = await promotionCollection
       .find({
         validThrough: { $gte: now },
+        select_method: "manual",
       })
-      .sort({ select_method: -1 }) // Get offers with manual select method first
       .limit(64)
       .toArray();
 
@@ -171,9 +171,6 @@ export const promoted: Route<
       : productCollection;
 
     const promotionIds = promotions.map((x) => x[strippedProductCollection]);
-    const manualPromotionIdStrings = promotions
-      .filter((x) => x.select_method === "manual")
-      .map((x) => x[strippedProductCollection].toString());
 
     const offerCollection = await getOffersCollection(productCollection);
 
@@ -185,10 +182,17 @@ export const promoted: Route<
       .project(defaultOfferProjection)
       .toArray();
 
-    // Return sorted with manual promotions first
-    const result = _.sortBy(promotedOffers, (offer) =>
-      manualPromotionIdStrings.includes(offer._id.toString()) ? -1 : 1,
-    );
+    const result = [...promotedOffers];
+
+    if (promotedOffers.length < 16) {
+      const extraOffers = await offerCollection
+        .find({ validThrough: { $gte: now } })
+        .project(defaultOfferProjection)
+        .sort({ pageviews: -1 })
+        .limit(32 - promotedOffers.length)
+        .toArray();
+      result.push(...extraOffers);
+    }
 
     return Response.ok(_.take(result, 32));
   });
