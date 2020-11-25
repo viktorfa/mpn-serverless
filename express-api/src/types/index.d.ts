@@ -144,3 +144,25 @@ interface ElasticMpnOfferRaw {
 
   _meta: { score: number; id: string; engine: string };
 }
+
+declare type RatingScoreType = 1 | 2 | 3 | 4 | 5;
+declare type OfferRelationType =
+  | "identical"
+  | "interchangeable"
+  | "similar"
+  | "related"
+  | "lowerend"
+  | "higherend"
+  | "usedtogether";
+
+interface IdenticalOfferRelation {
+  offerSet: string[];
+  relationType: OfferRelationType;
+}
+
+interface OfferReview {
+  body: string;
+  author: string;
+  uri: string;
+  rating: RatingScoreType;
+}

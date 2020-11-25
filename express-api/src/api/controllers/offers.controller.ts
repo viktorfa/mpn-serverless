@@ -4,7 +4,6 @@ import { Parser, Response, Route, route, URL } from "typera-express";
 import {
   findOne,
   findOneFull,
-  getOffersCollection,
   getPromotionsCollection,
 } from "@/api/services/offers";
 import { search as searchElastic } from "@/api/services/search";
@@ -13,6 +12,8 @@ import { getNowDate } from "../utils/helpers";
 import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
 import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
+import { getCollection } from "@/config/mongo";
+import { getOfferBiRelations } from "../services/offer-relations";
 
 const offersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -26,7 +27,7 @@ export const list: Route<
   .handler(async (request) => {
     const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
 
-    const offersCollection = await getOffersCollection(productCollection);
+    const offersCollection = await getCollection(productCollection);
 
     const now = getNowDate();
     const offers = await offersCollection
@@ -81,7 +82,7 @@ export const similar: Route<
     const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
     const useSearch = ["1", "true"].includes(request.query.useSearch);
 
-    const offersCollection = await getOffersCollection(productCollection);
+    const offersCollection = await getCollection(productCollection);
 
     let offer: FullMpnOffer;
     try {
@@ -172,7 +173,7 @@ export const promoted: Route<
 
     const promotionIds = promotions.map((x) => x[strippedProductCollection]);
 
-    const offerCollection = await getOffersCollection(productCollection);
+    const offerCollection = await getCollection(productCollection);
 
     const promotedOffers = await offerCollection
       .find<MpnMongoOffer>({
@@ -208,6 +209,51 @@ export const find: Route<
     try {
       const offer = await findOne(request.routeParams.id, productCollection);
       return Response.ok(offer);
+    } catch (e) {
+      return Response.notFound();
+    }
+  });
+
+export const relatedOffers: Route<
+  | Response.Ok<{ identical: MpnOffer[]; interchangeable: MpnOffer[] }>
+  | Response.NotFound
+  | Response.BadRequest<string>
+> = route
+  .get("/", URL.str("id"), "/related")
+  .use(Parser.query(offersQueryParams))
+  .handler(async (request) => {
+    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+
+    const offerCollection = await getCollection(productCollection);
+
+    try {
+      const relationResults = await getOfferBiRelations(
+        request.routeParams.id,
+        productCollection,
+      );
+      const identicalUris = _.get(
+        relationResults,
+        ["identical", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.id);
+      const interchangeableUris = _.get(
+        relationResults,
+        ["interchangeable", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.id);
+      const offers = await offerCollection
+        .find({
+          uri: { $in: [...identicalUris, ...interchangeableUris] },
+        })
+        .project(defaultOfferProjection)
+        .toArray();
+
+      return Response.ok({
+        identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
+        interchangeable: offers.filter((offer) =>
+          interchangeableUris.includes(offer.uri),
+        ),
+      });
     } catch (e) {
       return Response.notFound();
     }

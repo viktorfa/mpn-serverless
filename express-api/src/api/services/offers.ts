@@ -1,25 +1,14 @@
 import { getCollection } from "@/config/mongo";
 import { ObjectId, Collection } from "mongodb";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
+import { getStrippedProductCollectionName } from "../models/utils";
 import { isMongoUri } from "../utils/helpers";
 
-const DEFAULT_COLLECTION_NAME = "groceryoffer";
-
-export const getOffersCollection = async (
-  collectionName: string = DEFAULT_COLLECTION_NAME,
-): Promise<Collection> => {
-  const collection = await getCollection(collectionName);
-  return collection;
-};
-
 export const getPromotionsCollection = async (
-  collectionName: string = DEFAULT_COLLECTION_NAME,
+  collectionName: string,
 ): Promise<Collection> => {
-  const strippedProductCollection = collectionName.endsWith("s")
-    ? `${collectionName.substring(0, collectionName.length - 1)}`
-    : collectionName;
-  const promotionCollection = await getOffersCollection(
-    `${strippedProductCollection}promotions`,
+  const promotionCollection = await getCollection(
+    `${getStrippedProductCollectionName(collectionName)}promotions`,
   );
   return promotionCollection;
 };
@@ -38,7 +27,7 @@ export const findOne = async (
   id: string,
   collectionName: string,
 ): Promise<MpnOffer> => {
-  const offersCollection = await getOffersCollection(collectionName);
+  const offersCollection = await getCollection(collectionName);
   let filter = getFindOneFilter(id);
   return offersCollection.findOne<MpnOffer>(filter, {
     projection: defaultOfferProjection,
@@ -48,7 +37,7 @@ export const findOneFull = async (
   id: string,
   collectionName: string,
 ): Promise<FullMpnOffer> => {
-  const offersCollection = await getOffersCollection(collectionName);
+  const offersCollection = await getCollection(collectionName);
   let filter = getFindOneFilter(id);
   return offersCollection.findOne<FullMpnOffer>(filter);
 };

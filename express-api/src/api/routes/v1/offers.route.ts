@@ -6,6 +6,7 @@ import {
   promoted,
   similar,
   addToElastic,
+  relatedOffers,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -24,4 +25,5 @@ export default router(
   registerClick,
   searchPathParam,
   find,
+  relatedOffers,
 ).handler();
