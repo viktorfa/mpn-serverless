@@ -56,12 +56,40 @@ functions:
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
+            mongoCollection: "sebyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "segroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
             mongoCollection: "herbvuoffer"
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "groceryoffer"
-            
+
+  deleteOffersFromElastic:
+    handler: elastic/handler.handleTriggerDeleteEvent
+    events:
+      - schedule:
+          rate: rate(1 hour)
+          input:
+            engineName: byggoffers
+      - schedule:
+          rate: rate(1 hour)
+          input:
+            engineName: groceryoffers
+      - schedule:
+          rate: rate(1 hour)
+          input:
+            engineName: segroceryoffers
+      - schedule:
+          rate: rate(1 hour)
+          input:
+            engineName: segbyggoffers
+
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
   migrateOffersToElasticSns:
@@ -73,6 +101,11 @@ functions:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
               - Stage: ${self:provider.stage}
+
+  handlePageViewsFeed:
+    handler: stats/handler.handleFeed
+    events:
+      - http: PUT pageviews
 
   processGroceryOffersSns:
     handler: tokens/handler.processGroceryOffersSns
