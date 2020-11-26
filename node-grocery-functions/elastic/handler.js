@@ -45,6 +45,10 @@ const getEngineName = (engineName) => {
     result = "groceryoffers";
   } else if (engineName.startsWith("bygg")) {
     result = "byggoffers";
+  } else if (engineName.startsWith("sebygg")) {
+    result = "sebyggoffers";
+  } else if (engineName.startsWith("segrocery")) {
+    result = "segroceryoffers";
   } else {
     return "";
   }
@@ -57,9 +61,26 @@ const getEngineName = (engineName) => {
 
 /**
  *
+ * @param {import("@/types").DeleteElasticEvent} event
+ */
+const handleTriggerDeleteEvent = (event) => {
+  console.info("event");
+  console.info(event);
+  const { engineName: _engineName, limit = 1000 } = event;
+
+  const engineName = getEngineName(_engineName);
+  if (!engineName) {
+    throw new Error(`Need engineName input. Was ${engineName}`);
+  }
+  return deleteOldElasticOffers(engineName, limit);
+};
+/**
+ *
  * @param {import("@/types").MigrateElasticEvent} event
  */
 const handleTriggerMigrateEvent = (event) => {
+  console.info("event");
+  console.info(event);
   const {
     mongoCollection,
     engineName: _engineName,
@@ -86,6 +107,8 @@ const handleTriggerMigrateEvent = (event) => {
  * @param {import("@/types").SnsEvent<{provenance: string, collection_name: string}>} event
  */
 const handleSnsMigrateEvent = (event) => {
+  console.info("event");
+  console.info(event);
   const snsMessage = getMessageFromSnsEvent(event);
   const { collection_name: mongoCollection, provenance } = snsMessage;
 
@@ -166,7 +189,9 @@ const migrateOffersToElastic = async (
       elasticClient,
     );
     elasticResult.push(...elasticChunkResult);
-    console.log(`Indexed ${elasticChunkResult.length} objects to elastic.`);
+    console.log(
+      `Indexed ${elasticChunkResult.length} objects to elastic in engine ${engineName}.`,
+    );
   }
 
   const errors = _.flatten(elasticResult.map(({ errors }) => errors));
@@ -178,9 +203,64 @@ const migrateOffersToElastic = async (
     result: elasticResult.length,
   };
 };
+/**
+ *
+ * @param {string} engineName
+ * @param {number} limit
+ * @param {number} chunkSize
+ */
+const deleteOldElasticOffers = async (
+  engineName,
+  limit,
+  chunkSize = UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE,
+) => {
+  const now = new Date();
+  const elasticClient = await getElasticClient();
+
+  const { results: offers } = await elasticClient.search(engineName, "a", {
+    page: { size: limit },
+    filters: { valid_through: { to: now } },
+  });
+
+  console.info(
+    `Found ${offers.length} offers to be removed from engine ${engineName}.`,
+  );
+
+  const elasticPromises = _.chain(offers)
+    .map((offer) => offer.id.raw)
+    .chunk(chunkSize)
+    .value();
+
+  const elasticResult = [];
+
+  for (const chunk of elasticPromises) {
+    const elasticChunkResult = await deleteElasticDocuments(
+      chunk,
+      engineName,
+      elasticClient,
+    );
+    elasticResult.push(...elasticChunkResult);
+    console.log(`Deleted ${elasticChunkResult.length} objects from elastic.`);
+  }
+
+  const errors = _.flatten(elasticResult.map(({ errors }) => errors));
+  console.info(`Errors from elastic deletion: ${errors.length}`);
+  console.info(`Deleted documents from elastic: ${elasticResult.length}`);
+
+  return {
+    result: elasticResult.length,
+  };
+};
 
 const indexElasticDocuments = async (documents, engineName, client) => {
   return client.indexDocuments(engineName, documents);
 };
+const deleteElasticDocuments = async (documentIds, engineName, client) => {
+  return client.destroyDocuments(engineName, documentIds);
+};
 
-module.exports = { handleSnsMigrateEvent, handleTriggerMigrateEvent };
+module.exports = {
+  handleSnsMigrateEvent,
+  handleTriggerMigrateEvent,
+  handleTriggerDeleteEvent,
+};

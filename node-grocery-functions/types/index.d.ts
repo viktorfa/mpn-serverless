@@ -11,6 +11,10 @@ export interface HandleOffersEvent {
   storeInS3?: boolean;
   limit?: number;
 }
+export interface DeleteElasticEvent {
+  engineName: string;
+  limit?: number;
+}
 
 export interface SnsRecord<Message> {
   Sns: { Message: Message };
