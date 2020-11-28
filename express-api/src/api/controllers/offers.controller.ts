@@ -2,9 +2,12 @@ import _ from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route, URL } from "typera-express";
 import {
+  addTagToOffers,
   findOne,
   findOneFull,
+  getOfferUrisForTags,
   getPromotionsCollection,
+  getTagsForOffer,
 } from "@/api/services/offers";
 import { search as searchElastic } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
@@ -14,28 +17,52 @@ import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
+import { getBoolean, getStringList } from "./request-param-parsing";
+import { FilterQuery } from "mongodb";
 
 const offersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
+  tags: t.union([t.string, t.undefined]),
+  limit: t.union([t.string, t.undefined]),
 });
 
+interface ListOffersResponse {
+  items: MpnOffer[];
+}
+
 export const list: Route<
-  Response.Ok<MpnOffer[]> | Response.BadRequest<string>
+  Response.Ok<ListOffersResponse> | Response.BadRequest<string>
 > = route
   .get("/")
   .use(Parser.query(offersQueryParams))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const {
+      productCollection = DEFAULT_PRODUCT_COLLECTION,
+      tags,
+      limit,
+    } = request.query;
+
+    let _limit = Number.parseInt(limit)
+      ? 32
+      : Math.min(128, Number.parseInt(limit));
 
     const offersCollection = await getCollection(productCollection);
 
     const now = getNowDate();
+    const selection: FilterQuery<FullMpnOffer> = {
+      validThrough: { $gte: now },
+    };
+    if (tags) {
+      selection.uri = { $in: await getOfferUrisForTags(getStringList(tags)) };
+    }
+    console.log("GET list");
+    console.log(selection);
     const offers = await offersCollection
-      .find<MpnOffer>({ validThrough: { $gte: now } })
+      .find<MpnOffer>(selection)
       .project(defaultOfferProjection)
-      .limit(16)
+      .limit(_limit)
       .toArray();
-    return Response.ok(offers);
+    return Response.ok({ items: offers });
   });
 
 export const addToElastic: Route<
@@ -80,7 +107,7 @@ export const similar: Route<
   .use(Parser.query(similarOffersQueryParams))
   .handler(async (request) => {
     const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
-    const useSearch = ["1", "true"].includes(request.query.useSearch);
+    const useSearch = getBoolean(request.query.useSearch);
 
     const offersCollection = await getCollection(productCollection);
 
@@ -259,3 +286,28 @@ export const relatedOffers: Route<
       return Response.notFound();
     }
   });
+
+const addTagToOffersBody = t.type({
+  offerUris: t.array(t.string),
+  tag: t.string,
+});
+
+export const postAddTagToOffers: Route<
+  Response.NoContent<any> | Response.BadRequest<string>
+> = route
+  .post("/tags")
+  .use(Parser.body(addTagToOffersBody))
+  .handler(async (request) => {
+    if (request.body.offerUris.length === 0) {
+      return Response.badRequest("Need at least on offer uri.");
+    }
+    return Response.noContent(
+      await addTagToOffers(request.body.offerUris, request.body.tag),
+    );
+  });
+
+export const getTagsForOfferHandler: Route<
+  Response.Ok<string[]> | Response.BadRequest<string>
+> = route.post("/", URL.str("id"), "/tags").handler(async (request) => {
+  return Response.ok(await getTagsForOffer(request.routeParams.id));
+});

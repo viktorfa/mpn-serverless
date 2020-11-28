@@ -166,3 +166,19 @@ interface OfferReview {
   uri: string;
   rating: RatingScoreType;
 }
+
+interface OfferTag {
+  uri: string;
+  tag: string;
+  validThrough?: Date;
+  selectionType: "manual" | "ml" | "automatic";
+}
+
+interface SimilarOffersObject {
+  offers: MpnOffer[];
+  title: string;
+}
+
+type ListResponse<T> = {
+  items: T[];
+};

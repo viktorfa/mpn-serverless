@@ -13,3 +13,8 @@ export const getNowDate = (): Date => {
   now.setMinutes(0);
   return now;
 };
+export const getDaysAhead = (days: number): Date => {
+  const result = new Date();
+  result.setDate(result.getDate() + days);
+  return result;
+};

@@ -7,6 +7,8 @@ import {
   similar,
   addToElastic,
   relatedOffers,
+  postAddTagToOffers,
+  getTagsForOfferHandler,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -26,4 +28,6 @@ export default router(
   searchPathParam,
   find,
   relatedOffers,
+  postAddTagToOffers,
+  getTagsForOfferHandler,
 ).handler();

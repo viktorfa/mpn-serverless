@@ -106,3 +106,19 @@ export const getOfferBiRelations = async (
     ),
   };
 };
+
+export const getBiRelationsForOfferUris = async (
+  uris: string[],
+  collectionName: string,
+): Promise<string[][]> => {
+  const biRelationsOffersCollection = await getCollection(
+    `${getStrippedProductCollectionName(collectionName)}birelations`,
+  );
+  const biRelations = await biRelationsOffersCollection
+    .find<IdenticalOfferRelation>({
+      offerSet: { $in: uris },
+    })
+    .toArray();
+
+  return biRelations.map((x) => x.offerSet);
+};
