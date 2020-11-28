@@ -105,7 +105,8 @@ export const similar: Route<
       );
     }
 
-    if (useSearch === true || !offerHasSimilarOffers) {
+    //if (useSearch === true || !offerHasSimilarOffers) {
+    if (!offerHasSimilarOffers) {
       return Response.ok(
         await searchElastic(offer.title, getEngineName(productCollection), 32),
       );
