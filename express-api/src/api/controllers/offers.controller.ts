@@ -6,7 +6,6 @@ import {
   findOne,
   findOneFull,
   getOfferUrisForTags,
-  getPromotionsCollection,
   getTagsForOffer,
 } from "@/api/services/offers";
 import { search as searchElastic } from "@/api/services/search";
@@ -18,7 +17,7 @@ import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
-import { FilterQuery } from "mongodb";
+import { FilterQuery, QuerySelector } from "mongodb";
 
 const offersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -181,49 +180,44 @@ export const promoted: Route<
   .get("/promoted")
   .use(Parser.query(offersQueryParams))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const PROMOTED_OFFERS_LIMIT = 32;
+    const {
+      productCollection = DEFAULT_PRODUCT_COLLECTION,
+      limit,
+    } = request.query;
 
-    const promotionCollection = await getPromotionsCollection(
-      productCollection,
-    );
+    const _limit = Number.parseInt(limit)
+      ? Number.parseInt(limit)
+      : PROMOTED_OFFERS_LIMIT;
+
+    const promotedOfferUris = await getOfferUrisForTags(["promoted"]);
+
     const now = getNowDate();
-    const promotions = await promotionCollection
-      .find({
-        validThrough: { $gte: now },
-        select_method: "manual",
-      })
-      .limit(64)
-      .toArray();
-
-    const strippedProductCollection = productCollection.endsWith("s")
-      ? `${productCollection.substring(0, productCollection.length - 1)}`
-      : productCollection;
-
-    const promotionIds = promotions.map((x) => x[strippedProductCollection]);
+    const selection: Record<string, any> = {
+      validThrough: { $gte: now },
+      uri: { $in: promotedOfferUris },
+    };
 
     const offerCollection = await getCollection(productCollection);
 
     const promotedOffers = await offerCollection
-      .find<MpnMongoOffer>({
-        _id: { $in: promotionIds },
-        validThrough: { $gte: now },
-      })
-      .project(defaultOfferProjection)
+      .find(selection, defaultOfferProjection)
+      .limit(_limit)
       .toArray();
 
     const result = [...promotedOffers];
 
-    if (promotedOffers.length < 16) {
+    if (promotedOffers.length < _limit) {
       const extraOffers = await offerCollection
         .find({ validThrough: { $gte: now } })
         .project(defaultOfferProjection)
         .sort({ pageviews: -1 })
-        .limit(32 - promotedOffers.length)
+        .limit(_limit - promotedOffers.length)
         .toArray();
       result.push(...extraOffers);
     }
 
-    return Response.ok(_.take(result, 32));
+    return Response.ok(_.take(result, _limit));
   });
 
 export const find: Route<
@@ -308,6 +302,6 @@ export const postAddTagToOffers: Route<
 
 export const getTagsForOfferHandler: Route<
   Response.Ok<string[]> | Response.BadRequest<string>
-> = route.post("/", URL.str("id"), "/tags").handler(async (request) => {
+> = route.get("/", URL.str("id"), "/tags").handler(async (request) => {
   return Response.ok(await getTagsForOffer(request.routeParams.id));
 });
