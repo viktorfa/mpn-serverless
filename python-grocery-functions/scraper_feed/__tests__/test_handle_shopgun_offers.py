@@ -47,7 +47,9 @@ class TestHandleShopgunOffers(TestCase):
             },
         }
 
-        actual = transform_shopgun_product(shopgun_product)
+        actual = transform_shopgun_product(
+            shopgun_product, {"provenance": "shopgun_grocery"}
+        )
         self.assertEqual(actual["title"], shopgun_product["heading"])
         self.assertEqual(
             pydash.get(actual, ["quantity", "size", "amount", "min"]), 365,

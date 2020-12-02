@@ -4,13 +4,12 @@ from util.helpers import (
     json_time_to_datetime,
     get_product_uri,
 )
-from util.enums import provenances
 from scraper_feed.helpers import get_provenance_id, get_product_pricing
 from parsing.quantity_extraction import parse_quantity
-from amp_types.amp_product import MpnOffer
+from amp_types.amp_product import HandleConfig, MpnOffer
 
 
-def transform_shopgun_product(product: dict) -> MpnOffer:
+def transform_shopgun_product(product: dict, config: HandleConfig) -> MpnOffer:
     analyzed_product = parse_quantity(
         list(v for k, v in product.items() if k in ["description", "heading"] and v)
     )
@@ -18,14 +17,14 @@ def transform_shopgun_product(product: dict) -> MpnOffer:
     quantity = get_shopgun_quantity(product.get("quantity"))
     return dict(
         provenanceId=provenanceId,
-        provenance=provenances.SHOPGUN,
+        provenance=config["provenance"],
         validFrom=json_time_to_datetime(product.get("run_from")),
         validThrough=json_time_to_datetime(product.get("run_till")),
         dealer=product.get("branding", {}).get("name"),
         title=product.get("heading"),
         description=product.get("description"),
         brand=product.get("brand"),
-        href=get_shopgun_href(product),
+        href=get_shopgun_href(product, config["provenance"]),
         imageUrl=product.get("images", {}).get("zoom"),
         uri=get_product_uri("shopgun", provenanceId),
         stores=product.get("stores", []),

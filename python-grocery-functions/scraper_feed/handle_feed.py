@@ -1,3 +1,4 @@
+import os
 import boto3
 import json
 from pymongo.results import BulkWriteResult
@@ -30,7 +31,11 @@ def handle_feed(feed: list, config: ScraperConfig) -> BulkWriteResult:
     products = add_affiliate_links(products)
 
     try:
-        result = save_scraped_products(products, _config["collection_name"])
+        # Only 512 offers when in dev to avoid filling up Elastic Search storage
+        if os.getenv("STAGE") == "dev":
+            result = save_scraped_products(products[:512], _config["collection_name"])
+        else:
+            result = save_scraped_products(products, _config["collection_name"])
     except Exception as e:
         log_traceback(e)
         raise e

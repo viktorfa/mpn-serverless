@@ -39,9 +39,12 @@ def get_kolonial_image_url(url: str) -> str:
         return url
 
 
-def get_shopgun_href(product) -> str:
-    return "https://etilbudsavis.no/publications/paged/{}/pages/{}".format(
-        product.get("catalog_id"), product.get("catalog_page")
+def get_shopgun_href(product, provenance: str) -> str:
+    base_url = "etilbudsavis.no"
+    if "se_" in provenance:
+        base_url = "ereklamblad.se"
+    return "https://{}/publications/paged/{}/pages/{}".format(
+        base_url, product.get("catalog_id"), product.get("catalog_page")
     )
 
 

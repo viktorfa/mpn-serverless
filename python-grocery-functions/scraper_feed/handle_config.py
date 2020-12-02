@@ -15,6 +15,7 @@ DEFAULT_OFFER_COLLECTION_NAME = "mpnoffer"
 def generate_handle_config(config: dict) -> HandleConfig:
     result = {}
     result["provenance"] = config["provenance"]
+    result["namespace"] = config.get("namespace")
     result["collection_name"] = config["collection_name"]
     result["categoriesLimits"] = get(
         config, ["additionalConfig", "categoriesLimits"], []

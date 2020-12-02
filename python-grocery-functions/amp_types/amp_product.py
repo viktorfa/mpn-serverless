@@ -116,4 +116,5 @@ class HandleConfig(TypedDict):
     categoriesLimits: List[int]
     ignore_none: bool
     provenance: str
+    namespace: str
     collection_name: str

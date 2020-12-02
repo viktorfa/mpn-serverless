@@ -83,25 +83,27 @@ def get_categories(categories, categories_limits):
 def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
-    if config["provenance"] == provenances.SHOPGUN:
-        result = transform_shopgun_product(offer)
-    elif config["provenance"] == provenances.SHOPGUN_BYGG:
-        result = transform_shopgun_product(offer)
+    if "shopgun" in config["provenance"]:
+        result = transform_shopgun_product(offer, config)
     else:
         # Start here for everything not Shopgun offer.
         offer = transform_fields(offer, config["fieldMapping"])
         result: MpnOffer = {}
 
+        namespace = config.get("namespace") or config["provenance"]
         provenanceId = get_provenance_id(offer)
         result["provenanceId"] = provenanceId
-        result["uri"] = get_product_uri(
-            offer.get("dealer", config["provenance"]), provenanceId
-        )
+        result["uri"] = get_product_uri(namespace, provenanceId)
         result["pricing"] = get_product_pricing({**offer, **result})
         result["validThrough"] = time.one_week_ahead
         result["validFrom"] = time.time
         result["dealer"] = offer.get("dealer", config["provenance"])
         result["gtins"] = get_gtins({**offer, **result})
+
+        try:
+            result["imageUrl"] = result["imageUrl"].replace("http://", "https://")
+        except Exception:
+            pass
 
         # Handle quantity from scraper by parsing it like a string
         extra_quantity_string = " ".join(

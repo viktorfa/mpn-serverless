@@ -1,4 +1,3 @@
-from amp_types.amp_product import HandleConfig
 import json
 from unittest import TestCase
 from pprint import pprint
