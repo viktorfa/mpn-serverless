@@ -1,7 +1,9 @@
 import { Parser, Response, Route, route, URL } from "typera-express";
 import * as t from "io-ts";
-import { addReview, getReviewsCollection } from "../services/reviews";
+import { addReview } from "../services/reviews";
 import { findOne } from "../services/offers";
+import { getCollection } from "@/config/mongo";
+import { offerReviewsCollectionName } from "../utils/constants";
 
 const productCollectionQueryParams = t.type({
   productCollection: t.string,
@@ -28,22 +30,15 @@ export const add: Route<
   | Response.BadRequest<string>
 > = route
   .post("/")
-  .use(Parser.query(productCollectionQueryParams))
   .use(Parser.body(addOfferRelationBody))
   .handler(async (request) => {
-    const offer = await findOne(
-      request.body.review.uri,
-      request.query.productCollection,
-    );
+    const offer = await findOne(request.body.review.uri);
     if (!offer) {
       return Response.notFound(
         `Offer with uri ${request.body.review.uri} not found.`,
       );
     }
-    const createReviewResult = await addReview(
-      request.body.review,
-      request.query.productCollection,
-    );
+    const createReviewResult = await addReview(request.body.review);
 
     return Response.created(createReviewResult);
   });
@@ -54,9 +49,7 @@ export const getReviews: Route<
   .get("/", URL.str("uri"))
   .use(Parser.query(productCollectionQueryParams))
   .handler(async (request) => {
-    const reviewCollection = await getReviewsCollection(
-      request.query.productCollection,
-    );
+    const reviewCollection = await getCollection(offerReviewsCollectionName);
     return Response.ok(
       await reviewCollection.find({ uri: request.routeParams.uri }).toArray(),
     );

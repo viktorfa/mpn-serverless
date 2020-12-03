@@ -1,20 +1,18 @@
 import { Parser, Response, Route, route } from "typera-express";
 import * as t from "io-ts";
-import { NotImplemented } from "typera-express/response";
 import {
   addOfferToComparisons,
   createOrUpdateComparisonConfig,
   getComparisonConfig,
   getComparisonInstance,
 } from "../services/comparisons";
-import { request } from "express";
 
 const comparisonDataQueryParams = t.type({
   categories: t.union([t.string, t.undefined]),
 });
 const comparisonQueryParams = t.type({
   categories: t.string,
-  productCollection: t.union([t.string, t.undefined]),
+  productCollection: t.string,
 });
 
 export const getData: Route<
@@ -30,7 +28,7 @@ export const getData: Route<
   });
 
 export const getBors: Route<
-  Response.Ok<ComparisonInstance> | Response.BadRequest<string> | NotImplemented
+  Response.Ok<ComparisonInstance> | Response.BadRequest<string>
 > = route
   .get("/")
   .use(Parser.query(comparisonQueryParams))

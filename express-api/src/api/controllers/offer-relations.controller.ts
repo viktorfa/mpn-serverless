@@ -3,11 +3,7 @@ import * as t from "io-ts";
 import { Parser, Response, Route, route, URL } from "typera-express";
 import { addBiRelationalOffers } from "../services/offer-relations";
 import { findOne } from "../services/offers";
-import { DEFAULT_PRODUCT_COLLECTION, OfferRelation } from "../utils/constants";
-
-const productCollectionQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
-});
+import { offerCollectionName, OfferRelation } from "../utils/constants";
 
 const addOfferRelationBody = t.type({
   uri: t.string,
@@ -24,18 +20,15 @@ export const addIdenticalOffers: Route<
   | Response.BadRequest<string>
 > = route
   .put("/")
-  .use(Parser.query(productCollectionQueryParams))
   .use(Parser.body(addOfferRelationBody))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
-
-    const sourceOffer = await findOne(request.body.uri, productCollection);
+    const sourceOffer = await findOne(request.body.uri);
     if (!sourceOffer) {
       return Response.notFound(
         `Source offer with uri ${request.body.uri} not found.`,
       );
     }
-    const offersCollection = await getCollection(productCollection);
+    const offersCollection = await getCollection(offerCollectionName);
     const targetOffers = await offersCollection
       .find({
         uri: { $in: request.body.targetUris },
@@ -55,7 +48,6 @@ export const addIdenticalOffers: Route<
     ) {
       const dbResult = await addBiRelationalOffers(
         [sourceOffer, ...targetOffers],
-        productCollection,
         request.body.relationType,
       );
       return Response.ok(dbResult);

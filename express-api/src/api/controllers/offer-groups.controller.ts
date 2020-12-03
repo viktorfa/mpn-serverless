@@ -6,7 +6,6 @@ import {
 } from "@/api/services/offers";
 
 const offerGroupsQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
   tags: t.string,
   limit: t.union([t.string, t.undefined]),
 });
@@ -17,7 +16,7 @@ export const getOfferGroups: Route<
   .get("/")
   .use(Parser.query(offerGroupsQueryParams))
   .handler(async (request) => {
-    const { tags, limit, productCollection } = request.query;
+    const { tags, limit } = request.query;
 
     const offerUris = await getOfferUrisForTags(
       tags.split(","),
@@ -25,9 +24,6 @@ export const getOfferGroups: Route<
     );
 
     return Response.ok({
-      items: await getSimilarGroupedOffersFromOfferUris(
-        offerUris,
-        productCollection,
-      ),
+      items: await getSimilarGroupedOffersFromOfferUris(offerUris),
     });
   });

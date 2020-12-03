@@ -1,24 +1,20 @@
 import { getCollection } from "@/config/mongo";
 import { Collection, ObjectId } from "mongodb";
-import { getStrippedProductCollectionName } from "../models/utils";
-import { OfferRelation } from "../utils/constants";
+import { OfferRelation, offerRelationCollectionName } from "../utils/constants";
 
-export const getOfferRelationsCollection = async (
-  collectionName: string,
-): Promise<Collection> => {
+export const getOfferRelationsCollection = async (): Promise<Collection> => {
   const promotionCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}relations`,
+    `${offerRelationCollectionName}relations`,
   );
   return promotionCollection;
 };
 
 export const addBiRelationalOffers = async (
   offers: MpnMongoOffer[],
-  collectionName: string,
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
   const biRelationsOffersCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}birelations`,
+    `${offerRelationCollectionName}birelations`,
   );
 
   const offerUris = Array.from(new Set(offers.map((x) => x.uri)));
@@ -27,8 +23,6 @@ export const addBiRelationalOffers = async (
     offerSet: { $in: offerUris },
     relationType: relationType,
   });
-  console.log("existingRelation");
-  console.log(existingRelation);
   let mongoResult = null;
   if (existingRelation) {
     mongoResult = await biRelationsOffersCollection.updateOne(
@@ -51,11 +45,10 @@ export const addBiRelationalOffers = async (
 };
 export const removeBiRelationalOffer = async (
   offer: MpnMongoOffer,
-  collectionName: string,
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
   const biRelationsOffersCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}birelations`,
+    `${offerRelationCollectionName}birelations`,
   );
 
   const existingRelation = await biRelationsOffersCollection.findOne({
@@ -87,10 +80,9 @@ export const removeBiRelationalOffer = async (
 
 export const getOfferBiRelations = async (
   uri: string,
-  collectionName: string,
 ): Promise<Record<string, IdenticalOfferRelation>> => {
   const biRelationsOffersCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}birelations`,
+    `${offerRelationCollectionName}birelations`,
   );
   const relationObjects = await biRelationsOffersCollection
     .find({
@@ -109,10 +101,9 @@ export const getOfferBiRelations = async (
 
 export const getBiRelationsForOfferUris = async (
   uris: string[],
-  collectionName: string,
 ): Promise<string[][]> => {
   const biRelationsOffersCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}birelations`,
+    `${offerRelationCollectionName}birelations`,
   );
   const biRelations = await biRelationsOffersCollection
     .find<IdenticalOfferRelation>({

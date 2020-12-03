@@ -6,38 +6,45 @@ import {
   querySuggestion as querySuggestionElastic,
   registerClick as registerClickElastic,
 } from "@/api/services/search";
-import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
 import { stage } from "@/config/vars";
+import {
+  getLimitFromQueryParam,
+  productCollectionAndLimitQueryParams,
+  productCollectionQueryParams,
+} from "./typera-types";
 
 export const getEngineName = (productCollectionName: string): string => {
-  let result = "";
-  if (productCollectionName.endsWith("s")) {
-    result = productCollectionName;
-  } else {
-    result = `${productCollectionName}s`;
-  }
   if (stage === "prod") {
-    return result;
+    return productCollectionName;
   } else {
-    return `${result}-dev`;
+    return `${productCollectionName}-dev`;
   }
 };
 
 const filterDuplicateOffers = (offers: MpnResultOffer[]): MpnResultOffer[] =>
   _.uniqBy(offers, (x) => x.dealer + x.pricing.price + x.title);
 
-const productCollectionQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
-});
-const productCollectionAndLimitQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
-  limit: t.union([t.number, t.undefined]),
-});
 const searchQueryParams = t.type({
   query: t.string,
-  productCollection: t.union([t.string, t.undefined]),
-  limit: t.union([t.number, t.undefined]),
+  productCollection: t.string,
+  limit: t.union([t.string, t.undefined]),
 });
+
+export const searchExtra: Route<
+  Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
+> = route
+  .get("/searchextra")
+  .use(Parser.query(searchQueryParams))
+  .handler(async (request) => {
+    const { limit, query } = request.query;
+    const _limit = getLimitFromQueryParam(limit, 8);
+
+    const productCollection = "extraoffers";
+    const searchResults = await searchElastic(query, productCollection, _limit);
+    return Response.ok(
+      filterDuplicateOffers(searchResults.filter((offer) => offer.score > 20)),
+    );
+  });
 
 export const search: Route<
   Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
@@ -45,15 +52,13 @@ export const search: Route<
   .get("/search")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
-    const {
-      limit = 256,
-      query,
-      productCollection = DEFAULT_PRODUCT_COLLECTION,
-    } = request.query;
+    const { limit, query, productCollection } = request.query;
+    const _limit = getLimitFromQueryParam(limit, 256);
+
     const searchResults = await searchElastic(
       query,
       getEngineName(productCollection),
-      limit,
+      _limit,
     );
     return Response.ok(filterDuplicateOffers(searchResults));
   });
@@ -64,14 +69,12 @@ export const searchPathParam: Route<
   .use(Parser.query(productCollectionAndLimitQueryParams))
   .handler(async (request) => {
     const query = request.routeParams.query;
-    const {
-      productCollection = DEFAULT_PRODUCT_COLLECTION,
-      limit = 256,
-    } = request.query;
+    const { productCollection, limit } = request.query;
+    const _limit = getLimitFromQueryParam(limit, 256);
     const searchResults = await searchElastic(
       query,
       getEngineName(productCollection),
-      limit,
+      _limit,
     );
     return Response.ok(filterDuplicateOffers(searchResults));
   });
@@ -82,7 +85,7 @@ export const querySuggestion: Route<
   .get("/search/hint")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const { productCollection } = request.query;
     const query = request.query.query;
     const searchResults = await querySuggestionElastic(
       query,
@@ -105,7 +108,7 @@ export const registerClick: Route<
   .use(Parser.query(productCollectionQueryParams))
   .use(Parser.body(registerClickBody))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const { productCollection } = request.query;
     try {
       await registerClickElastic(
         request.body,

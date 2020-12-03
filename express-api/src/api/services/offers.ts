@@ -1,19 +1,10 @@
 import { getCollection } from "@/config/mongo";
 import { flatten } from "lodash";
-import { ObjectId, Collection, FindOneOptions, FilterQuery } from "mongodb";
+import { ObjectId, FindOneOptions, FilterQuery } from "mongodb";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
-import { getStrippedProductCollectionName } from "../models/utils";
+import { offerCollectionName } from "../utils/constants";
 import { getDaysAhead, getNowDate, isMongoUri } from "../utils/helpers";
 import { getBiRelationsForOfferUris } from "./offer-relations";
-
-export const getPromotionsCollection = async (
-  collectionName: string,
-): Promise<Collection> => {
-  const promotionCollection = await getCollection(
-    `${getStrippedProductCollectionName(collectionName)}promotions`,
-  );
-  return promotionCollection;
-};
 
 const getFindOneFilter = (
   id: string,
@@ -25,45 +16,52 @@ const getFindOneFilter = (
   }
 };
 
-export const findOne = async (
-  id: string,
-  collectionName: string,
-): Promise<MpnOffer> => {
-  const offersCollection = await getCollection(collectionName);
+export const findOne = async (id: string): Promise<MpnOffer> => {
+  const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
   return offersCollection.findOne<MpnOffer>(filter, {
     projection: defaultOfferProjection,
   });
 };
-export const findOneFull = async (
-  id: string,
-  collectionName: string,
-): Promise<FullMpnOffer> => {
-  const offersCollection = await getCollection(collectionName);
+export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
+  const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
   return offersCollection.findOne<FullMpnOffer>(filter);
 };
 
-export const getOffers = async (
-  collectionName: string,
+export const getOffersForSiteCollection = async (
+  siteCollection: string,
   selection: FilterQuery<FullMpnOffer> = {},
   projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
   limit: number = 30,
 ): Promise<MpnOffer[]> => {
-  const offersCollection = await getCollection(collectionName);
+  const offersCollection = await getCollection(offerCollectionName);
   const now = getNowDate();
   selection.validThrough = { $gte: now };
+  selection.siteCollection = siteCollection;
+  return getOffers(selection, projection, limit);
+};
+
+export const getOffers = async (
+  selection: FilterQuery<FullMpnOffer> = {},
+  projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
+  limit: number = 30,
+): Promise<MpnOffer[]> => {
+  const offersCollection = await getCollection(offerCollectionName);
+  const now = getNowDate();
+  selection.validThrough = { $gte: now };
+
   return offersCollection.find(selection, projection).limit(limit).toArray();
 };
+
 export const getOffersByUris = async (
   uris: string[],
-  collectionName: string,
   projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
 ): Promise<MpnOffer[]> => {
   const selection = {
     uri: { $in: uris },
   };
-  return getOffers(collectionName, selection, projection, uris.length);
+  return getOffers(selection, projection, uris.length);
 };
 
 export const getOfferUrisForTags = async (
@@ -83,16 +81,13 @@ export const getOfferUrisForTags = async (
     })
     .limit(limit)
     .toArray();
-  console.log("getOfferUrisForTags");
-  console.log(tagObjects);
   return tagObjects.map((x) => x.uri);
 };
 
 export const getOffersWithTags = async (
   tags: string[],
-  collectionName: string,
 ): Promise<MpnOffer[]> => {
-  return getOffersByUris(await getOfferUrisForTags(tags), collectionName);
+  return getOffersByUris(await getOfferUrisForTags(tags));
 };
 
 export const addTagToOffers = async (offerUris: string[], tag: string) => {
@@ -142,11 +137,10 @@ export const getTagsForOffer = async (uri: string): Promise<string[]> => {
 
 export const getOffersInUriGroups = async (
   uriGroups: string[][],
-  collectionName: string,
 ): Promise<SimilarOffersObject[]> => {
   const uris = flatten(uriGroups);
 
-  const offers = await getOffersByUris(uris, collectionName);
+  const offers = await getOffersByUris(uris);
 
   const uriToOfferMap = offers.reduce((acc, offer) => {
     return { ...acc, [offer.uri]: offer };
@@ -166,17 +160,8 @@ export const getOffersInUriGroups = async (
 
 export const getSimilarGroupedOffersFromOfferUris = async (
   uris: string[],
-  collectionName: string,
 ): Promise<SimilarOffersObject[]> => {
-  const biRelationGroups = await getBiRelationsForOfferUris(
-    uris,
-    collectionName,
-  );
-  console.log("uris");
-  console.log(uris);
-
-  console.log("biRelationGroups");
-  console.log(biRelationGroups);
+  const biRelationGroups = await getBiRelationsForOfferUris(uris);
 
   const offerGroups = [...biRelationGroups];
 
@@ -190,5 +175,5 @@ export const getSimilarGroupedOffersFromOfferUris = async (
   console.log("offerGroups");
   console.log(offerGroups);
 
-  return getOffersInUriGroups(offerGroups, collectionName);
+  return getOffersInUriGroups(offerGroups);
 };

@@ -5,22 +5,29 @@ import {
   addTagToOffers,
   findOne,
   findOneFull,
+  getOffersForSiteCollection,
   getOfferUrisForTags,
   getTagsForOffer,
 } from "@/api/services/offers";
 import { search as searchElastic } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getNowDate } from "../utils/helpers";
-import { DEFAULT_PRODUCT_COLLECTION } from "../utils/constants";
 import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
-import { FilterQuery, QuerySelector } from "mongodb";
+import { FilterQuery } from "mongodb";
+import { offerCollectionName } from "../utils/constants";
+import {
+  getLimitFromQueryParam,
+  limitQueryParams,
+  productCollectionAndLimitQueryParams,
+  productCollectionQueryParams,
+} from "./typera-types";
 
 const offersQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
+  productCollection: t.string,
   tags: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
 });
@@ -35,46 +42,34 @@ export const list: Route<
   .get("/")
   .use(Parser.query(offersQueryParams))
   .handler(async (request) => {
-    const {
-      productCollection = DEFAULT_PRODUCT_COLLECTION,
-      tags,
-      limit,
-    } = request.query;
+    const { productCollection, tags, limit } = request.query;
 
-    let _limit = Number.parseInt(limit)
-      ? 32
-      : Math.min(128, Number.parseInt(limit));
+    let _limit = getLimitFromQueryParam(limit, 32, 128);
 
-    const offersCollection = await getCollection(productCollection);
-
-    const now = getNowDate();
-    const selection: FilterQuery<FullMpnOffer> = {
-      validThrough: { $gte: now },
-    };
+    const selection: FilterQuery<FullMpnOffer> = {};
     if (tags) {
       selection.uri = { $in: await getOfferUrisForTags(getStringList(tags)) };
     }
-    console.log("GET list");
-    console.log(selection);
-    const offers = await offersCollection
-      .find<MpnOffer>(selection)
-      .project(defaultOfferProjection)
-      .limit(_limit)
-      .toArray();
-    return Response.ok({ items: offers });
+    const result = await getOffersForSiteCollection(
+      productCollection,
+      selection,
+      defaultOfferProjection,
+      _limit,
+    );
+    return Response.ok({ items: result });
   });
 
 export const addToElastic: Route<
   Response.NoContent | Response.NotFound<string> | Response.BadRequest<string>
 > = route
   .put("/elastic/", URL.str("id"))
-  .use(Parser.query(offersQueryParams))
+  .use(Parser.query(productCollectionQueryParams))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const { productCollection } = request.query;
 
     let offer: FullMpnOffer;
     try {
-      offer = await findOneFull(request.routeParams.id, productCollection);
+      offer = await findOneFull(request.routeParams.id);
       if (!offer) {
         throw new Error();
       }
@@ -93,7 +88,7 @@ export const addToElastic: Route<
   });
 
 const similarOffersQueryParams = t.type({
-  productCollection: t.union([t.string, t.undefined]),
+  productCollection: t.string,
   useSearch: t.union([t.string, t.undefined]),
 });
 
@@ -105,14 +100,14 @@ export const similar: Route<
   .get("/similar/", URL.str("id"))
   .use(Parser.query(similarOffersQueryParams))
   .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+    const { productCollection } = request.query;
     const useSearch = getBoolean(request.query.useSearch);
 
-    const offersCollection = await getCollection(productCollection);
+    const offersCollection = await getCollection(offerCollectionName);
 
     let offer: FullMpnOffer;
     try {
-      offer = await findOneFull(request.routeParams.id, productCollection);
+      offer = await findOneFull(request.routeParams.id);
       if (!offer) {
         throw new Error();
       }
@@ -174,21 +169,84 @@ export const similar: Route<
     return Response.ok(result);
   });
 
+export const similarExtra: Route<
+  | Response.Ok<MpnResultOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/similarextra/", URL.str("id"))
+  .use(Parser.query(limitQueryParams))
+  .handler(async (request) => {
+    const { limit } = request.query;
+
+    let _limit = getLimitFromQueryParam(limit, 5);
+
+    let offer: FullMpnOffer;
+    try {
+      offer = await findOneFull(request.routeParams.id);
+      if (!offer) {
+        throw new Error();
+      }
+    } catch (e) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+
+    const query = offer.title;
+
+    const searchResults = await searchElastic(query, "extraoffers", _limit);
+    return Response.ok(searchResults.filter((offer) => offer.score > 20));
+  });
+
+const similarFromExtraOffersQueryParams = t.type({
+  limit: t.union([t.string, t.undefined]),
+  productCollection: t.string,
+});
+
+export const similarFromExtra: Route<
+  | Response.Ok<MpnResultOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/similarfromextra/", URL.str("id"))
+  .use(Parser.query(similarFromExtraOffersQueryParams))
+  .handler(async (request) => {
+    const { limit, productCollection } = request.query;
+    const _limit = getLimitFromQueryParam(limit, 5);
+
+    let offer: FullMpnOffer;
+    try {
+      offer = await findOneFull(request.routeParams.id);
+      if (!offer) {
+        throw new Error();
+      }
+    } catch (e) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+
+    const query = offer.title;
+
+    const searchResults = await searchElastic(
+      query,
+      getEngineName(productCollection),
+      _limit,
+    );
+
+    return Response.ok(searchResults.filter((offer) => offer.score > 10));
+  });
+
 export const promoted: Route<
   Response.Ok<MpnOffer[]> | Response.BadRequest<string>
 > = route
   .get("/promoted")
-  .use(Parser.query(offersQueryParams))
+  .use(Parser.query(productCollectionAndLimitQueryParams))
   .handler(async (request) => {
-    const PROMOTED_OFFERS_LIMIT = 32;
-    const {
-      productCollection = DEFAULT_PRODUCT_COLLECTION,
-      limit,
-    } = request.query;
+    const { limit, productCollection } = request.query;
 
-    const _limit = Number.parseInt(limit)
-      ? Number.parseInt(limit)
-      : PROMOTED_OFFERS_LIMIT;
+    let _limit = getLimitFromQueryParam(limit, 32);
 
     const promotedOfferUris = await getOfferUrisForTags(["promoted"]);
 
@@ -196,9 +254,10 @@ export const promoted: Route<
     const selection: Record<string, any> = {
       validThrough: { $gte: now },
       uri: { $in: promotedOfferUris },
+      siteCollection: productCollection,
     };
 
-    const offerCollection = await getCollection(productCollection);
+    const offerCollection = await getCollection(offerCollectionName);
 
     const promotedOffers = await offerCollection
       .find(selection, defaultOfferProjection)
@@ -209,7 +268,10 @@ export const promoted: Route<
 
     if (promotedOffers.length < _limit) {
       const extraOffers = await offerCollection
-        .find({ validThrough: { $gte: now } })
+        .find({
+          validThrough: { $gte: now },
+          siteCollection: productCollection,
+        })
         .project(defaultOfferProjection)
         .sort({ pageviews: -1 })
         .limit(_limit - promotedOffers.length)
@@ -222,64 +284,51 @@ export const promoted: Route<
 
 export const find: Route<
   Response.Ok<MpnOffer> | Response.NotFound | Response.BadRequest<string>
-> = route
-  .get("/", URL.str("id"))
-  .use(Parser.query(offersQueryParams))
-  .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
-
-    try {
-      const offer = await findOne(request.routeParams.id, productCollection);
-      return Response.ok(offer);
-    } catch (e) {
-      return Response.notFound();
-    }
-  });
+> = route.get("/", URL.str("id")).handler(async (request) => {
+  try {
+    const offer = await findOne(request.routeParams.id);
+    return Response.ok(offer);
+  } catch (e) {
+    return Response.notFound();
+  }
+});
 
 export const relatedOffers: Route<
   | Response.Ok<{ identical: MpnOffer[]; interchangeable: MpnOffer[] }>
   | Response.NotFound
   | Response.BadRequest<string>
-> = route
-  .get("/", URL.str("id"), "/related")
-  .use(Parser.query(offersQueryParams))
-  .handler(async (request) => {
-    const { productCollection = DEFAULT_PRODUCT_COLLECTION } = request.query;
+> = route.get("/", URL.str("id"), "/related").handler(async (request) => {
+  const offerCollection = await getCollection(offerCollectionName);
 
-    const offerCollection = await getCollection(productCollection);
+  try {
+    const relationResults = await getOfferBiRelations(request.routeParams.id);
+    const identicalUris = _.get(
+      relationResults,
+      ["identical", "offerSet"],
+      [],
+    ).filter((x) => x !== request.routeParams.id);
+    const interchangeableUris = _.get(
+      relationResults,
+      ["interchangeable", "offerSet"],
+      [],
+    ).filter((x) => x !== request.routeParams.id);
+    const offers = await offerCollection
+      .find({
+        uri: { $in: [...identicalUris, ...interchangeableUris] },
+      })
+      .project(defaultOfferProjection)
+      .toArray();
 
-    try {
-      const relationResults = await getOfferBiRelations(
-        request.routeParams.id,
-        productCollection,
-      );
-      const identicalUris = _.get(
-        relationResults,
-        ["identical", "offerSet"],
-        [],
-      ).filter((x) => x !== request.routeParams.id);
-      const interchangeableUris = _.get(
-        relationResults,
-        ["interchangeable", "offerSet"],
-        [],
-      ).filter((x) => x !== request.routeParams.id);
-      const offers = await offerCollection
-        .find({
-          uri: { $in: [...identicalUris, ...interchangeableUris] },
-        })
-        .project(defaultOfferProjection)
-        .toArray();
-
-      return Response.ok({
-        identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
-        interchangeable: offers.filter((offer) =>
-          interchangeableUris.includes(offer.uri),
-        ),
-      });
-    } catch (e) {
-      return Response.notFound();
-    }
-  });
+    return Response.ok({
+      identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
+      interchangeable: offers.filter((offer) =>
+        interchangeableUris.includes(offer.uri),
+      ),
+    });
+  } catch (e) {
+    return Response.notFound();
+  }
+});
 
 const addTagToOffersBody = t.type({
   offerUris: t.array(t.string),

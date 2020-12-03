@@ -1,5 +1,3 @@
-export const DEFAULT_PRODUCT_COLLECTION = "groceryoffer";
-
 export const OfferRelation: Record<OfferRelationType, OfferRelationType> = {
   identical: "identical",
   interchangeable: "interchangeable",
@@ -9,3 +7,7 @@ export const OfferRelation: Record<OfferRelationType, OfferRelationType> = {
   higherend: "higherend",
   usedtogether: "usedtogether",
 };
+
+export const offerCollectionName = "mpnoffers";
+export const offerRelationCollectionName = "offerrelations";
+export const offerReviewsCollectionName = "offerreviews";

@@ -1,3 +1,4 @@
+import { offerCollectionName } from "@/api/utils/constants";
 import { getCollection } from "@/config/mongo";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import _ from "lodash";
@@ -14,7 +15,7 @@ export const getComparisonConfig = async (
 };
 export const getComparisonInstance = async (
   categories: string[],
-  collectionName: string,
+  siteCollection: string,
 ): Promise<ComparisonInstance> => {
   const now = new Date();
 
@@ -28,12 +29,13 @@ export const getComparisonInstance = async (
     }),
   );
   const selection = {
+    siteCollection,
     uri: { $in: uris },
     validThrough: {
       $gt: now,
     },
   };
-  const collection = await getCollection(collectionName);
+  const collection = await getCollection(offerCollectionName);
   const offers = await collection
     .find(selection, defaultOfferProjection)
     .toArray();
