@@ -1,10 +1,13 @@
 import { getCollection } from "@/config/mongo";
 import { flatten } from "lodash";
 import { ObjectId, FindOneOptions, FilterQuery } from "mongodb";
-import { defaultOfferProjection } from "../models/mpnOffer.model";
-import { offerCollectionName } from "../utils/constants";
-import { getDaysAhead, getNowDate, isMongoUri } from "../utils/helpers";
-import { getBiRelationsForOfferUris } from "./offer-relations";
+import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
+import {
+  offerCollectionName,
+  offerTagsCollectionName,
+} from "@/api/utils/constants";
+import { getDaysAhead, getNowDate, isMongoUri } from "@/api/utils/helpers";
+import { getBiRelationsForOfferUris } from "@/api/services/offer-relations";
 
 const getFindOneFilter = (
   id: string,
@@ -68,7 +71,7 @@ export const getOfferUrisForTags = async (
   tags: string[],
   limit: number = 128,
 ): Promise<string[]> => {
-  const tagsCollection = await getCollection("offertags");
+  const tagsCollection = await getCollection(offerTagsCollectionName);
 
   const now = getNowDate();
   const tagObjects = await tagsCollection
@@ -91,7 +94,7 @@ export const getOffersWithTags = async (
 };
 
 export const addTagToOffers = async (offerUris: string[], tag: string) => {
-  const tagsCollection = await getCollection("offertags");
+  const tagsCollection = await getCollection(offerTagsCollectionName);
 
   const writeOperations = offerUris.map((uri) => {
     const update: Record<string, any> = {
@@ -120,7 +123,7 @@ export const addTagToOffers = async (offerUris: string[], tag: string) => {
 };
 
 export const getTagsForOffer = async (uri: string): Promise<string[]> => {
-  const tagsCollection = await getCollection("offertags");
+  const tagsCollection = await getCollection(offerTagsCollectionName);
 
   const now = getNowDate();
 
@@ -171,9 +174,6 @@ export const getSimilarGroupedOffersFromOfferUris = async (
       offerGroups.push([uri]);
     }
   });
-
-  console.log("offerGroups");
-  console.log(offerGroups);
 
   return getOffersInUriGroups(offerGroups);
 };

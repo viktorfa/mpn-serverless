@@ -9,8 +9,7 @@ import {
   relatedOffers,
   postAddTagToOffers,
   getTagsForOfferHandler,
-  similarExtra,
-  similarFromExtra,
+  extra,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -27,8 +26,7 @@ export default router(
   addToElastic,
   search,
   searchExtra,
-  similarExtra,
-  similarFromExtra,
+  extra,
   querySuggestion,
   registerClick,
   searchPathParam,

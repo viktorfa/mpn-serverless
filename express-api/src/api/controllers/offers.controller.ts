@@ -169,6 +169,39 @@ export const similar: Route<
     return Response.ok(result);
   });
 
+const extraOffersQueryParams = t.type({
+  productCollection: t.union([t.string, t.undefined]),
+  limit: t.union([t.string, t.undefined]),
+});
+
+export const extra: Route<
+  | Response.Ok<MpnResultOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/extra/", URL.str("id"))
+  .use(Parser.query(extraOffersQueryParams))
+  .handler(async (request) => {
+    const { limit, productCollection = "extraoffers" } = request.query;
+    let _limit = getLimitFromQueryParam(limit, 5);
+
+    let offer: FullMpnOffer;
+    try {
+      offer = await findOneFull(request.routeParams.id);
+      if (!offer) {
+        throw new Error();
+      }
+    } catch (e) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+
+    const query = offer.title;
+
+    const searchResults = await searchElastic(query, productCollection, _limit);
+    return Response.ok(searchResults.filter((offer) => offer.score > 20));
+  });
 export const similarExtra: Route<
   | Response.Ok<MpnResultOffer[]>
   | Response.BadRequest<string>
@@ -283,13 +316,20 @@ export const promoted: Route<
   });
 
 export const find: Route<
-  Response.Ok<MpnOffer> | Response.NotFound | Response.BadRequest<string>
+  | Response.Ok<MpnOffer>
+  | Response.NotFound<string>
+  | Response.BadRequest<string>
 > = route.get("/", URL.str("id")).handler(async (request) => {
   try {
     const offer = await findOne(request.routeParams.id);
+    if (!offer) {
+      throw new Error(`Could not find offer with id ${request.routeParams.id}`);
+    }
     return Response.ok(offer);
   } catch (e) {
-    return Response.notFound();
+    return Response.notFound(
+      `Could not find offer with id ${request.routeParams.id}`,
+    );
   }
 });
 

@@ -12,7 +12,6 @@ const comparisonDataQueryParams = t.type({
 });
 const comparisonQueryParams = t.type({
   categories: t.string,
-  productCollection: t.string,
 });
 
 export const getData: Route<
@@ -33,7 +32,6 @@ export const getBors: Route<
   .get("/")
   .use(Parser.query(comparisonQueryParams))
   .handler(async (request) => {
-    const { productCollection } = request.query;
     const { categories } = request.query;
     const categoriesList = categories
       ? categories
@@ -41,9 +39,7 @@ export const getBors: Route<
           .split(",")
           .filter((x) => !!x)
       : null;
-    return Response.ok(
-      await getComparisonInstance(categoriesList, productCollection.toString()),
-    );
+    return Response.ok(await getComparisonInstance(categoriesList));
   });
 
 const putComparisonRequestBody = t.type({

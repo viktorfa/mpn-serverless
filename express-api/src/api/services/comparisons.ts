@@ -1,12 +1,16 @@
-import { offerCollectionName } from "@/api/utils/constants";
+import _ from "lodash";
+
+import {
+  categoryComparisonsCollectionName,
+  offerCollectionName,
+} from "@/api/utils/constants";
 import { getCollection } from "@/config/mongo";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
-import _ from "lodash";
 
 export const getComparisonConfig = async (
   categories?: string[],
 ): Promise<ComparisonConfig> => {
-  const borsCollection = await getCollection("categorycomparisons");
+  const borsCollection = await getCollection(categoryComparisonsCollectionName);
   if (categories) {
     return borsCollection.find({ category: { $in: categories } }).toArray();
   } else {
@@ -15,7 +19,6 @@ export const getComparisonConfig = async (
 };
 export const getComparisonInstance = async (
   categories: string[],
-  siteCollection: string,
 ): Promise<ComparisonInstance> => {
   const now = new Date();
 
@@ -29,7 +32,6 @@ export const getComparisonInstance = async (
     }),
   );
   const selection = {
-    siteCollection,
     uri: { $in: uris },
     validThrough: {
       $gt: now,
@@ -71,7 +73,7 @@ interface OfferConfigPutParameters {
 export const addOfferToComparisons = async (
   config: OfferConfigPutParameters,
 ) => {
-  const borsCollection = await getCollection("categorycomparisons");
+  const borsCollection = await getCollection(categoryComparisonsCollectionName);
 
   return borsCollection.updateOne(
     { category: config.category, name: config.name },
@@ -82,7 +84,7 @@ export const addOfferToComparisons = async (
 export const createOrUpdateComparisonConfig = async (
   config: PutOfferConfig,
 ) => {
-  const borsCollection = await getCollection("categorycomparisons");
+  const borsCollection = await getCollection(categoryComparisonsCollectionName);
 
   const existingConfig = await borsCollection.findOne({
     category: config.category,

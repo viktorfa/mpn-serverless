@@ -9,5 +9,8 @@ export const OfferRelation: Record<OfferRelationType, OfferRelationType> = {
 };
 
 export const offerCollectionName = "mpnoffers";
-export const offerRelationCollectionName = "offerrelations";
 export const offerReviewsCollectionName = "offerreviews";
+export const offerBiRelationsCollectionName = "offerbirelations";
+export const offerRelationsCollectionName = "offerrelations";
+export const categoryComparisonsCollectionName = "categorycomparisons";
+export const offerTagsCollectionName = "offertags";

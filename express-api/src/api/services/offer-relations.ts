@@ -1,11 +1,13 @@
 import { getCollection } from "@/config/mongo";
 import { Collection, ObjectId } from "mongodb";
-import { OfferRelation, offerRelationCollectionName } from "../utils/constants";
+import {
+  offerBiRelationsCollectionName,
+  offerRelationsCollectionName,
+  OfferRelation,
+} from "@/api/utils/constants";
 
 export const getOfferRelationsCollection = async (): Promise<Collection> => {
-  const promotionCollection = await getCollection(
-    `${offerRelationCollectionName}relations`,
-  );
+  const promotionCollection = await getCollection(offerRelationsCollectionName);
   return promotionCollection;
 };
 
@@ -14,7 +16,7 @@ export const addBiRelationalOffers = async (
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
   const biRelationsOffersCollection = await getCollection(
-    `${offerRelationCollectionName}birelations`,
+    offerBiRelationsCollectionName,
   );
 
   const offerUris = Array.from(new Set(offers.map((x) => x.uri)));
@@ -48,7 +50,7 @@ export const removeBiRelationalOffer = async (
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
   const biRelationsOffersCollection = await getCollection(
-    `${offerRelationCollectionName}birelations`,
+    offerBiRelationsCollectionName,
   );
 
   const existingRelation = await biRelationsOffersCollection.findOne({
@@ -82,7 +84,7 @@ export const getOfferBiRelations = async (
   uri: string,
 ): Promise<Record<string, IdenticalOfferRelation>> => {
   const biRelationsOffersCollection = await getCollection(
-    `${offerRelationCollectionName}birelations`,
+    offerBiRelationsCollectionName,
   );
   const relationObjects = await biRelationsOffersCollection
     .find({
@@ -103,7 +105,7 @@ export const getBiRelationsForOfferUris = async (
   uris: string[],
 ): Promise<string[][]> => {
   const biRelationsOffersCollection = await getCollection(
-    `${offerRelationCollectionName}birelations`,
+    offerBiRelationsCollectionName,
   );
   const biRelations = await biRelationsOffersCollection
     .find<IdenticalOfferRelation>({
