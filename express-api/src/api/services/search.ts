@@ -2,6 +2,7 @@ import { elasticOfferToMpnOffer } from "@/api/models/mpnOffer.model";
 import { getElasticClient } from "@/config/elastic";
 import { getNowDate } from "../utils/helpers";
 import APIError from "../utils/APIError";
+import { getOffersByUris } from "./offers";
 
 export const search = async (
   query: string,
@@ -21,7 +22,16 @@ export const search = async (
     const mpnResults = searchResponse.results.map((x) => {
       return elasticOfferToMpnOffer(x);
     });
-    return mpnResults;
+
+    // Filter offers that only exist in Elastic and not in Mongo
+    const resultUris = mpnResults.map((x) => x.uri);
+    const urisFromMongoSet = new Set(
+      (await getOffersByUris(resultUris, { uri: 1 })).map((x) => x.uri),
+    );
+
+    const validOffers = mpnResults.filter((x) => urisFromMongoSet.has(x.uri));
+
+    return validOffers;
   } catch (e) {
     console.error(e);
     throw new APIError({

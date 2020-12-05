@@ -59,7 +59,7 @@ export const getOffers = async (
 
 export const getOffersByUris = async (
   uris: string[],
-  projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
+  projection: any = defaultOfferProjection,
 ): Promise<MpnOffer[]> => {
   const selection = {
     uri: { $in: uris },
