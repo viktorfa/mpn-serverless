@@ -1,0 +1,7 @@
+{
+  "mongoCollection": "sebyggoffers",
+  "engineName": "sebyggoffers",
+  "mongoFilter": {
+    "provenance": { "$nin": ["se_byggmax_spider", "se_amazon_bygg_spider"] }
+  }
+}

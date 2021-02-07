@@ -22,6 +22,9 @@ def handle_feed(feed: list, config: ScraperConfig) -> BulkWriteResult:
 
     _config = fetch_handle_config(config)
 
+    if not _config["namespace"]:
+        raise Exception("Config needs namespace")
+
     products = handle_products(feed, _config)
     products = list(
         {**product, "siteCollection": _config["collection_name"]}

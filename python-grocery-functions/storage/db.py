@@ -42,13 +42,13 @@ def save_promoted_offers(df, collection_name: str):
 
 def save_scraped_products(products: Iterable, offers_collection_name: str):
     last_update_limit = datetime.utcnow() - timedelta(OVERWRITE_EDIT_LIMIT_DAYS)
-    meta_fields_collection = get_collection(f"{offers_collection_name}meta")
+    meta_fields_collection = get_collection(f"mpnoffersmeta")
     meta_fields = meta_fields_collection.find(
         dict(updatedAt={"$gt": last_update_limit})
     )
     uri_field_dict = meta_fields_result_to_dict(meta_fields)
     return bulk_upsert(
-        remove_protected_fields(products, uri_field_dict), offers_collection_name, "uri"
+        remove_protected_fields(products, uri_field_dict), "mpnoffers", "uri"
     )
 
 

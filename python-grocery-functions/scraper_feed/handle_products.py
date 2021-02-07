@@ -90,14 +90,14 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         offer = transform_fields(offer, config["fieldMapping"])
         result: MpnOffer = {}
 
-        namespace = config.get("namespace") or config["provenance"]
+        namespace = config["namespace"]
         provenanceId = get_provenance_id(offer)
         result["provenanceId"] = provenanceId
         result["uri"] = get_product_uri(namespace, provenanceId)
         result["pricing"] = get_product_pricing({**offer, **result})
         result["validThrough"] = time.one_week_ahead
         result["validFrom"] = time.time
-        result["dealer"] = offer.get("dealer", config["provenance"])
+        result["dealer"] = offer.get("dealer", namespace)
         result["gtins"] = get_gtins({**offer, **result})
 
         try:

@@ -44,15 +44,15 @@ module.exports.processGroceryOffersSns = async (event) => {
     console.log("event");
     console.log(event);
     const snsMessage = getMessageFromSnsEvent(event);
-    const { collection_name: mongoCollection } = snsMessage;
-    if (!mongoCollection || typeof mongoCollection !== "string") {
+    const { collection_name: siteCollection } = snsMessage;
+    if (!siteCollection || typeof siteCollection !== "string") {
       throw new Error(
-        `mongoCollection argument has to be a string. Was ${mongoCollection}`,
+        `siteCollection argument has to be a string. Was ${siteCollection}`,
       );
     }
     const result = await processProducts(
-      mongoCollection,
-      `${stage}-${mongoCollection}`,
+      siteCollection,
+      `${stage}-${siteCollection}`,
     );
     return {
       message: "Go Serverless v1.0! Your function executed successfully!",

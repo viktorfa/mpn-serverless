@@ -5,6 +5,7 @@ const { getCollection } = require("../config/mongo");
 const { mpnOfferToElasticOffer } = require("./helpers");
 const { stage } = require("../config/vars");
 const { getMessageFromSnsEvent } = require("../utils");
+const { defaultOfferCollection } = require("../utils/constants");
 
 const UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE = 100;
 
@@ -45,6 +46,8 @@ const getEngineName = (engineName) => {
     result = "groceryoffers";
   } else if (engineName.startsWith("bygg")) {
     result = "byggoffers";
+  } else if (engineName.startsWith("extra")) {
+    result = "extraoffers";
   } else if (engineName.startsWith("sebygg")) {
     result = "sebyggoffers";
   } else if (engineName.startsWith("segrocery")) {
@@ -110,6 +113,8 @@ const handleSnsMigrateEvent = (event) => {
   console.info("event");
   console.info(event);
   const snsMessage = getMessageFromSnsEvent(event);
+  console.info("snsMessage");
+  console.info(snsMessage);
   const { collection_name: mongoCollection, provenance } = snsMessage;
 
   if (!mongoCollection) {
@@ -133,26 +138,26 @@ const handleSnsMigrateEvent = (event) => {
 
 /**
  *
- * @param {string} mongoCollectionName
+ * @param {string} siteCollection
  * @param {string} engineName
  * @param {number} limit
  * @param {object} mongoFilter
  * @param {number} chunkSize
  */
 const migrateOffersToElastic = async (
-  mongoCollectionName,
+  siteCollection,
   engineName,
   limit,
   mongoFilter = {},
   chunkSize = UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE,
 ) => {
-  const mongoCollection = await getCollection(mongoCollectionName);
+  const mongoCollection = await getCollection(defaultOfferCollection);
 
   const now = new Date();
 
   /** @var {import("@/types/offers").MpnOffer[]} */
   const offers = await mongoCollection
-    .find({ validThrough: { $gte: now }, ...mongoFilter })
+    .find({ validThrough: { $gte: now }, siteCollection, ...mongoFilter })
     .project(
       includeFields.reduce((acc, current) => ({ ...acc, [current]: true }), {}),
     )
@@ -217,7 +222,7 @@ const deleteOldElasticOffers = async (
   const now = new Date();
   const elasticClient = await getElasticClient();
 
-  const { results: offers } = await elasticClient.search(engineName, "a", {
+  const { results: offers } = await elasticClient.search(engineName, "e", {
     page: { size: limit },
     filters: { valid_through: { to: now } },
   });

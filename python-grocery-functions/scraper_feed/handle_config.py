@@ -1,3 +1,4 @@
+import logging
 from pydash import get
 
 
@@ -8,8 +9,6 @@ from scraper_feed.scraper_configs import (
 from storage.db import get_handle_config
 from amp_types.amp_product import HandleConfig, ScraperConfig
 from util.errors import NoHandleConfigError
-
-DEFAULT_OFFER_COLLECTION_NAME = "mpnoffer"
 
 
 def generate_handle_config(config: dict) -> HandleConfig:
@@ -42,6 +41,6 @@ def fetch_handle_config(config: ScraperConfig) -> HandleConfig:
     try:
         result = {**config, **get_handle_config(config.get("provenance"))}
     except NoHandleConfigError:
-        result = {**config}
-        result["collection_name"] = DEFAULT_OFFER_COLLECTION_NAME
+        logging.warn("No handle config found")
+        raise NoHandleConfigError()
     return generate_handle_config(result)

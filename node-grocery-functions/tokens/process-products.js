@@ -1,5 +1,6 @@
 const get = require("lodash/get");
 
+const { defaultOfferCollection } = require("../utils/constants");
 const { reverseString } = require("../utils");
 const { getCollection } = require("../config/mongo");
 const { bucketName, cloudFrontDistributionId } = require("../config/vars");
@@ -87,16 +88,17 @@ const updateAutocompleteInS3 = async (autocompleteData, prefix) => {
 };
 
 const processProducts = async (
-  productCollectionName,
+  siteCollectionName,
   prefix,
   storeInS3 = false,
   limit = 2 ** 20,
 ) => {
-  console.info(`Processing ${productCollectionName} with prefix ${prefix}`);
-  const productCollection = await getCollection(productCollectionName);
+  console.info(`Processing ${siteCollectionName} with prefix ${prefix}`);
+  const productCollection = await getCollection(defaultOfferCollection);
 
   const allProducts = await productCollection
     .find({
+      siteCollection: siteCollectionName,
       validThrough: {
         $gt: new Date(),
       },
@@ -109,11 +111,11 @@ const processProducts = async (
   const autocompleteData = getAutocompleteData(allProducts);
   const mongoUpdatePromise = updateAutocompleteInMongo(
     autocompleteData,
-    productCollectionName,
+    siteCollectionName,
   );
   const mongoUpdateTermsPromise = updateAutocompleteTermsInMongo(
     autocompleteData,
-    productCollectionName,
+    siteCollectionName,
   );
   const promises = [mongoUpdatePromise, mongoUpdateTermsPromise];
   if (storeInS3 === true) {

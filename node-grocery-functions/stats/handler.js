@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const { defaultOfferCollection } = require("../utils/constants");
 const { getCollection } = require("../config/mongo");
 const secretValue = "mrworldwidemrworldwidemrworldwide";
 
@@ -17,7 +18,7 @@ module.exports.handleFeed = async (event) => {
     };
   }
   const analData = JSON.parse(event.body);
-  const offerCollection = await getCollection(collectionName);
+  const offerCollection = await getCollection(defaultOfferCollection);
 
   const updates = Object.entries(analData).map(([path, data]) => {
     return {

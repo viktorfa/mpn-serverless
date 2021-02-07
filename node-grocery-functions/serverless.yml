@@ -28,6 +28,7 @@ provider:
     BUCKET_NAME: !ImportValue StaticAssetsBucket
     CLOUD_FRONT_DISTRIBUTION_ID: !ImportValue StaticAssetsDistribution
     STAGE: ${self:provider.stage}
+    NODE_ENV: ${env:NODE_ENV}
     ELASTIC_URL: ${env:ELASTIC_URL}
     ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
 
@@ -64,31 +65,35 @@ functions:
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
-            mongoCollection: "herbvuoffer"
+            mongoCollection: "herbvuoffers"
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
-            mongoCollection: "groceryoffer"
+            mongoCollection: "groceryoffers"
 
   deleteOffersFromElastic:
     handler: elastic/handler.handleTriggerDeleteEvent
     events:
       - schedule:
-          rate: rate(1 hour)
+          rate: rate(55 minutes)
           input:
             engineName: byggoffers
       - schedule:
-          rate: rate(1 hour)
+          rate: rate(110 minutes)
           input:
             engineName: groceryoffers
       - schedule:
-          rate: rate(1 hour)
+          rate: rate(125 minutes)
           input:
             engineName: segroceryoffers
       - schedule:
-          rate: rate(1 hour)
+          rate: rate(65 minutes)
           input:
-            engineName: segbyggoffers
+            engineName: sebyggoffers
+      - schedule:
+          rate: rate(45 minutes)
+          input:
+            engineName: extraoffers
 
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
