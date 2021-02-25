@@ -45,7 +45,7 @@ export const add: Route<
 
 export const getReviews: Route<
   Response.Ok<OfferReview[]> | Response.BadRequest<string>
-> = route.get("/", URL.str("uri")).handler(async (request) => {
+> = route.get("/:uri").handler(async (request) => {
   const reviewCollection = await getCollection(offerReviewsCollectionName);
   return Response.ok(
     await reviewCollection.find({ uri: request.routeParams.uri }).toArray(),

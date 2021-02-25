@@ -65,7 +65,7 @@ export const search: Route<
 export const searchPathParam: Route<
   Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
 > = route
-  .get("/search/", URL.str("query"))
+  .get("/search/:query")
   .use(Parser.query(productCollectionAndLimitQueryParams))
   .handler(async (request) => {
     const query = request.routeParams.query;

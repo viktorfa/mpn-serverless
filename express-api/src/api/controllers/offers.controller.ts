@@ -62,7 +62,7 @@ export const list: Route<
 export const addToElastic: Route<
   Response.NoContent | Response.NotFound<string> | Response.BadRequest<string>
 > = route
-  .put("/elastic/", URL.str("id"))
+  .put("/elastic/:id")
   .use(Parser.query(productCollectionQueryParams))
   .handler(async (request) => {
     const { productCollection } = request.query;
@@ -97,7 +97,7 @@ export const similar: Route<
   | Response.BadRequest<string>
   | Response.NotFound<string>
 > = route
-  .get("/similar/", URL.str("id"))
+  .get("/similar/:id")
   .use(Parser.query(similarOffersQueryParams))
   .handler(async (request) => {
     const { productCollection } = request.query;
@@ -179,7 +179,7 @@ export const extra: Route<
   | Response.BadRequest<string>
   | Response.NotFound<string>
 > = route
-  .get("/extra/", URL.str("id"))
+  .get("/extra/:id")
   .use(Parser.query(extraOffersQueryParams))
   .handler(async (request) => {
     const { limit, productCollection = "extraoffers" } = request.query;
@@ -207,7 +207,7 @@ export const similarExtra: Route<
   | Response.BadRequest<string>
   | Response.NotFound<string>
 > = route
-  .get("/similarextra/", URL.str("id"))
+  .get("/similarextra/:id")
   .use(Parser.query(limitQueryParams))
   .handler(async (request) => {
     const { limit } = request.query;
@@ -242,7 +242,7 @@ export const similarFromExtra: Route<
   | Response.BadRequest<string>
   | Response.NotFound<string>
 > = route
-  .get("/similarfromextra/", URL.str("id"))
+  .get("/similarfromextra/:id")
   .use(Parser.query(similarFromExtraOffersQueryParams))
   .handler(async (request) => {
     const { limit, productCollection } = request.query;
@@ -319,7 +319,7 @@ export const find: Route<
   | Response.Ok<MpnOffer>
   | Response.NotFound<string>
   | Response.BadRequest<string>
-> = route.get("/", URL.str("id")).handler(async (request) => {
+> = route.get("/:id").handler(async (request) => {
   try {
     const offer = await findOne(request.routeParams.id);
     if (!offer) {
@@ -337,7 +337,7 @@ export const relatedOffers: Route<
   | Response.Ok<{ identical: MpnOffer[]; interchangeable: MpnOffer[] }>
   | Response.NotFound
   | Response.BadRequest<string>
-> = route.get("/", URL.str("id"), "/related").handler(async (request) => {
+> = route.get("/:id/related").handler(async (request) => {
   const offerCollection = await getCollection(offerCollectionName);
 
   try {
@@ -391,6 +391,6 @@ export const postAddTagToOffers: Route<
 
 export const getTagsForOfferHandler: Route<
   Response.Ok<string[]> | Response.BadRequest<string>
-> = route.get("/", URL.str("id"), "/tags").handler(async (request) => {
+> = route.get("/:id/tags").handler(async (request) => {
   return Response.ok(await getTagsForOffer(request.routeParams.id));
 });
