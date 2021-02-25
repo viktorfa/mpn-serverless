@@ -47,6 +47,7 @@ interface MpnOffer {
   brand: string;
 
   href: string;
+  ahref?: string;
   imageUrl: string;
   uri: string;
 

@@ -18,6 +18,7 @@ const defaultOfferFields = [
   "brand",
   "uri",
   "href",
+  "ahref",
   "imageUrl",
   "value",
   "provenance",
