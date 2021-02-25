@@ -107,8 +107,8 @@ export const getBiRelationsForOfferUris = async (
   const biRelationsOffersCollection = await getCollection(
     offerBiRelationsCollectionName,
   );
-  const biRelations = await biRelationsOffersCollection
-    .find<IdenticalOfferRelation>({
+  const biRelations: IdenticalOfferRelation[] = await biRelationsOffersCollection
+    .find({
       offerSet: { $in: uris },
     })
     .toArray();
