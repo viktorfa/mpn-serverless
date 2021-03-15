@@ -46,6 +46,8 @@ const getEngineName = (engineName) => {
     result = "groceryoffers";
   } else if (engineName.startsWith("bygg")) {
     result = "byggoffers";
+  } else if (engineName.startsWith("beauty")) {
+    result = "beautyoffers";
   } else if (engineName.startsWith("extra")) {
     result = "extraoffers";
   } else if (engineName.startsWith("sebygg")) {
