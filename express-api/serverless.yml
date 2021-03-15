@@ -21,6 +21,7 @@ provider:
 functions:
   api:
     handler: dist/server.handler
+    timeout: 16
     events:
       - http:
           method: ANY
