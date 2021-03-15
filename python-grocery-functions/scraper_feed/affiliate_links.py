@@ -64,6 +64,23 @@ def add_cdon_affiliate_link(product: dict) -> dict:
     return {**product, "href": new_href, "ahref": new_href}
 
 
+def add_slikkepott_affiliate_link(product: dict) -> dict:
+    if "tt=" in product["href"]:
+        return product
+    escaped_original_href = product["href"]
+    new_href = (
+        f"https://slikkepott.no/tt/?tt=19005_12_392741_&r={escaped_original_href}"
+    )
+    return {**product, "href": new_href, "ahref": new_href}
+
+
+def add_natur_no_affiliate_link(product: dict) -> dict:
+    if "?___store=nno&aff_id=1119" in product["href"]:
+        return product
+    new_href = f"{product['href']}?___store=nno&aff_id=1119"
+    return {**product, "href": new_href, "ahref": new_href}
+
+
 def add_se_matsmart_affiliate_link(product: dict) -> dict:
     if "id.matsmart.se" in product["href"]:
         return product
@@ -149,6 +166,10 @@ def get_affiliate_handler(product: dict):
         return add_se_skanska_affiliate_link
     elif "byggmax.se" in product["href"]:
         return add_se_byggmax_affiliate_link
+    elif "www.slikkepott.no" in product["href"]:
+        return add_slikkepott_affiliate_link
+    elif "natur.no" in product["href"]:
+        return add_natur_no_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
