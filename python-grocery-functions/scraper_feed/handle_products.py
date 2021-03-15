@@ -8,7 +8,6 @@ import pydash
 from transform.transform import transform_fields
 from transform.offer import get_field_from_scraper_offer
 from util.helpers import get_product_uri, is_integer_num
-from util.enums import provenances
 from parsing.quantity_extraction import (
     analyze_quantity,
     parse_quantity,

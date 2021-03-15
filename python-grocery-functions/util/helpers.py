@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from typing import Union
 
-from util.enums import currency_codes, provenances, select_methods
+from util.enums import currency_codes, select_methods
 
 
 def flatten(l: list) -> list:
