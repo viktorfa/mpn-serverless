@@ -93,6 +93,9 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         namespace = config["namespace"]
         provenanceId = get_provenance_id(offer)
         result["provenanceId"] = provenanceId
+        result["href"] = offer["url"]
+        result["ahref"] = offer.get("trackingUrl")
+
         result["uri"] = get_product_uri(namespace, provenanceId)
         result["pricing"] = get_product_pricing({**offer, **result})
         result["validThrough"] = time.one_week_ahead
@@ -131,7 +134,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
             # parsed_quantity = remove_none_fields(parsed_quantity)
         result["mpnStock"] = get_stock_status(offer)
         result["categories"] = get_categories(
-            pydash.get(offer, "categories"), config["categoriesLimits"],
+            pydash.get(offer, "categories"),
+            config["categoriesLimits"],
         )
         result = {**result, **parsed_quantity}
 
