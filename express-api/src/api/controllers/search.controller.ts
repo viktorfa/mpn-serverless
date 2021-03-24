@@ -37,6 +37,9 @@ export const searchExtra: Route<
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
     const { limit, query } = request.query;
+    if (query.length > 128) {
+      return Response.badRequest("Query longer than 128 characters");
+    }
     const _limit = getLimitFromQueryParam(limit, 8);
 
     const productCollection = "extraoffers";
@@ -53,6 +56,9 @@ export const search: Route<
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
     const { limit, query, productCollection } = request.query;
+    if (query.length > 128) {
+      return Response.badRequest("Query longer than 128 characters");
+    }
     const _limit = getLimitFromQueryParam(limit, 256);
 
     const searchResults = await searchElastic(
@@ -69,6 +75,9 @@ export const searchPathParam: Route<
   .use(Parser.query(productCollectionAndLimitQueryParams))
   .handler(async (request) => {
     const query = request.routeParams.query;
+    if (query.length > 128) {
+      return Response.badRequest("Query longer than 128 characters");
+    }
     const { productCollection, limit } = request.query;
     const _limit = getLimitFromQueryParam(limit, 256);
     const searchResults = await searchElastic(
@@ -87,6 +96,9 @@ export const querySuggestion: Route<
   .handler(async (request) => {
     const { productCollection } = request.query;
     const query = request.query.query;
+    if (query.length > 128) {
+      return Response.badRequest("Query longer than 128 characters");
+    }
     const searchResults = await querySuggestionElastic(
       query,
       getEngineName(productCollection),

@@ -129,7 +129,11 @@ export const similar: Route<
     //if (useSearch === true || !offerHasSimilarOffers) {
     if (!offerHasSimilarOffers) {
       return Response.ok(
-        await searchElastic(offer.title, getEngineName(productCollection), 32),
+        await searchElastic(
+          offer.title.substring(0, 127),
+          getEngineName(productCollection),
+          32,
+        ),
       );
     }
 
@@ -158,7 +162,11 @@ export const similar: Route<
         `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
       );
       return Response.ok(
-        await searchElastic(offer.title, getEngineName(productCollection), 32),
+        await searchElastic(
+          offer.title.substring(0, 127),
+          getEngineName(productCollection),
+          32,
+        ),
       );
     }
     const result = similarOffers.map((x, i) => ({
@@ -197,7 +205,7 @@ export const extra: Route<
       );
     }
 
-    const query = offer.title;
+    const query = offer.title.substring(0, 127);
 
     const searchResults = await searchElastic(query, productCollection, _limit);
     return Response.ok(searchResults.filter((offer) => offer.score > 20));
@@ -226,7 +234,7 @@ export const similarExtra: Route<
       );
     }
 
-    const query = offer.title;
+    const query = offer.title.substring(0, 127);
 
     const searchResults = await searchElastic(query, "extraoffers", _limit);
     return Response.ok(searchResults.filter((offer) => offer.score > 20));
@@ -260,7 +268,7 @@ export const similarFromExtra: Route<
       );
     }
 
-    const query = offer.title;
+    const query = offer.title.substring(0, 127);
 
     const searchResults = await searchElastic(
       query,

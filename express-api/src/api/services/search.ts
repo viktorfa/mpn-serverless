@@ -10,6 +10,14 @@ export const search = async (
   limit = 32,
 ): Promise<MpnResultOffer[]> => {
   const elasticClient = await getElasticClient();
+  if (query.length > 127) {
+    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
+    console.error(message);
+    throw new APIError({
+      status: 500,
+      message,
+    });
+  }
   console.log(`Searching for ${query} on engine ${engineName}.`);
   const now = getNowDate();
   const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
@@ -42,6 +50,14 @@ export const search = async (
 };
 
 export const querySuggestion = async (query, engineName): Promise<string[]> => {
+  if (query.length > 127) {
+    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
+    console.error(message);
+    throw new APIError({
+      status: 500,
+      message,
+    });
+  }
   const elasticClient = await getElasticClient();
   console.log(`Getting querySuggestion for ${query} on engine ${engineName}.`);
   const searchResponse = await elasticClient.querySuggestion(engineName, query);
