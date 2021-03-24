@@ -3,11 +3,17 @@ const { processProducts } = require("./process-products");
 const { stage } = require("../config/vars");
 const { getMessageFromSnsEvent } = require("../utils");
 
+const Sentry = require("@sentry/serverless");
+
+Sentry.AWSLambda.init({
+  tracesSampleRate: 1.0,
+});
+
 /**
  *
  * @param {import("@/types").HandleOffersEvent} event
  */
-module.exports.processGroceryOffers = async (event) => {
+const processGroceryOffers = async (event) => {
   try {
     const { mongoCollection, storeInS3 = true, limit = 2 ** 20 } = event;
     if (!mongoCollection || typeof mongoCollection !== "string") {
@@ -39,7 +45,7 @@ module.exports.processGroceryOffers = async (event) => {
  *
  * @param {import("@/types").SnsEvent<{collection_name:string}>} event
  */
-module.exports.processGroceryOffersSns = async (event) => {
+const processGroceryOffersSns = async (event) => {
   try {
     console.log("event");
     console.log(event);
@@ -66,4 +72,11 @@ module.exports.processGroceryOffersSns = async (event) => {
       event,
     };
   }
+};
+
+module.exports = {
+  processGroceryOffers: Sentry.AWSLambda.wrapHandler(processGroceryOffers),
+  processGroceryOffersSns: Sentry.AWSLambda.wrapHandler(
+    processGroceryOffersSns,
+  ),
 };

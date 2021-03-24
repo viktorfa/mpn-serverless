@@ -7,6 +7,12 @@ const { stage } = require("../config/vars");
 const { getMessageFromSnsEvent } = require("../utils");
 const { defaultOfferCollection } = require("../utils/constants");
 
+const Sentry = require("@sentry/serverless");
+
+Sentry.AWSLambda.init({
+  tracesSampleRate: 1.0,
+});
+
 const UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE = 100;
 
 const includeFields = [
@@ -267,7 +273,11 @@ const deleteElasticDocuments = async (documentIds, engineName, client) => {
 };
 
 module.exports = {
-  handleSnsMigrateEvent,
-  handleTriggerMigrateEvent,
-  handleTriggerDeleteEvent,
+  handleSnsMigrateEvent: Sentry.AWSLambda.wrapHandler(handleSnsMigrateEvent),
+  handleTriggerMigrateEvent: Sentry.AWSLambda.wrapHandler(
+    handleTriggerMigrateEvent,
+  ),
+  handleTriggerDeleteEvent: Sentry.AWSLambda.wrapHandler(
+    handleTriggerDeleteEvent,
+  ),
 };

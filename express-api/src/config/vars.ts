@@ -4,6 +4,5 @@ export const mongoUri = process.env.MONGO_URI;
 export const mongoDatabase = process.env.MONGO_DATABASE;
 export const elasticUrl = process.env.ELASTIC_URL;
 export const elasticApiKey = process.env.ELASTIC_API_KEY;
-export const sentryDsn = process.env.SENTRY_DSN;
 
 export const stage = process.env.STAGE;

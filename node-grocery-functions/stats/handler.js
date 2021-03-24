@@ -1,9 +1,16 @@
 const _ = require("lodash");
 const { defaultOfferCollection } = require("../utils/constants");
 const { getCollection } = require("../config/mongo");
+
+const Sentry = require("@sentry/serverless");
+
+Sentry.AWSLambda.init({
+  tracesSampleRate: 1.0,
+});
+
 const secretValue = "mrworldwidemrworldwidemrworldwide";
 
-module.exports.handleFeed = async (event) => {
+const handleFeed = async (event) => {
   const secret = event.headers["x-mpn-secret"];
   if (secret !== secretValue) {
     return {
@@ -35,4 +42,8 @@ module.exports.handleFeed = async (event) => {
   });
   const result = await offerCollection.bulkWrite(updates);
   return { body: JSON.stringify(result), statusCode: 200 };
+};
+
+module.exports = {
+  handleFeed: Sentry.AWSLambda.wrapHandler(handleFeed),
 };

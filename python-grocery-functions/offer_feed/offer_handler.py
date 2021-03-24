@@ -15,6 +15,13 @@ from storage.db import (
     get_offers_with_product,
 )
 
+import sentry_sdk
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+
+sentry_sdk.init(
+    integrations=[AwsLambdaIntegration()],
+)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 logging.getLogger("botocore").setLevel(logging.WARNING)

@@ -30,6 +30,8 @@ provider:
     STAGE: ${self:provider.stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
     SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
+    SENTRY_DSN: ${env:SENTRY_DSN}
+    SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
 
   iamRoleStatements:
     - Effect: "Allow"
