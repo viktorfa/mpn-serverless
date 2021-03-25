@@ -1,9 +1,10 @@
 import { Parser, Response, Route, route, URL } from "typera-express";
 import * as t from "io-ts";
-import { addReview } from "../services/reviews";
+import { addReview, removeReview } from "../services/reviews";
 import { findOne } from "../services/offers";
 import { getCollection } from "@/config/mongo";
 import { offerReviewsCollectionName } from "../utils/constants";
+import { NotFound } from "typera-common/response";
 
 const productCollectionQueryParams = t.type({
   productCollection: t.string,
@@ -42,6 +43,20 @@ export const add: Route<
 
     return Response.created(createReviewResult);
   });
+
+export const remove: Route<
+  Response.NoContent<any> | Response.BadRequest<string> | NotFound<string>
+> = route.delete("/:id").handler(async (request) => {
+  const createReviewResult = await removeReview(request.routeParams.id);
+
+  if (createReviewResult.nModified > 0) {
+    return Response.noContent();
+  } else {
+    return Response.notFound(
+      `Could not remove review with id ${request.routeParams.id}`,
+    );
+  }
+});
 
 export const getReviews: Route<
   Response.Ok<OfferReview[]> | Response.BadRequest<string>

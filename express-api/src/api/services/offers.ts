@@ -19,10 +19,10 @@ const getFindOneFilter = (
   }
 };
 
-export const findOne = async (id: string): Promise<MpnOffer> => {
+export const findOne = async (id: string): Promise<MpnMongoOffer> => {
   const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
-  return offersCollection.findOne<MpnOffer>(filter, {
+  return offersCollection.findOne<MpnMongoOffer>(filter, {
     projection: defaultOfferProjection,
   });
 };
@@ -38,7 +38,6 @@ export const getOffersForSiteCollection = async (
   projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
   limit: number = 30,
 ): Promise<MpnOffer[]> => {
-  const offersCollection = await getCollection(offerCollectionName);
   const now = getNowDate();
   selection.validThrough = { $gte: now };
   selection.siteCollection = siteCollection;
@@ -102,6 +101,7 @@ export const addTagToOffers = async (offerUris: string[], tag: string) => {
         tag,
         uri,
         selectionType: "manual",
+        status: "enabled",
       },
     };
     if (tag === "promoted") {
@@ -115,6 +115,31 @@ export const addTagToOffers = async (offerUris: string[], tag: string) => {
         },
         update,
         upsert: true,
+      },
+    };
+  });
+
+  return tagsCollection.bulkWrite(writeOperations);
+};
+export const removeTagFromOffers = async (offerUris: string[], tag: string) => {
+  const tagsCollection = await getCollection(offerTagsCollectionName);
+
+  const writeOperations = offerUris.map((uri) => {
+    const update: Record<string, any> = {
+      $set: {
+        tag,
+        uri,
+        selectionType: "manual",
+        status: "disabled",
+      },
+    };
+    return {
+      updateOne: {
+        filter: {
+          tag,
+          uri,
+        },
+        update,
       },
     };
   });

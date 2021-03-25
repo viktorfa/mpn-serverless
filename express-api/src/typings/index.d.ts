@@ -166,6 +166,10 @@ interface OfferReview {
   author: string;
   uri: string;
   rating: RatingScoreType;
+  status?: "enabled" | "removed";
+}
+interface MongoOfferReview extends OfferReview {
+  _id: string;
 }
 
 interface OfferTag {

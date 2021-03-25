@@ -8,6 +8,7 @@ import {
   getOffersForSiteCollection,
   getOfferUrisForTags,
   getTagsForOffer,
+  removeTagFromOffers,
 } from "@/api/services/offers";
 import { search as searchElastic } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
@@ -394,6 +395,19 @@ export const postAddTagToOffers: Route<
     }
     return Response.noContent(
       await addTagToOffers(request.body.offerUris, request.body.tag),
+    );
+  });
+export const putRemoveTagFromOffers: Route<
+  Response.NoContent<any> | Response.BadRequest<string>
+> = route
+  .put("/tags/remove")
+  .use(Parser.body(addTagToOffersBody))
+  .handler(async (request) => {
+    if (request.body.offerUris.length === 0) {
+      return Response.badRequest("Need at least on offer uri.");
+    }
+    return Response.noContent(
+      await removeTagFromOffers(request.body.offerUris, request.body.tag),
     );
   });
 

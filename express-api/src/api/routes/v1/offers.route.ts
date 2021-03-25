@@ -9,6 +9,7 @@ import {
   relatedOffers,
   postAddTagToOffers,
   getTagsForOfferHandler,
+  putRemoveTagFromOffers,
   extra,
 } from "@/api/controllers/offers.controller";
 import {
@@ -34,4 +35,5 @@ export default router(
   relatedOffers,
   postAddTagToOffers,
   getTagsForOfferHandler,
+  putRemoveTagFromOffers,
 ).handler();
