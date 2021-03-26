@@ -40,6 +40,7 @@ export const getComparisonInstance = async (
   const collection = await getCollection(offerCollectionName);
   const offers = await collection
     .find(selection, defaultOfferProjection)
+    .project(defaultOfferProjection)
     .toArray();
 
   const offerMap = offers.reduce(

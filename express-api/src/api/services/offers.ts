@@ -168,7 +168,7 @@ export const getOffersInUriGroups = async (
 ): Promise<SimilarOffersObject[]> => {
   const uris = flatten(uriGroups);
 
-  const offers = await getOffersByUris(uris);
+  const offers = await getOffersByUris(uris, defaultOfferProjection);
 
   const uriToOfferMap = offers.reduce((acc, offer) => {
     return { ...acc, [offer.uri]: offer };
