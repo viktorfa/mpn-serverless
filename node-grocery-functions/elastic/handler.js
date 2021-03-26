@@ -216,6 +216,11 @@ const migrateOffersToElastic = async (
     result: elasticResult.length,
   };
 };
+
+const getRandomLetter = (letterSet = "abcdefghijklmnopqrstuvwxyz") => {
+  return letterSet[Math.floor(Math.random() * letterSet.length)];
+};
+
 /**
  *
  * @param {string} engineName
@@ -230,10 +235,16 @@ const deleteOldElasticOffers = async (
   const now = new Date();
   const elasticClient = await getElasticClient();
 
-  const { results: offers } = await elasticClient.search(engineName, "e", {
-    page: { size: limit },
-    filters: { valid_through: { to: now } },
-  });
+  console.info(`Deleting up to ${limit} old offers from ${engineName}`);
+
+  const { results: offers } = await elasticClient.search(
+    engineName,
+    getRandomLetter(),
+    {
+      page: { size: limit },
+      filters: { valid_through: { to: now } },
+    },
+  );
 
   console.info(
     `Found ${offers.length} offers to be removed from engine ${engineName}.`,
