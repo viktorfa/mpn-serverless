@@ -73,8 +73,16 @@ def get_offers_with_product(
     collection = get_collection(collection_name)
     pipeline = [
         # {"$match": {"provenance": provenance,}},
-        {"$match": {"gtins": {"$ne": None},}},
-        {"$addFields": {"gtin_list": {"$objectToArray": "$gtins"},},},
+        {
+            "$match": {
+                "gtins": {"$ne": None},
+            }
+        },
+        {
+            "$addFields": {
+                "gtin_list": {"$objectToArray": "$gtins"},
+            },
+        },
         {
             "$lookup": {
                 "from": target_collection_name,
@@ -82,7 +90,11 @@ def get_offers_with_product(
                 # "foreignField": "gtins",
                 "let": {"source_gtin_list": "$gtin_list"},
                 "pipeline": [
-                    {"$addFields": {"gtin_list": {"$objectToArray": "$gtins"},},},
+                    {
+                        "$addFields": {
+                            "gtin_list": {"$objectToArray": "$gtins"},
+                        },
+                    },
                     {
                         "$addFields": {
                             "same_gtins": {
@@ -93,8 +105,16 @@ def get_offers_with_product(
                             },
                         },
                     },
-                    {"$match": {"$expr": {"$gt": ["$same_gtins", []]}},},
-                    {"$project": {"_id": 1, "provenance": 1, "same_gtins": 1,}},
+                    {
+                        "$match": {"$expr": {"$gt": ["$same_gtins", []]}},
+                    },
+                    {
+                        "$project": {
+                            "_id": 1,
+                            "provenance": 1,
+                            "same_gtins": 1,
+                        }
+                    },
                 ],
                 "as": "gtin_products",
             },
@@ -118,9 +138,83 @@ def get_offers_with_product(
     return collection.aggregate(pipeline)
 
 
+def get_offers_same_gtin_offers(
+    provenance: str,
+    collection_name: str,
+    limit: int = 0,
+) -> Iterable[dict]:
+    collection = get_collection(collection_name)
+    now = datetime.now()
+    pipeline = [
+        {
+            "$match": {
+                "validThrough": {"$gt": now},
+                "provenance": provenance,
+                "gtins": {"$ne": {}, "$exists": True},
+            }
+        },
+        {"$project": {"gtins": 1, "provenance": 1, "uri": 1}},
+        {
+            "$addFields": {
+                "gtin_list": {"$objectToArray": "$gtins"},
+                "source_id": "$_id",
+            },
+        },
+        {
+            "$lookup": {
+                "from": "mpnoffers",
+                "let": {"source_gtin_list": "$gtin_list", "source_id": "$source_id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "gtins": {"$ne": {}, "$exists": True},
+                            "$expr": {"$ne": ["$$source_id", "$_id"]},
+                        },
+                    },
+                    {
+                        "$addFields": {
+                            "gtin_list": {"$objectToArray": "$gtins"},
+                        },
+                    },
+                    {
+                        "$addFields": {
+                            "same_gtins": {
+                                "$setIntersection": [
+                                    "$$source_gtin_list",
+                                    "$gtin_list",
+                                ]
+                            },
+                        },
+                    },
+                    {
+                        "$match": {
+                            "same_gtins": {"$exists": True},
+                            "$expr": {"$gt": ["$same_gtins", []]},
+                        },
+                    },
+                    {
+                        "$project": {
+                            "_id": 1,
+                            "provenance": 1,
+                            "same_gtins": 1,
+                            "uri": 1,
+                        }
+                    },
+                ],
+                "as": "gtin_products",
+            },
+        },
+        {"$match": {"gtin_products": {"$not": {"$size": 0}}}},
+    ]
+    if limit > 0:
+        pipeline.append({"$limit": limit})
+    return collection.aggregate(pipeline)
+
+
 def get_update_product_with_offer(offer, product_relation) -> UpdateOne:
     return UpdateOne(
-        {"_id": product_relation["product"]}, {"$set": {"updatedAt": datetime.now()}},
+        {"_id": product_relation["product"]},
+        {"$set": {"updatedAt": datetime.now()}},
     )
 
 
@@ -150,4 +244,3 @@ def get_new_product_from_offer(offer) -> dict:
 
 def get_insert_product_with_offer(offer) -> List[InsertOne]:
     return InsertOne({**get_new_product_from_offer(offer), "offers": [offer["_id"]]})
-

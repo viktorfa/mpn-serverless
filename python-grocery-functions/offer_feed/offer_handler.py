@@ -2,10 +2,12 @@ import json
 from bson import json_util
 import logging
 from pymongo import UpdateOne, InsertOne
+from util.utils import log_traceback
 
 import boto3
-from typing import Iterable, TypedDict
+from typing import Iterable, TypedDict, List
 from pymongo.results import InsertManyResult
+from datetime import datetime
 
 from offer_feed.process_offers import MpnOfferWithProduct, OfferConfig, process_offers
 
@@ -13,6 +15,7 @@ from storage.db import (
     get_collection,
     get_insert_product_has_offer,
     get_offers_with_product,
+    get_offers_same_gtin_offers,
 )
 
 import sentry_sdk
@@ -37,87 +40,122 @@ class SnsMessage(TypedDict):
     provenance: str
 
 
-def handle_offers(offers: Iterable[MpnOfferWithProduct], config: OfferConfig):
+def handle_offers(
+    offers_list: Iterable[Iterable[dict]],
+):
     """
-    Handles newly scraped products after they are initially processed and standardized.
-    """
+    Adds offers with the same gtins to be identical."""
+    operations = []
+    now = datetime.now()
+    for offers in offers_list:
+        all_uris = list(set(x["uri"] for x in offers))
 
-    _offers = list(offers)
-    logging.info(f"Handling {len(_offers)} offers.")
-    result = process_offers(_offers, config)
-
-    insert_product_data = result["insert_product_data"]
-    update_product_operations = result["update_product_operations"]
-    relation_operations = result["relation_operations"]
-
-    logging.info(f"{len(insert_product_data)} insert_product_data.")
-    if len(insert_product_data) > 0:
-        product_collection = get_collection(config["product_collection"])
-        relation_collection = get_collection(config["relation_collection"])
-        product_docs = list(x["operation"]._doc for x in insert_product_data)
-        insert_many_result = product_collection.insert_many(product_docs, ordered=True)
-        # First we inserted the products, now we insert the product has offer relations.
-        offers = list(x["offer"] for x in insert_product_data)
-        logging.info(f"Inserted {len(insert_many_result.inserted_ids)} products.")
-        bulk_write_result = relation_collection.bulk_write(
-            list(
-                get_insert_product_has_offer(offer["_id"], product_id, "new")
-                for offer, product_id in zip(offers, insert_many_result.inserted_ids)
-            )
+        upsert_operation1 = UpdateOne(
+            {
+                "relationType": "identical",
+                "offerSet": {"$in": all_uris},
+            },
+            {
+                "$setOnInsert": {
+                    "createdAt": now,
+                    "updatedAt": now,
+                    "relationType": "identical",
+                    "offerSet": all_uris,
+                },
+            },
+            upsert=True,
         )
-        logging.info(json_util.dumps(bulk_write_result.bulk_api_result))
+        operations.append(upsert_operation1)
+        upsert_operation2 = UpdateOne(
+            {
+                "relationType": "identical",
+                "offerSet": {"$in": all_uris},
+            },
+            {
+                "$set": {"updatedAt": now},
+                "$addToSet": {
+                    "offerSet": {"$each": all_uris},
+                },
+            },
+            upsert=False,
+        )
+        operations.append(upsert_operation2)
 
-    logging.info(f"{len(update_product_operations)} update_product_operations.")
-    if len(update_product_operations) > 0:
-        product_collection = get_collection(config["product_collection"])
-        bulk_write_result = product_collection.bulk_write(update_product_operations)
-        logging.info(json_util.dumps(bulk_write_result.bulk_api_result))
+    print(f"{len(operations)} operations to add identical offers")
 
-    logging.info(f"{len(relation_operations)} relation operations.")
-    if len(relation_operations) > 0:
-        relation_collection = get_collection(config["relation_collection"])
-        bulk_write_result = relation_collection.bulk_write(relation_operations)
-        logging.info(json_util.dumps(bulk_write_result.bulk_api_result))
+    collection = get_collection("offerbirelations")
 
-    return {"message": "Dale Costa Rica"}
+    bulk_write_result = collection.bulk_write(operations, ordered=True)
+
+    return {"message": json_util.dumps(bulk_write_result.bulk_api_result)}
+
+
+def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
+    now = datetime.now()
+    collection = get_collection("mpnoffers")
+    scraped_offers = collection.find(
+        {
+            "provenance": provenance,
+            "validThrough": {"$gt": now},
+            "gtins": {"$exists": True, "$ne": {}},
+        },
+        {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
+    )
+    all_offers = collection.find(
+        {"validThrough": {"$gt": now}, "gtins": {"$exists": True, "$ne": {}}},
+        {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
+    )
+    gtin_offer_map = {}
+    for offer in all_offers:
+        for gtin_key, gtin_value in offer.get("gtins", {}).items():
+            gtin = f"{gtin_key}_{gtin_value}"
+            if gtin in gtin_offer_map.keys():
+                gtin_offer_map[gtin].append(offer)
+            else:
+                gtin_offer_map[gtin] = [offer]
+
+    offers_list = []
+
+    for offer in scraped_offers:
+        for gtin_key, gtin_value in offer.get("gtins", {}).items():
+            gtin = f"{gtin_key}_{gtin_value}"
+            # Remove self from identical offers
+            identical_offers = list(
+                (x for x in gtin_offer_map.get(gtin, []) if x["uri"] != offer["uri"])
+            )
+            if len(identical_offers) > 0:
+                offers_list.append([offer, *identical_offers])
+
+    print(f"gtins found: {len(gtin_offer_map.keys())}")
+    return offers_list
 
 
 def offer_feed_sns(event, context):
     logging.info("event")
     logging.info(event)
+    sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
+    provenance = sns_message["provenance"]
     try:
-        sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
-        collection = get_collection(sns_message["collection_name"])
-        config = {"collection": collection}
-        offers = get_offers_with_product(
-            event["provenance"],
-            event["collection_name"],
-            event["target_collection_name"],
-            event["relation_collection_name"],
-        )
-        return handle_offers(offers, config)
+        offers_list = get_offers_list_for_gtins(provenance)
+        if len(offers_list) > 0:
+            return handle_offers(offers_list)
+        else:
+            return {"message": f"No offers with gtins for {provenance}"}
     except Exception as e:
         logging.error(e)
+        log_traceback(e)
     return {"message": "no cannot"}
 
 
 def offer_feed_trigger(event, context):
+    provenance = event["provenance"]
     try:
-        collection = get_collection(event["collection_name"])
-        config = {
-            "collection": collection,
-            "provenance": event["provenance"],
-            "product_collection": event["target_collection_name"],
-            "relation_collection": event["relation_collection_name"],
-        }
-        offers = get_offers_with_product(
-            event["provenance"],
-            event["collection_name"],
-            event["target_collection_name"],
-            event["relation_collection_name"],
-            limit=0,
-        )
-        return handle_offers(offers, config)
+        offers_list = get_offers_list_for_gtins(provenance)
+        if len(offers_list) > 0:
+            return handle_offers(offers_list)
+        else:
+            return {"message": f"No offers with gtins for {provenance}"}
     except Exception as e:
         logging.error(e)
+        log_traceback(e)
     return {"message": "no cannot"}

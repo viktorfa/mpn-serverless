@@ -13,6 +13,5 @@ def get_collection(collection_name: str):
     if client is None:
         client = pymongo.MongoClient(MONGO_URI)
     if db is None:
-        db = client[MONGO_DATABASE]
-
-    return db[collection_name]
+        db = client.get_database(MONGO_DATABASE)
+    return db.get_collection(collection_name)
