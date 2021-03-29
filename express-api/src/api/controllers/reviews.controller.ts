@@ -5,6 +5,7 @@ import { findOne } from "../services/offers";
 import { getCollection } from "@/config/mongo";
 import { offerReviewsCollectionName } from "../utils/constants";
 import { NotFound } from "typera-common/response";
+import { get } from "lodash";
 
 const productCollectionQueryParams = t.type({
   productCollection: t.string,
@@ -39,7 +40,10 @@ export const add: Route<
         `Offer with uri ${request.body.review.uri} not found.`,
       );
     }
-    const createReviewResult = await addReview(request.body.review);
+    const createReviewResult = await addReview(
+      request.body.review,
+      get(request, ["user", "role"]) === "admin" ? "enabled" : "pending",
+    );
 
     return Response.created(createReviewResult);
   });
@@ -62,7 +66,15 @@ export const getReviews: Route<
   Response.Ok<OfferReview[]> | Response.BadRequest<string>
 > = route.get("/:uri").handler(async (request) => {
   const reviewCollection = await getCollection(offerReviewsCollectionName);
-  return Response.ok(
-    await reviewCollection.find({ uri: request.routeParams.uri }).toArray(),
-  );
+  if (get(request, ["user", "role"]) === "admin") {
+    return Response.ok(
+      await reviewCollection.find({ uri: request.routeParams.uri }).toArray(),
+    );
+  } else {
+    return Response.ok(
+      await reviewCollection
+        .find({ uri: request.routeParams.uri, status: "enabled" })
+        .toArray(),
+    );
+  }
 });

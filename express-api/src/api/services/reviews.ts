@@ -2,11 +2,14 @@ import { getCollection } from "@/config/mongo";
 import { ObjectID } from "bson";
 import { offerReviewsCollectionName } from "../utils/constants";
 
-export const addReview = async (review: OfferReview) => {
+export const addReview = async (
+  review: OfferReview,
+  reviewStatus: OfferReviewStatus,
+) => {
   const reviewCollection = await getCollection(offerReviewsCollectionName);
   const mongoResult = await reviewCollection.insertOne({
     createdAt: new Date(),
-    status: "enabled",
+    status: reviewStatus,
     ...review,
   });
   return mongoResult.result;

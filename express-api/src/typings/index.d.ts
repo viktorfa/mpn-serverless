@@ -161,12 +161,14 @@ interface IdenticalOfferRelation {
   relationType: OfferRelationType;
 }
 
+type OfferReviewStatus = "enabled" | "removed" | "pending";
+
 interface OfferReview {
   body: string;
   author: string;
   uri: string;
   rating: RatingScoreType;
-  status?: "enabled" | "removed";
+  status?: OfferReviewStatus;
 }
 interface MongoOfferReview extends OfferReview {
   _id: string;
