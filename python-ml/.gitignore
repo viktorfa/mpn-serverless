@@ -18,3 +18,7 @@ var/
 
 # Serverless directories
 .serverless
+
+# Env
+.env.prod
+.env.dev

@@ -7,8 +7,8 @@ def get_update_one(product, id_field: str = "uri"):
     return UpdateOne({id_field: product[id_field]}, {"$set": product}, upsert=True)
 
 
-def save_similar_offers(updates: list, collection_name: str):
-    collection = get_collection(collection_name)
+def save_similar_offers(updates: list):
+    collection = get_collection("mpnoffers")
     requests = list(
         [
             UpdateOne(
