@@ -9,6 +9,7 @@ import offerGroupsRoute from "@/api/routes/v1/offer-groups.route";
 const router = express.Router();
 
 router.get("/status", (req, res) => res.send("OK"));
+router.get("/me", (req, res) => res.send(req["user"]));
 
 router.get("/echo/:message", (req, res) =>
   res.json({ message: req.params.message }),
