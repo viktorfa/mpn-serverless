@@ -33,6 +33,7 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "meny",
+                "namespace": "meny",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "subtitle", "title"],
@@ -62,6 +63,7 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "kolonial",
+                "namespace": "kolonial",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
@@ -88,12 +90,21 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "europris",
+                "namespace": "europris",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["description", "name"],
                 "fieldMapping": [
-                    {"source": "name", "destination": "title", "replace_type": "key",},
-                    {"source": "link", "destination": "href", "replace_type": "key",},
+                    {
+                        "source": "name",
+                        "destination": "title",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "link",
+                        "destination": "href",
+                        "replace_type": "key",
+                    },
                 ],
             }
         )
@@ -109,7 +120,11 @@ class TestWithConfig(TestCase):
 
     def test_shopgun_products(self):
         config = generate_handle_config(
-            {"provenance": "shopgun", "collection_name": "groceryoffer",}
+            {
+                "provenance": "shopgun",
+                "namespace": "shopgun",
+                "collection_name": "groceryoffer",
+            }
         )
         actual = handle_products(self.shopgun_products, config)
         pprint(actual[0])
@@ -123,7 +138,11 @@ class TestWithConfig(TestCase):
 
     def test_swecandy_products(self):
         config = generate_handle_config(
-            {"provenance": "swecandy", "collection_name": "groceryoffer",}
+            {
+                "provenance": "swecandy",
+                "namespace": "swecandy",
+                "collection_name": "groceryoffer",
+            }
         )
         actual = handle_products(self.swecandy_products, config)
         pprint(actual[0])
@@ -138,7 +157,11 @@ class TestWithConfig(TestCase):
 
     def test_gottebiten_products(self):
         config = generate_handle_config(
-            {"provenance": "gottebiten.se", "collection_name": "groceryoffer",}
+            {
+                "provenance": "gottebiten.se",
+                "namespace": "gottebiten.se",
+                "collection_name": "groceryoffer",
+            }
         )
         actual = handle_products(self.gottebiten_products, config)
         pprint(actual[0])
@@ -155,9 +178,14 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "iherb",
+                "namespace": "iherb",
                 "collection_name": "iherboffers",
                 "fieldMapping": [
-                    {"source": "sku", "destination": "mpn", "replace_type": "key",},
+                    {
+                        "source": "sku",
+                        "destination": "mpn",
+                        "replace_type": "key",
+                    },
                 ],
             }
         )
@@ -176,7 +204,11 @@ class TestWithConfig(TestCase):
 
     def test_obsbygg_products(self):
         config = generate_handle_config(
-            {"provenance": "obsbygg", "collection_name": "byggoffers",}
+            {
+                "provenance": "obsbygg",
+                "namespace": "obsbygg",
+                "collection_name": "byggoffers",
+            }
         )
         actual = handle_products(self.obsbygg_products, config)
         pprint(actual[0])
@@ -191,7 +223,11 @@ class TestWithConfig(TestCase):
 
     def test_byggmax_products(self):
         config = generate_handle_config(
-            {"provenance": "byggmax.no", "collection_name": "byggoffers",}
+            {
+                "provenance": "byggmax.no",
+                "namespace": "byggmax.no",
+                "collection_name": "byggoffers",
+            }
         )
         actual = handle_products(self.byggmax_products, config)
         pprint(actual[0])
@@ -208,9 +244,14 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "monter.no",
+                "namespace": "monter.no",
                 "collection_name": "byggoffers",
                 "fieldMapping": [
-                    {"source": "NOBB", "destination": "nobb", "replace_type": "key",},
+                    {
+                        "source": "NOBB",
+                        "destination": "nobb",
+                        "replace_type": "key",
+                    },
                 ],
             }
         )
@@ -232,6 +273,7 @@ class TestWithConfig(TestCase):
         config = generate_handle_config(
             {
                 "provenance": "meny",
+                "namespace": "meny",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],
@@ -266,4 +308,3 @@ class TestWithConfig(TestCase):
         result = handle_products([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 37.5)
-

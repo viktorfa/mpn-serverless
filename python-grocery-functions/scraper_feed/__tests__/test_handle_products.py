@@ -16,6 +16,7 @@ class TestHandleProducts(TestCase):
         product = self.obsbygg_products[0]
         config = {
             "provenance": "obsbygg",
+            "namespace": "obsbygg",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
@@ -29,6 +30,7 @@ class TestHandleProducts(TestCase):
         product = self.swecandy_products[0]
         config = {
             "provenance": "swecandy.se",
+            "namespace": "swecandy",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
@@ -39,17 +41,16 @@ class TestHandleProducts(TestCase):
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
-    def test_transform_product_with_dealer(self):
+    def test_transform_product_with_namespace(self):
         product = self.obsbygg_products[0]
         config = {
             "provenance": "obsbygg",
+            "namespace": "HALLA",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
         }
-
-        product["dealer"] = "HALLA"
 
         actual = transform_product(product, config)
         self.assertIn("HALLA", actual["uri"])
@@ -58,6 +59,7 @@ class TestHandleProducts(TestCase):
         product = self.obsbygg_products[0]
         config = {
             "provenance": "obsbygg",
+            "namespace": "obsbygg",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": [],
@@ -90,4 +92,3 @@ class TestGetCategories(TestCase):
 
         actual = get_categories(categories, categories_limits)
         self.assertListEqual(actual, ["Grønnsaker"])
-
