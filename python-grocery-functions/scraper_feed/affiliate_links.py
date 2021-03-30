@@ -59,7 +59,7 @@ def add_elimport_affiliate_link(product: dict) -> dict:
 def add_cdon_affiliate_link(product: dict) -> dict:
     if "tradedoubler" in product["href"]:
         return product
-    escaped_original_href = product["href"]
+    escaped_original_href = encode_uri_component(product["href"])
     new_href = f"https://clk.tradedoubler.com/click?p=116&a=3191774&url={escaped_original_href}"
     return {**product, "href": new_href, "ahref": new_href}
 
@@ -137,6 +137,12 @@ def add_se_byggmax_affiliate_link(product: dict) -> dict:
     return {**product, "href": new_href, "ahref": new_href}
 
 
+def add_buildor_se_affiliate_link(product: dict) -> dict:
+    escaped_original_href = encode_uri_component(product["href"])
+    ahref = f"https://clk.tradedoubler.com/click?p=287168&a=3213987&url={escaped_original_href}"
+    return {**product, "ahref": ahref}
+
+
 def get_affiliate_handler(product: dict):
     if "byggmax.no" in product["href"]:
         return add_byggmax_affiliate_link
@@ -148,8 +154,6 @@ def get_affiliate_handler(product: dict):
         return add_staypro_affiliate_link
     elif "lampegiganten.no" in product["href"]:
         return add_lampegiganten_affiliate_link
-    elif "elektroimportoren.no" in product["href"]:
-        return add_elimport_affiliate_link
     elif "cdon.no" in product["href"]:
         return add_cdon_affiliate_link
     elif "matsmart.se" in product["href"]:
@@ -170,9 +174,13 @@ def get_affiliate_handler(product: dict):
         return add_slikkepott_affiliate_link
     elif "natur.no" in product["href"]:
         return add_natur_no_affiliate_link
+    elif "www.buildor.se" in product["href"]:
+        return add_buildor_se_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
+    if product.get("ahref"):
+        return product
     handler = get_affiliate_handler(product)
     if handler is None:
         return product
