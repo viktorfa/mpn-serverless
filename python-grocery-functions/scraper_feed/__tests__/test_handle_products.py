@@ -17,6 +17,7 @@ class TestHandleProducts(TestCase):
         config = {
             "provenance": "obsbygg",
             "namespace": "obsbygg",
+            "market": "no",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
@@ -31,6 +32,7 @@ class TestHandleProducts(TestCase):
         config = {
             "provenance": "swecandy.se",
             "namespace": "swecandy",
+            "market": "no",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
@@ -46,6 +48,7 @@ class TestHandleProducts(TestCase):
         config = {
             "provenance": "obsbygg",
             "namespace": "HALLA",
+            "market": "no",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
@@ -60,6 +63,7 @@ class TestHandleProducts(TestCase):
         config = {
             "provenance": "obsbygg",
             "namespace": "obsbygg",
+            "market": "no",
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": [],

@@ -29,11 +29,56 @@ class TestWithConfig(TestCase):
         with open("assets/monter-scraper-feed.json") as monter_products_json:
             self.monter_products = json.load(monter_products_json)
 
+    def test_filter_products_with_has(self):
+        config = {
+            "provenance": "obsbygg",
+            "namespace": "obsbygg",
+            "market": "no",
+            "categoriesLimits": [],
+            "fieldMapping": [],
+            "extractQuantityFields": ["title"],
+            "ignore_none": False,
+            "filters": [
+                {
+                    "source": "categories",
+                    "operator": "has",
+                    "target": "skruer og spiker",
+                }
+            ],
+        }
+
+        actual = handle_products(self.obsbygg_products, config)
+
+        self.assertEqual(len(actual), 24, "Should be 24 offers with target category")
+
+    def test_filter_products_with_gt(self):
+        config = {
+            "provenance": "obsbygg",
+            "namespace": "obsbygg",
+            "market": "no",
+            "categoriesLimits": [],
+            "fieldMapping": [],
+            "extractQuantityFields": ["title"],
+            "ignore_none": False,
+            "filters": [
+                {
+                    "source": "pricing.price",
+                    "operator": "gt",
+                    "target": 200,
+                }
+            ],
+        }
+
+        actual = handle_products(self.obsbygg_products, config)
+
+        self.assertEqual(len(actual), 54, "Should be 54 offers price higher than 200")
+
     def test_meny_products(self):
         config = generate_handle_config(
             {
                 "provenance": "meny",
                 "namespace": "meny",
+                "market": "no",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "subtitle", "title"],
@@ -64,6 +109,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "kolonial",
                 "namespace": "kolonial",
+                "market": "no",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
@@ -91,6 +137,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "europris",
                 "namespace": "europris",
+                "market": "no",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["description", "name"],
@@ -123,6 +170,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "shopgun",
                 "namespace": "shopgun",
+                "market": "no",
                 "collection_name": "groceryoffer",
             }
         )
@@ -141,6 +189,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "swecandy",
                 "namespace": "swecandy",
+                "market": "no",
                 "collection_name": "groceryoffer",
             }
         )
@@ -160,6 +209,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "gottebiten.se",
                 "namespace": "gottebiten.se",
+                "market": "no",
                 "collection_name": "groceryoffer",
             }
         )
@@ -179,6 +229,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "iherb",
                 "namespace": "iherb",
+                "market": "no",
                 "collection_name": "iherboffers",
                 "fieldMapping": [
                     {
@@ -207,6 +258,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "obsbygg",
                 "namespace": "obsbygg",
+                "market": "no",
                 "collection_name": "byggoffers",
             }
         )
@@ -226,6 +278,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "byggmax.no",
                 "namespace": "byggmax.no",
+                "market": "no",
                 "collection_name": "byggoffers",
             }
         )
@@ -245,6 +298,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "monter.no",
                 "namespace": "monter.no",
+                "market": "no",
                 "collection_name": "byggoffers",
                 "fieldMapping": [
                     {
@@ -274,6 +328,7 @@ class TestWithConfig(TestCase):
             {
                 "provenance": "meny",
                 "namespace": "meny",
+                "market": "no",
                 "collection_name": "groceryoffer",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],

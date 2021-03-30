@@ -17,6 +17,7 @@ from amp_types.amp_product import (
     HandleConfig,
     MpnOffer,
     ScraperOffer,
+    OfferFilterConfig,
 )
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
@@ -58,7 +59,41 @@ def handle_products(
     time.set_time(config.get("scrape_time", datetime.utcnow()))
     logging.info("Using handle config:")
     logging.info(config)
-    return list(transform_product(x, config) for x in products)
+    transformed_products = (transform_product(x, config) for x in products)
+    filters = pydash.get(config, ["filters"], [])
+    if len(filters) == 0:
+        return list(transformed_products)
+    else:
+        return list(x for x in transformed_products if filter_product(x, filters))
+
+
+def filter_product(product: MpnOffer, filters: List[OfferFilterConfig]):
+    """
+    Will return true if any of the filters are accepted. I.e. OR chaining."""
+    for _filter in filters:
+        op1 = pydash.get(product, _filter["source"])
+        if not op1:
+            continue
+        if type(op1) is str:
+            op1 = op1.lower()
+        elif type(op1) is list:
+            op1 = list(x.lower() if type(x) is str else x for x in op1)
+        is_accepted = False
+        operator = _filter["operator"]
+        op2 = _filter["target"]
+        if operator == "eq":
+            is_accepted = op1 == op2
+        elif operator == "has":
+            is_accepted = op2 in op1
+        elif operator == "in":
+            is_accepted = op1 in op2
+        elif operator == "gt":
+            is_accepted = op1 > op2
+        elif operator == "lt":
+            is_accepted = op1 < op2
+        if is_accepted:
+            return True
+    return False
 
 
 def get_categories(categories, categories_limits):
@@ -137,6 +172,9 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
             config["categoriesLimits"],
         )
         result = {**result, **parsed_quantity}
+
+    result["market"] = config["market"]
+    result["isPartner"] = config.get("is_partner", False)
 
     result = analyze_quantity(result)
     result = standardize_quantity(result)

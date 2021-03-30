@@ -55,6 +55,8 @@ class MpnOffer(TypedDict):
     categories2: List[str]
     gtin: str
     gtins: List[Mapping[str, str]]
+    market: str
+    isPartner: bool
 
 
 class ScraperOffer(TypedDict):
@@ -110,11 +112,20 @@ class ScraperConfig(TypedDict):
     provenance: str
 
 
+class OfferFilterConfig(TypedDict):
+    source: str
+    operator: Literal["in", "has", "eq", "neq", "gt", "lt"]
+    target: str
+
+
 class HandleConfig(TypedDict):
     fieldMapping: List[MappingConfigField]
+    filters: List[OfferFilterConfig]
     extractQuantityFields: List[str]
     categoriesLimits: List[int]
     ignore_none: bool
     provenance: str
     namespace: str
     collection_name: str
+    market: str
+    is_partner: bool
