@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from storage.db import get_handle_config
+from storage.db import get_handle_configs
 
 
 class TestDb(TestCase):
@@ -8,6 +8,5 @@ class TestDb(TestCase):
         pass
 
     def test_get_handle_config(self):
-        result = get_handle_config("obsbygg")
-        self.assertIsNotNone(result.get("collection_name"))
-
+        result = get_handle_configs("obsbygg")
+        self.assertIsNotNone(result[0].get("collection_name"))

@@ -52,11 +52,16 @@ def save_scraped_products(products: Iterable, offers_collection_name: str):
     )
 
 
-def get_handle_config(provenance: str):
+def get_handle_configs(provenance: str):
     collection = get_collection("handleconfigs")
-    cursor = collection.find_one({"provenance": provenance})
-    if cursor:
-        return cursor
+    result = list(
+        x
+        for x in collection.find(
+            {"provenance": provenance, "status": {"$ne": "disabled"}}
+        )
+    )
+    if len(result) > 0:
+        return result
     else:
         raise NoHandleConfigError(
             f"No handleconfig found for provenance: {provenance}."

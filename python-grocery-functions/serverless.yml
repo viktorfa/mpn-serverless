@@ -32,6 +32,7 @@ provider:
     SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
     SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
+    HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -45,11 +46,15 @@ provider:
       Action:
         - "sns:Publish"
       Resource: !Ref ScraperFeedHandledTopic
+    - Effect: Allow
+      Action:
+        - "lambda:InvokeFunction"
+      Resource:
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
 
 package:
   include:
-    - scraper_feed_handler.py
-    - product_feed_handler.py
+    - aws_config.py
     - offer_feed/**
     - scraper_feed/**
     - storage/**
@@ -63,12 +68,16 @@ package:
 
 functions:
   scraperFeedSns:
-    handler: scraper_feed_handler.scraper_feed_sns
+    handler: scraper_feed.scraper_handler.scraper_feed_sns
     events:
       - sns:
           topicName: ScraperFeedCreated
           arn:
             Ref: ScraperFeedCreatedTopic
+  scraperFeedTrigger:
+    handler: scraper_feed.scraper_handler.trigger_scraper_feed
+  scraperFeedWithConfigTrigger:
+    handler: scraper_feed.scraper_handler.trigger_scraper_feed_with_config
   productFeedSns:
     handler: offer_feed.offer_handler.offer_feed_sns
     events:
@@ -76,8 +85,6 @@ functions:
           topicName: ScraperFeedHandled
           arn:
             Ref: ScraperFeedHandledTopic
-  scraperFeedTrigger:
-    handler: scraper_feed_handler.trigger_scraper_feed
   offerFeedTrigger:
     handler: offer_feed.offer_handler.offer_feed_trigger
 

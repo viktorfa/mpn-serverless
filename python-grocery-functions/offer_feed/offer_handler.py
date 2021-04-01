@@ -2,22 +2,17 @@ import json
 from bson import json_util
 import logging
 import os
-from pymongo import UpdateOne, InsertOne
+from pymongo import UpdateOne
 from util.utils import log_traceback
 
 import aws_config
 import boto3
 from typing import Iterable, TypedDict, List
-from pymongo.results import InsertManyResult
 from datetime import datetime
 
-from offer_feed.process_offers import MpnOfferWithProduct, OfferConfig, process_offers
 
 from storage.db import (
     get_collection,
-    get_insert_product_has_offer,
-    get_offers_with_product,
-    get_offers_same_gtin_offers,
 )
 
 import sentry_sdk
@@ -153,6 +148,7 @@ def offer_feed_sns(event, context):
 
 
 def offer_feed_trigger(event, context):
+    aws_config.lambda_context = context
     provenance = event["provenance"]
     try:
         offers_list = get_offers_list_for_gtins(provenance)

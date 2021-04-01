@@ -118,7 +118,7 @@ class OfferFilterConfig(TypedDict):
     target: str
 
 
-class HandleConfig(TypedDict):
+class DbHandleConfig(TypedDict):
     fieldMapping: List[MappingConfigField]
     filters: List[OfferFilterConfig]
     extractQuantityFields: List[str]
@@ -129,3 +129,11 @@ class HandleConfig(TypedDict):
     collection_name: str
     market: str
     is_partner: bool
+
+
+class EventHandleConfig(DbHandleConfig):
+    feed_key: str
+
+
+class HandleConfig(EventHandleConfig):
+    scrape_time: datetime
