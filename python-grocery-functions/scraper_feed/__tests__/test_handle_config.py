@@ -17,6 +17,7 @@ class TestHandleConfig(TestCase):
             return_value={
                 "provenance": "shopgun",
                 "market": "no",
+                "namespace": "meny",
                 "collection_name": expected_collection_name,
             },
         ) as mock_method:

@@ -14,7 +14,7 @@ from util.errors import NoHandleConfigError
 def generate_handle_config(config: dict) -> HandleConfig:
     result = {}
     result["provenance"] = config["provenance"]
-    result["namespace"] = config.get("namespace")
+    result["namespace"] = config["namespace"]
     result["collection_name"] = config["collection_name"]
     result["market"] = config["market"]
     result["is_partner"] = config.get("is_partner", False)

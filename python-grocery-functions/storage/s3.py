@@ -1,7 +1,9 @@
 import json
 import boto3
+import botostubs
 
-s3 = boto3.client("s3")
+
+s3 = boto3.client("s3")  # type: botostubs.S3
 
 
 def get_sns_file_content(event):

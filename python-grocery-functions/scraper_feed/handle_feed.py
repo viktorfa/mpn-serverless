@@ -1,11 +1,14 @@
+from datetime import datetime, timedelta
 import os
 import boto3
+import botostubs
 import json
 from pymongo.results import BulkWriteResult
 
+import aws_config
 from scraper_feed.handle_config import fetch_handle_config
 from scraper_feed.handle_products import handle_products
-from storage.db import save_scraped_products
+from storage.db import save_scraped_products, store_handle_run
 from util.helpers import json_handler
 from util.utils import log_traceback
 from amp_types.amp_product import ScraperConfig
@@ -18,7 +21,9 @@ def handle_feed(feed: list, config: ScraperConfig) -> BulkWriteResult:
     Handles a feed from Scrapy according to the provided config.
     """
 
-    sns_client = boto3.client("sns")
+    start_time = datetime.now()
+
+    sns_client = boto3.client("sns")  # type: botostubs.SNS
 
     _config = fetch_handle_config(config)
 
@@ -55,4 +60,20 @@ def handle_feed(feed: list, config: ScraperConfig) -> BulkWriteResult:
         MessageStructure="json",
         TargetArn=SCRAPER_FEED_HANDLED_TOPIC_ARN,
     )
+
+    end_time = datetime.now()
+
+    handle_run = {
+        **_config,
+        "example_items": products[:100],
+        "original_config": config,
+        "time_elapsed_seconds": (end_time - start_time).total_seconds(),
+        "items_handled": len(products),
+        "createdAt": end_time,
+        "updatedAt": end_time,
+        "logs": aws_config.get_log_group_url(),
+    }
+
+    store_handle_run(handle_run)
+
     return result

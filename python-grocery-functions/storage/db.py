@@ -244,3 +244,8 @@ def get_new_product_from_offer(offer) -> dict:
 
 def get_insert_product_with_offer(offer) -> List[InsertOne]:
     return InsertOne({**get_new_product_from_offer(offer), "offers": [offer["_id"]]})
+
+
+def store_handle_run(handle_run_config):
+    collection = get_collection("handleruns")
+    return collection.insert_one(handle_run_config)

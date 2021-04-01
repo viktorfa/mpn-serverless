@@ -1,9 +1,11 @@
 import json
 from bson import json_util
 import logging
+import os
 from pymongo import UpdateOne, InsertOne
 from util.utils import log_traceback
 
+import aws_config
 import boto3
 from typing import Iterable, TypedDict, List
 from pymongo.results import InsertManyResult
@@ -21,9 +23,11 @@ from storage.db import (
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
-sentry_sdk.init(
-    integrations=[AwsLambdaIntegration()],
-)
+
+if not os.getenv("IS_LOCAL"):
+    sentry_sdk.init(
+        integrations=[AwsLambdaIntegration()],
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -133,6 +137,7 @@ def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
 def offer_feed_sns(event, context):
     logging.info("event")
     logging.info(event)
+    aws_config.lambda_context = context
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
     provenance = sns_message["provenance"]
     try:
@@ -144,7 +149,7 @@ def offer_feed_sns(event, context):
     except Exception as e:
         logging.error(e)
         log_traceback(e)
-    return {"message": "no cannot"}
+        return {"message": str(e)}
 
 
 def offer_feed_trigger(event, context):
@@ -158,4 +163,4 @@ def offer_feed_trigger(event, context):
     except Exception as e:
         logging.error(e)
         log_traceback(e)
-    return {"message": "no cannot"}
+        return {"message": str(e)}
