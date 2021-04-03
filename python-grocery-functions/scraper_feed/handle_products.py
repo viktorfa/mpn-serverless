@@ -8,6 +8,7 @@ import pydash
 from transform.transform import transform_fields
 from transform.offer import get_field_from_scraper_offer
 from util.helpers import get_product_uri, is_integer_num
+from scraper_feed.filters import filter_product
 from parsing.quantity_extraction import (
     analyze_quantity,
     parse_quantity,
@@ -17,7 +18,6 @@ from amp_types.amp_product import (
     HandleConfig,
     MpnOffer,
     ScraperOffer,
-    OfferFilterConfig,
 )
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
@@ -65,35 +65,6 @@ def handle_products(
         return list(transformed_products)
     else:
         return list(x for x in transformed_products if filter_product(x, filters))
-
-
-def filter_product(product: MpnOffer, filters: List[OfferFilterConfig]):
-    """
-    Will return true if any of the filters are accepted. I.e. OR chaining."""
-    for _filter in filters:
-        op1 = pydash.get(product, _filter["source"])
-        if not op1:
-            continue
-        if type(op1) is str:
-            op1 = op1.lower()
-        elif type(op1) is list:
-            op1 = list(x.lower() if type(x) is str else x for x in op1)
-        is_accepted = False
-        operator = _filter["operator"]
-        op2 = _filter["target"]
-        if operator == "eq":
-            is_accepted = op1 == op2
-        elif operator == "has":
-            is_accepted = op2 in op1
-        elif operator == "in":
-            is_accepted = op1 in op2
-        elif operator == "gt":
-            is_accepted = op1 > op2
-        elif operator == "lt":
-            is_accepted = op1 < op2
-        if is_accepted:
-            return True
-    return False
 
 
 def get_categories(categories, categories_limits):
