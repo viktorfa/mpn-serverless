@@ -38,14 +38,15 @@ def add_grontfokus_affiliate_link(product: dict) -> dict:
 
 
 def add_se_amazon_affiliate_link(product: dict) -> dict:
-    if "tag=" in product["href"]:
-        return product
-    return {
-        **product,
-        "href": f'{product["href"]}&tag=mpn00e-21'
-        if "?" in product["href"]
-        else f'{product["href"]}?tag=mpn00e-21',
-    }
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn00e-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn00e-21'
+        )
+
+    return {**product, "ahref": ahref}
 
 
 def add_elimport_affiliate_link(product: dict) -> dict:
@@ -179,7 +180,7 @@ def get_affiliate_handler(product: dict):
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
-    if product.get("ahref"):
+    if product.get("ahref") and not not product["ahref"]:
         return product
     handler = get_affiliate_handler(product)
     if handler is None:
