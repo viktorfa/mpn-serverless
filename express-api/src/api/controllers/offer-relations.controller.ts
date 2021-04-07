@@ -14,6 +14,8 @@ const addOfferRelationBody = t.type({
   relationType: t.union([
     t.literal(OfferRelation.identical),
     t.literal(OfferRelation.interchangeable),
+    t.literal(OfferRelation.identicaldifferentquantity),
+    t.literal(OfferRelation.exchangeabledifferentquantity),
   ]),
 });
 

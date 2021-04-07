@@ -150,6 +150,8 @@ declare type RatingScoreType = 1 | 2 | 3 | 4 | 5;
 declare type OfferRelationType =
   | "identical"
   | "interchangeable"
+  | "identicaldifferentquantity"
+  | "exchangeabledifferentquantity"
   | "similar"
   | "related"
   | "lowerend"

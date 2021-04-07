@@ -1,6 +1,8 @@
 export const OfferRelation: Record<OfferRelationType, OfferRelationType> = {
   identical: "identical",
   interchangeable: "interchangeable",
+  identicaldifferentquantity: "identicaldifferentquantity",
+  exchangeabledifferentquantity: "exchangeabledifferentquantity",
   similar: "similar",
   related: "related",
   lowerend: "lowerend",
