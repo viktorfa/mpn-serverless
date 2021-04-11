@@ -8,12 +8,13 @@ from pymongo.results import BulkWriteResult
 
 import aws_config
 from scraper_feed.handle_products import handle_products
-from storage.db import save_scraped_products, store_handle_run
+from storage.db import save_scraped_products, store_handle_run, save_book_offers
 from util.helpers import json_handler
 from util.utils import log_traceback
-from amp_types.amp_product import HandleConfig, ScraperConfig
+from amp_types.amp_product import HandleConfig
 from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
 from scraper_feed.affiliate_links import add_affiliate_links
+from scraper_feed.helpers import get_book_gtins
 
 
 def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult:
@@ -55,6 +56,27 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
     if len(products) == 0:
         return {"message": "No offers to save"}
 
+    if config["collection_name"] == "bookoffers":
+        try:
+            products = list(
+                {
+                    **product,
+                    "gtins": get_book_gtins(product),
+                    "uri": product["book_uri"],
+                }
+                for product in products
+            )
+            result = {}
+            # Only 512 offers when in dev to avoid filling up Elastic Search storage
+            if os.getenv("STAGE") == "dev":
+                result = save_book_offers(products[:512])
+            else:
+                result = save_book_offers(products)
+            return result
+        except Exception as e:
+            log_traceback(e)
+            raise e
+
     try:
         # Only 512 offers when in dev to avoid filling up Elastic Search storage
         if os.getenv("STAGE") == "dev":
@@ -64,6 +86,7 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
     except Exception as e:
         log_traceback(e)
         raise e
+
     # To allow event-driven behaviour, we publish an sns topic when products are saved successfully.
     sns_message_data = {
         **config,

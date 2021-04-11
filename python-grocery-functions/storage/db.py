@@ -254,3 +254,7 @@ def get_insert_product_with_offer(offer) -> List[InsertOne]:
 def store_handle_run(handle_run_config):
     collection = get_collection("handleruns")
     return collection.insert_one(handle_run_config)
+
+
+def save_book_offers(offers):
+    return bulk_upsert(offers, "bookoffers")

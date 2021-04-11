@@ -47,6 +47,22 @@ def get_gtins(offer: ScraperOffer) -> dict:
     return result
 
 
+def get_book_gtins(offer: ScraperOffer) -> dict:
+    result = {}
+    for k, v in {
+        _k: _v
+        for _k, _v in offer.items()
+        if _k in ["isbn", "isbn10", "isbn13"] and re.match(r"^\d+$", str(_v))
+    }.items():
+        if len(v) == 10:
+            result["isbn10"] = v
+        elif len(v) == 13:
+            result["isbn13"] = v
+        else:
+            result[k] = v
+    return result
+
+
 def get_provenance_id(product):
     candidates = (
         product.get("provenanceId"),

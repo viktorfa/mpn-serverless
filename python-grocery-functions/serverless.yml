@@ -88,6 +88,9 @@ functions:
   offerFeedTrigger:
     handler: offer_feed.offer_handler.offer_feed_trigger
 
+  bookFeedTrigger:
+    handler: book_feed.handler.handle_book_offers_trigger
+
 resources:
   - ${file(../s3-sns-cloudformation.yml)}
 
