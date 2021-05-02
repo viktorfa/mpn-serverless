@@ -18,7 +18,7 @@ from parsing.enums import unit_types
 
 def extract_number(string: str) -> Optional[float]:
     try:
-        pattern = r"(\d+,\d+)"
+        pattern = r"(\d+[,\.\:]\d+)"
         matches = re.findall(pattern, string)
         if len(matches) > 0:
             return matches[0]
@@ -33,7 +33,7 @@ def extract_numbers_with_context(string: str) -> Optional[list]:
     """
     Finds numbers and returns a list of tuples with the number and its prefix and suffix.
     """
-    number_pattern = r"(\d+(?:,\d+)?)"
+    number_pattern = r"(\d+(?:[,\.\:]\d+)?)"
     compiled_number_pattern = re.compile(number_pattern, re.A)
     number_matches = re.finditer(number_pattern, string)
     number_matches = list(number_matches)

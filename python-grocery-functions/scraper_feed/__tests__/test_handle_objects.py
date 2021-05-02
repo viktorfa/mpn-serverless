@@ -38,6 +38,7 @@ class TestWithConfig(TestCase):
             "fieldMapping": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
+            "collection_name": "byggoffers",
             "filters": [
                 {
                     "source": "categories",
@@ -60,6 +61,7 @@ class TestWithConfig(TestCase):
             "fieldMapping": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
+            "collection_name": "byggoffers",
             "filters": [
                 {
                     "source": "pricing.price",
@@ -79,7 +81,7 @@ class TestWithConfig(TestCase):
                 "provenance": "meny",
                 "namespace": "meny",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "subtitle", "title"],
                 "fieldMapping": [
@@ -110,7 +112,7 @@ class TestWithConfig(TestCase):
                 "provenance": "kolonial",
                 "namespace": "kolonial",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
                 "fieldMapping": [
@@ -138,7 +140,7 @@ class TestWithConfig(TestCase):
                 "provenance": "europris",
                 "namespace": "europris",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["description", "name"],
                 "fieldMapping": [
@@ -171,7 +173,7 @@ class TestWithConfig(TestCase):
                 "provenance": "shopgun",
                 "namespace": "shopgun",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
             }
         )
         actual = handle_products(self.shopgun_products, config)
@@ -190,7 +192,7 @@ class TestWithConfig(TestCase):
                 "provenance": "swecandy",
                 "namespace": "swecandy",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
             }
         )
         actual = handle_products(self.swecandy_products, config)
@@ -210,7 +212,7 @@ class TestWithConfig(TestCase):
                 "provenance": "gottebiten.se",
                 "namespace": "gottebiten.se",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
             }
         )
         actual = handle_products(self.gottebiten_products, config)
@@ -329,7 +331,7 @@ class TestWithConfig(TestCase):
                 "provenance": "meny",
                 "namespace": "meny",
                 "market": "no",
-                "collection_name": "groceryoffer",
+                "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],
                 "fieldMapping": [
@@ -359,7 +361,8 @@ class TestWithConfig(TestCase):
             "gtin13": "2000406400006",
             "provenanceId": "2000406400006",
             "priceCurrency": "NOK",
+            "collection_name": "groceryoffers",
         }
         result = handle_products([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
-        self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 37.5)
+        self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 39.9)

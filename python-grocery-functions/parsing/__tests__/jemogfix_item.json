@@ -1,0 +1,208 @@
+{
+  "_id": {
+    "$oid": "5fca33c39f8cd4704bb9929c"
+  },
+  "uri": "www.jemogfix.no:product:9050863",
+  "additionalProperties": [
+    {
+      "value": "34.85",
+      "key": "unitPrice",
+      "type": "price"
+    },
+    {
+      "value": "/m",
+      "key": "unitPriceUnit",
+      "type": null
+    }
+  ],
+  "additionalProperty": null,
+  "availability": "http://schema.org/InStock",
+  "brand": null,
+  "canonical_url": "https://www.jemogfix.no/furu-terrassebord-28-x-120/4330/9050863/",
+  "categories": ["Byggevarer & trelast", "Trematerialer og bord"],
+  "dealer": "www.jemogfix.no",
+  "description": "Impregnert CU\nRoyalimpregnert\nMeget holdbar i forhold til råte og insektangrep\n4,8 meter\nFarge: Royal brun",
+  "ean": null,
+  "gtin": null,
+  "gtin12": null,
+  "gtin13": null,
+  "gtin8": null,
+  "gtins": {},
+  "href": "https://www.jemogfix.no/furu-terrassebord-28-x-120/4330/9050863/",
+  "image": "https://medieserver.jemogfix.dk/api/v1/products/GetPrimaryProductImage?productGroupNumber=4330&productNumber=9050863&shopLanguage=3&previewSize=700",
+  "imageUrl": "https://medieserver.jemogfix.dk/api/v1/products/GetPrimaryProductImage?productGroupNumber=4330&productNumber=9050863&shopLanguage=3&previewSize=700",
+  "itemCondition": null,
+  "items": {
+    "max": 1,
+    "min": 1
+  },
+  "market": "no",
+  "mpn": "9050863",
+  "mpnStock": "InStock",
+  "pieces": {},
+  "price": 167.28,
+  "priceCurrency": "NOK",
+  "pricing": {
+    "price": 167.28,
+    "currency": "NOK",
+    "prePrice": null,
+    "priceUnit": "pcs"
+  },
+  "provenance": "www.jemogfix.no",
+  "provenanceId": "9050863",
+  "quantity": {
+    "size": {},
+    "pieces": {}
+  },
+  "similarOffers": [
+    {
+      "uri": "gausdal:product:40110413",
+      "score": 0.5553058950006924
+    },
+    {
+      "uri": "gausdal:product:54629744",
+      "score": 0.5302436932951134
+    },
+    {
+      "uri": "www.monter.no:product:7296860",
+      "score": 0.5033919841878288
+    },
+    {
+      "uri": "gausdal:product:51998501",
+      "score": 0.49526859096660203
+    },
+    {
+      "uri": "gausdal:product:23304215",
+      "score": 0.4866833869344161
+    },
+    {
+      "uri": "gausdal:product:51998516",
+      "score": 0.48515057452431487
+    },
+    {
+      "uri": "gausdal:product:46906065",
+      "score": 0.47822511009305785
+    },
+    {
+      "uri": "gausdal:product:54294452",
+      "score": 0.4749728537290615
+    },
+    {
+      "uri": "byggern:product:3159",
+      "score": 0.47213871852774436
+    },
+    {
+      "uri": "www.monter.no:product:7180869",
+      "score": 0.4554002783823474
+    },
+    {
+      "uri": "skibygg:product:23304181",
+      "score": 0.4502863054009176
+    },
+    {
+      "uri": "skibygg:product:45174946",
+      "score": 0.4420979676243809
+    },
+    {
+      "uri": "skibygg:product:45174935",
+      "score": 0.4402016917269799
+    },
+    {
+      "uri": "gausdal:product:51407485",
+      "score": 0.4391862699757212
+    },
+    {
+      "uri": "gausdal:product:54294380",
+      "score": 0.4379681606452412
+    },
+    {
+      "uri": "www.maxbo.no:product:2414339",
+      "score": 0.42888226823604064
+    },
+    {
+      "uri": "skibygg:product:52078456",
+      "score": 0.42209823749836833
+    },
+    {
+      "uri": "skibygg:product:52078494",
+      "score": 0.42006868377390805
+    },
+    {
+      "uri": "skibygg:product:45720273",
+      "score": 0.4186391391206866
+    },
+    {
+      "uri": "skibygg:product:52078441",
+      "score": 0.4182483221935467
+    },
+    {
+      "uri": "skibygg:product:52078437",
+      "score": 0.4179204418795309
+    },
+    {
+      "uri": "www.monter.no:product:7084156",
+      "score": 0.41365692101771667
+    },
+    {
+      "uri": "www.monter.no:product:7084150",
+      "score": 0.41365692101771667
+    },
+    {
+      "uri": "www.monter.no:product:7084155",
+      "score": 0.41365692101771667
+    },
+    {
+      "uri": "www.monter.no:product:7084151",
+      "score": 0.41365692101771667
+    },
+    {
+      "uri": "skibygg:product:45720265",
+      "score": 0.41355641093212825
+    },
+    {
+      "uri": "skibygg:product:41330622",
+      "score": 0.41261231879104265
+    },
+    {
+      "uri": "skibygg:product:49335841",
+      "score": 0.41140050834359093
+    },
+    {
+      "uri": "gausdal:product:51767743",
+      "score": 0.40541023357907596
+    },
+    {
+      "uri": "gausdal:product:45174946",
+      "score": 0.4026974888566951
+    },
+    {
+      "uri": "www.maxbo.no:product:860818",
+      "score": 0.4023708039987687
+    },
+    {
+      "uri": "gausdal:product:24200842",
+      "score": 0.3994291678595443
+    }
+  ],
+  "siteCollection": "byggoffers",
+  "size": {},
+  "sku": "9050863",
+  "title": "Furu terrassebord 28 X 120",
+  "unitPrice": "22.9",
+  "unitPriceUnit": "/m",
+  "upc": null,
+  "url": "https://www.jemogfix.no/furu-terrassebord-28-x-120/4330/9050863/",
+  "url_fingerprint": "143abc0b19c99bf23eaf269ff689af34b7f2f5bc",
+  "validFrom": {
+    "$date": "2021-04-26T07:01:58.000Z"
+  },
+  "validThrough": {
+    "$date": "2021-05-03T11:01:58.000Z"
+  },
+  "value": {
+    "size": {},
+    "pieces": {}
+  },
+  "ahref": null,
+  "isPartner": false
+}

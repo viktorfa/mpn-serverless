@@ -1,15 +1,18 @@
+from transform.offer import get_field_from_scraper_offer
 from amp_types.amp_product import MpnOffer
 from typing import List
 import pydash
+import re
 
 from parsing.parsing import (
     extract_numbers_with_context,
     extract_unit,
     extract_units_from_number_context,
     get_si,
+    extract_number,
 )
 from parsing.enums import unit_types
-from amp_types.amp_product import MpnOffer
+from amp_types.amp_product import MpnOffer, ScraperOffer, HandleConfig
 from amp_types.quantity_types import (
     QuantityField,
     ItemsField,
@@ -96,7 +99,7 @@ def analyze_quantity(offer: MpnOffer) -> MpnOffer:
     return offer
 
 
-def parse_quantity(strings: List[str]) -> ExtractQuantityReturnType:
+def parse_quantity(strings: List[str], safe_units=None) -> ExtractQuantityReturnType:
     """Returns a dict describing the quantity and value with unitsextracted from strings.
     Quantity can be denominated in both size (kg, l, grams, etc.) or pieces (packs, bags, etc.)
     It also extracts value which is price divided by quantity. It does this only by parsing text, not by using the price then dividing it by the extracted quantity.
@@ -106,14 +109,14 @@ def parse_quantity(strings: List[str]) -> ExtractQuantityReturnType:
 
     _strings = list(s.lower() for s in strings)
 
-    quantity = extract_quantity(_strings)
-    value = extract_value(_strings)
+    quantity = extract_quantity(_strings, safe_units)
+    value = extract_value(_strings, safe_units)
     items = extract_items(_strings)
 
     return dict(quantity=quantity, value=value, items=items)
 
 
-def extract_quantity(strings: List[str]) -> QuantityField:
+def extract_quantity(strings: List[str], safe_units=None) -> QuantityField:
     extracted_strings = []
     for string in strings:
         context = extract_numbers_with_context(string)
@@ -125,28 +128,30 @@ def extract_quantity(strings: List[str]) -> QuantityField:
     size = {}
     pieces = {}
     for string in extracted_strings:
-        for (i, number) in enumerate(string):
+        for (i, number) in enumerate(x for x in string if x):
             unit = number.get("unit")
             unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
-            if unit in quantity_units:
+            unit = extract_unit(unit)
+
+            if unit["type"] not in (unit_types.QUANTITY, unit_types.PIECE):
+                continue
+            if unit["symbol"] in quantity_units:
+                if safe_units and unit["si"]["symbol"] not in safe_units:
+                    continue
                 size_value = number.get("value")
                 size_amount = dict(min=size_value, max=size_value)
-                size_unit = dict(
-                    symbol=unit, type=unit_types.QUANTITY, si=get_si(unit),
-                )
-                size = dict(unit=size_unit, amount=size_amount)
+                size = dict(unit=unit, amount=size_amount)
                 result = dict(size=size, pieces=dict())
-            elif unit in piece_units:
+            elif unit["symbol"] in piece_units:
                 pieces_value = number.get("value")
                 pieces_amount = dict(min=pieces_value, max=pieces_value)
-                pieces_unit = dict(symbol=unit, type=unit_types.PIECE)
-                pieces = dict(unit=pieces_unit, amount=pieces_amount)
+                pieces = dict(unit=unit, amount=pieces_amount)
 
     result = dict(size=size, pieces=pieces)
     return result
 
 
-def extract_value(strings: List[str]) -> QuantityField:
+def extract_value(strings: List[str], safe_units=None) -> QuantityField:
     extracted_strings = []
     for string in strings:
         context = extract_numbers_with_context(string)
@@ -159,30 +164,30 @@ def extract_value(strings: List[str]) -> QuantityField:
         extracted_numbers = handle_multipliers(extracted_numbers)
 
         extracted_strings.append(extracted_numbers)
+
     size = {}
     pieces = {}
     for string in extracted_strings:
         for (i, number) in enumerate(string):
             unit = extract_unit(number.get("unit"))
-            if unit["symbol"] in quantity_value_units:
+            if safe_units and unit["symbol"] not in safe_units:
+                continue
+            if unit["type"] not in (unit_types.QUANTITY_VALUE, unit_types.PIECE_VALUE):
+                continue
+            if unit["symbol"] in quantity_units:
+                if safe_units and unit["si"]["symbol"] not in safe_units:
+                    continue
                 size_value = number.get("value")
                 size_amount = dict(min=size_value, max=size_value)
-                size_unit = dict(
-                    symbol=number.get("unit"),
-                    type=unit_types.QUANTITY_VALUE,
-                    si=si_mappings.get(number.get("unit")),
-                )
-                size = dict(unit=size_unit, amount=size_amount)
+                size = dict(unit=unit, amount=size_amount)
                 result = dict(size=size, pieces=dict())
-            elif unit["symbol"] in piece_value_units:
+            elif unit["symbol"] in piece_units:
                 pieces_value = number.get("value")
                 pieces_amount = dict(min=pieces_value, max=pieces_value)
-                pieces_unit = dict(
-                    symbol=number.get("unit"), type=unit_types.PIECE_VALUE
-                )
-                pieces = dict(unit=pieces_unit, amount=pieces_amount)
+                pieces = dict(unit=unit, amount=pieces_amount)
 
     result = dict(size=size, pieces=pieces)
+
     return result
 
 
@@ -204,3 +209,39 @@ def handle_multipliers(extracted_numbers):
 
 def extract_items(strings: List[str]) -> ItemsField:
     return dict(max=1, min=1)
+
+
+def parse_explicit_quantity(offer: ScraperOffer, config: HandleConfig):
+    parsed_quantity = parse_quantity(get_explicit_quantity_strings(offer, config))
+    return {
+        k: v
+        for k, v in parsed_quantity.items()
+        if v
+        and v.get("pieces") not in ({}, None) != {}
+        or v.get("size") not in ({}, None)
+    }
+
+
+def get_explicit_quantity_strings(offer: ScraperOffer, config: HandleConfig):
+    explicit_quantity = get_field_from_scraper_offer(offer, "quantityValue")
+    explicit_quantity_unit = get_field_from_scraper_offer(offer, "quantityUnit")
+
+    explicit_unit_price = get_field_from_scraper_offer(offer, "unitPrice")
+    explicit_unit_price_unit = get_field_from_scraper_offer(offer, "unitPriceUnit")
+
+    explicit_quantity_string = get_field_from_scraper_offer(offer, "quantityString")
+    explicit_value_string = get_field_from_scraper_offer(offer, "valueString")
+
+    result = []
+    if explicit_quantity and explicit_quantity_unit:
+        result.append(f"{explicit_quantity}{explicit_quantity_unit}")
+    if explicit_unit_price and explicit_unit_price_unit:
+        result.append(
+            f"{explicit_unit_price}/{re.sub(r'/', '',explicit_unit_price_unit)}"
+        )
+    if explicit_quantity_string:
+        result.append(explicit_quantity_string)
+    if explicit_value_string:
+        result.append(explicit_value_string)
+
+    return result

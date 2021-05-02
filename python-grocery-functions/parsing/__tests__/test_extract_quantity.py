@@ -33,6 +33,27 @@ class TestExtractQuantity(TestCase):
         self.assertEqual(pydash.get(actual, "size.amount.min"), 12)
         self.assertEqual(pydash.get(actual, "size.unit.symbol"), "l")
 
+    def test_with_safe_unit_list_not_parse(self):
+        actual = extract_quantity(["4m"], ["l"])
+        print("actual")
+        print(actual)
+        self.assertEqual(pydash.get(actual, "size.amount.min"), None)
+        self.assertEqual(pydash.get(actual, "size.unit.symbol"), None)
+
+    def test_with_safe_unit_list(self):
+        actual = extract_quantity(["4m"], ["l", "m"])
+        print("actual")
+        print(actual)
+        self.assertEqual(pydash.get(actual, "size.amount.min"), 4)
+        self.assertEqual(pydash.get(actual, "size.unit.symbol"), "m")
+
+    def test_with_safe_unit_list_not_si(self):
+        actual = extract_quantity(["4dl"], ["l", "m"])
+        print("actual")
+        print(actual)
+        self.assertEqual(pydash.get(actual, "size.amount.min"), 4)
+        self.assertEqual(pydash.get(actual, "size.unit.symbol"), "dl")
+
 
 class TestAnalyzeQuantity(TestCase):
     def test_basic_without_size(self):
@@ -40,7 +61,9 @@ class TestAnalyzeQuantity(TestCase):
             "items": {"max": 1, "min": 1},
             "pricing": {"price": 44, "priceUnit": "/m"},
             "pieces": {},
-            "quantity": {"size": {},},
+            "quantity": {
+                "size": {},
+            },
         }
         actual = analyze_quantity(offer)
         self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 1)
@@ -51,7 +74,9 @@ class TestAnalyzeQuantity(TestCase):
             "items": {"max": 1, "min": 1},
             "pricing": {"price": 44, "priceUnit": "/lm"},
             "pieces": {},
-            "quantity": {"size": {},},
+            "quantity": {
+                "size": {},
+            },
         }
         actual = analyze_quantity(offer)
         self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 1)
@@ -62,7 +87,9 @@ class TestAnalyzeQuantity(TestCase):
             "items": {"max": 1, "min": 1},
             "pricing": {"price": 44, "priceUnit": "/stk"},
             "pieces": {},
-            "quantity": {"size": {},},
+            "quantity": {
+                "size": {},
+            },
         }
         actual = analyze_quantity(offer)
         self.assertIsNone(pydash.get(actual, "quantity.size.amount.min"))

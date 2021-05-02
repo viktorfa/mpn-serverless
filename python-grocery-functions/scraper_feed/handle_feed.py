@@ -12,7 +12,7 @@ from storage.db import save_scraped_products, store_handle_run, save_book_offers
 from util.helpers import json_handler
 from util.utils import log_traceback
 from amp_types.amp_product import HandleConfig
-from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN
+from config.vars import SCRAPER_FEED_HANDLED_TOPIC_ARN, BOOK_FEED_HANDLED_TOPIC_ARN
 from scraper_feed.affiliate_links import add_affiliate_links
 from scraper_feed.helpers import get_book_gtins
 
@@ -72,6 +72,17 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
                 result = save_book_offers(products[:512])
             else:
                 result = save_book_offers(products)
+            sns_message_data = {
+                "namespace": config["namespace"],
+            }
+            sns_message = json.dumps(
+                {"default": json.dumps(sns_message_data, default=json_handler)}
+            )
+            sns_client.publish(
+                Message=sns_message,
+                MessageStructure="json",
+                TargetArn=BOOK_FEED_HANDLED_TOPIC_ARN,
+            )
             return result
         except Exception as e:
             log_traceback(e)

@@ -13,6 +13,7 @@ from parsing.quantity_extraction import (
     analyze_quantity,
     parse_quantity,
     standardize_quantity,
+    parse_explicit_quantity,
 )
 from amp_types.amp_product import (
     HandleConfig,
@@ -129,14 +130,23 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         if extra_quantity_string:
             parse_quantity_strings.append(extra_quantity_string)
 
-        parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x))
+        safe_unit_list = ["l", "kg"] if "grocery" in config["collection_name"] else None
+
+        parsed_quantity = parse_quantity(
+            list(x for x in parse_quantity_strings if x), safe_unit_list
+        )
         if config["ignore_none"]:
             for k, v in parsed_quantity.items():
                 if remove_none_fields(v):
                     parsed_quantity[k] = v
                 else:
                     parsed_quantity[k] = {}
-            # parsed_quantity = remove_none_fields(parsed_quantity)
+
+        parsed_explicit_quantity = parse_explicit_quantity(offer, config)
+        parsed_quantity = {
+            **parsed_quantity,
+            **parsed_explicit_quantity,
+        }
         result["mpnStock"] = get_stock_status(offer)
         result["categories"] = get_categories(
             pydash.get(offer, "categories"),

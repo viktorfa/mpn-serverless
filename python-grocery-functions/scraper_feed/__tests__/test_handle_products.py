@@ -22,6 +22,7 @@ class TestHandleProducts(TestCase):
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
+            "collection_name": "byggoffers",
         }
 
         actual = transform_product(product, config)
@@ -37,6 +38,7 @@ class TestHandleProducts(TestCase):
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
+            "collection_name": "groceryoffers",
         }
 
         actual = transform_product(product, config)
@@ -53,6 +55,7 @@ class TestHandleProducts(TestCase):
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
             "ignore_none": False,
+            "collection_name": "groceryoffers",
         }
 
         actual = transform_product(product, config)
@@ -68,6 +71,7 @@ class TestHandleProducts(TestCase):
             "categoriesLimits": [],
             "extractQuantityFields": [],
             "ignore_none": True,
+            "collection_name": "groceryoffers",
         }
 
         actual = transform_product(product, config)
