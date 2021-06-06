@@ -23,38 +23,40 @@ export const schemaConfig = {
   categories: "text",
 };
 
-export const getSchemaElasticClient = async (): Promise<
-  ISchemaElasticClient
-> => {
-  const elasticClient: ISchemaElasticClient = (await getElasticClient()) as ISchemaElasticClient;
+export const getSchemaElasticClient =
+  async (): Promise<ISchemaElasticClient> => {
+    const elasticClient: ISchemaElasticClient =
+      (await getElasticClient()) as ISchemaElasticClient;
 
-  function listSchema(engineName) {
-    return this.client.get(`engines/${encodeURIComponent(engineName)}/schema`);
-  }
-  function listSettings(engineName) {
-    return this.client.get(
-      `engines/${encodeURIComponent(engineName)}/search_settings`,
-    );
-  }
-  function updateSchema(engineName, schemaConfig) {
-    return this.client.post(
-      `engines/${encodeURIComponent(engineName)}/schema`,
-      schemaConfig,
-    );
-  }
-  function updateSettings(engineName, settingsConfig) {
-    return this.client.put(
-      `engines/${encodeURIComponent(engineName)}/search_settings`,
-      settingsConfig,
-    );
-  }
-  elasticClient.listSchema = listSchema.bind(elasticClient);
-  elasticClient.listSettings = listSettings.bind(elasticClient);
-  elasticClient.updateSchema = updateSchema.bind(elasticClient);
-  elasticClient.updateSettings = updateSettings.bind(elasticClient);
+    function listSchema(engineName) {
+      return this.client.get(
+        `engines/${encodeURIComponent(engineName)}/schema`,
+      );
+    }
+    function listSettings(engineName) {
+      return this.client.get(
+        `engines/${encodeURIComponent(engineName)}/search_settings`,
+      );
+    }
+    function updateSchema(engineName, schemaConfig) {
+      return this.client.post(
+        `engines/${encodeURIComponent(engineName)}/schema`,
+        schemaConfig,
+      );
+    }
+    function updateSettings(engineName, settingsConfig) {
+      return this.client.put(
+        `engines/${encodeURIComponent(engineName)}/search_settings`,
+        settingsConfig,
+      );
+    }
+    elasticClient.listSchema = listSchema.bind(elasticClient);
+    elasticClient.listSettings = listSettings.bind(elasticClient);
+    elasticClient.updateSchema = updateSchema.bind(elasticClient);
+    elasticClient.updateSettings = updateSettings.bind(elasticClient);
 
-  return elasticClient;
-};
+    return elasticClient;
+  };
 
 export const ensureEngineExists = async (engineName: string) => {
   const elasticClient = await getElasticClient();

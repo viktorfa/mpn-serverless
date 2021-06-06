@@ -104,7 +104,7 @@ export const addTagToOffers = async (offerUris: string[], tag: string) => {
         status: "enabled",
       },
     };
-    if (tag === "promoted") {
+    if (["promotion_good-offer", "promoted"].includes(tag)) {
       update.$set.validThrough = getDaysAhead(14);
     }
     return {
@@ -164,9 +164,9 @@ export const getTagsForOffer = async (uri: string): Promise<string[]> => {
 };
 
 export const getOffersInUriGroups = async (
-  uriGroups: string[][],
+  offerGroups: UriOfferGroup[],
 ): Promise<SimilarOffersObject[]> => {
-  const uris = flatten(uriGroups);
+  const uris = flatten(offerGroups.map((x) => x.uris));
 
   const offers = await getOffersByUris(uris, defaultOfferProjection);
 
@@ -175,12 +175,12 @@ export const getOffersInUriGroups = async (
   }, {});
 
   const result: SimilarOffersObject[] = [];
-  uriGroups.forEach((uris) => {
-    const offers = uris
+  offerGroups.forEach((offerGroup) => {
+    const offers = offerGroup.uris
       .filter((uri) => !!uriToOfferMap[uri])
       .map((uri) => uriToOfferMap[uri]);
     if (offers.length > 0) {
-      result.push({ offers, title: offers[0].title });
+      result.push({ offers, title: offerGroup.title ?? offers[0].title });
     }
   });
   return result;
@@ -195,8 +195,8 @@ export const getSimilarGroupedOffersFromOfferUris = async (
 
   // Add offers that don't have any stored bi relations as belonging to a group of their own
   uris.forEach((uri) => {
-    if (!biRelationGroups.some((group) => group.includes(uri))) {
-      offerGroups.push([uri]);
+    if (!biRelationGroups.some((group) => group.uris.includes(uri))) {
+      offerGroups.push({ uris: [uri] });
     }
   });
 

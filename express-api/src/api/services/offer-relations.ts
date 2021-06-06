@@ -11,6 +11,26 @@ export const getOfferRelationsCollection = async (): Promise<Collection> => {
   return promotionCollection;
 };
 
+export const updateOfferBiRelation = async (
+  offerRelation: UpdateOfferRelationBody,
+): Promise<UpdateOfferRelationBody> => {
+  const biRelationsOffersCollection = await getCollection(
+    offerBiRelationsCollectionName,
+  );
+
+  const mongoResult = await biRelationsOffersCollection.updateOne(
+    {
+      _id: new ObjectId(offerRelation.id),
+    },
+    {
+      $set: {
+        title: offerRelation.title,
+      },
+    },
+  );
+  return offerRelation;
+};
+
 export const addBiRelationalOffers = async (
   offers: MpnMongoOffer[],
   relationType: OfferRelationType,
@@ -103,15 +123,16 @@ export const getOfferBiRelations = async (
 
 export const getBiRelationsForOfferUris = async (
   uris: string[],
-): Promise<string[][]> => {
+): Promise<UriOfferGroup[]> => {
   const biRelationsOffersCollection = await getCollection(
     offerBiRelationsCollectionName,
   );
-  const biRelations: IdenticalOfferRelation[] = await biRelationsOffersCollection
-    .find({
-      offerSet: { $in: uris },
-    })
-    .toArray();
+  const biRelations: IdenticalOfferRelation[] =
+    await biRelationsOffersCollection
+      .find({
+        offerSet: { $in: uris },
+      })
+      .toArray();
 
-  return biRelations.map((x) => x.offerSet);
+  return biRelations.map((x) => ({ uris: x.offerSet, title: x.title }));
 };

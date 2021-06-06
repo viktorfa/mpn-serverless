@@ -106,7 +106,7 @@ interface ElasticMpnOffer {
 }
 
 interface RawField<
-  T extends string[] | Record<string, string> | string = string
+  T extends string[] | Record<string, string> | string = string,
 > {
   raw: T;
 }
@@ -161,6 +161,7 @@ declare type OfferRelationType =
 interface IdenticalOfferRelation {
   offerSet: string[];
   relationType: OfferRelationType;
+  title: string;
 }
 
 type OfferReviewStatus = "enabled" | "removed" | "pending";
@@ -190,4 +191,14 @@ interface SimilarOffersObject {
 
 type ListResponse<T> = {
   items: T[];
+};
+
+type UpdateOfferRelationBody = {
+  title: string;
+  id: string;
+};
+
+type UriOfferGroup = {
+  uris: string[];
+  title?: string;
 };

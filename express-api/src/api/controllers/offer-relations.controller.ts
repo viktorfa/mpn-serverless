@@ -4,6 +4,7 @@ import { Parser, Response, Route, route, URL } from "typera-express";
 import {
   addBiRelationalOffers,
   removeBiRelationalOffer,
+  updateOfferBiRelation,
 } from "../services/offer-relations";
 import { findOne } from "../services/offers";
 import { offerCollectionName, OfferRelation } from "../utils/constants";
@@ -18,6 +19,27 @@ const addOfferRelationBody = t.type({
     t.literal(OfferRelation.exchangeabledifferentquantity),
   ]),
 });
+const updateOfferRelationBody = t.type({
+  id: t.string,
+  title: t.string,
+});
+
+export const updateOfferRelation: Route<
+  | Response.Ok<UpdateOfferRelationBody>
+  | Response.NotFound<string>
+  | Response.BadRequest<string>
+> = route
+  .put("/update")
+  .use(Parser.body(updateOfferRelationBody))
+  .handler(async (request) => {
+    const result = await updateOfferBiRelation(request.body);
+    if (!result) {
+      return Response.notFound(
+        `Offer relation with id ${request.body.id} not found.`,
+      );
+    }
+    return Response.ok(result);
+  });
 
 export const addIdenticalOffers: Route<
   | Response.Ok<IdenticalOfferRelation>
