@@ -1,7 +1,7 @@
 #!/bin/bash
 
 yarn --prod=false
-yarn build
+yarn build:js
 mkdir .temp || true
 yarn --prod --modules-folder .temp/node_modules
 rm artifact.zip || true
