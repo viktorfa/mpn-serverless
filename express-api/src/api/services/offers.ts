@@ -47,23 +47,26 @@ export const getOffersForSiteCollection = async (
 export const getOffers = async (
   selection: FilterQuery<FullMpnOffer> = {},
   projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
-  limit: number = 30,
+  limit = 30,
+  includeExpired = false,
 ): Promise<MpnOffer[]> => {
   const offersCollection = await getCollection(offerCollectionName);
-  const now = getNowDate();
-  selection.validThrough = { $gte: now };
-
+  if (!includeExpired) {
+    const now = getNowDate();
+    selection.validThrough = { $gte: now };
+  }
   return offersCollection.find(selection, projection).limit(limit).toArray();
 };
 
 export const getOffersByUris = async (
   uris: string[],
   projection: any = defaultOfferProjection,
+  includeExpired = false,
 ): Promise<MpnOffer[]> => {
   const selection = {
     uri: { $in: uris },
   };
-  return getOffers(selection, projection, uris.length);
+  return getOffers(selection, projection, uris.length, includeExpired);
 };
 
 export const getOfferUrisForTags = async (

@@ -10,6 +10,12 @@ export const getOfferRelationsCollection = async (): Promise<Collection> => {
   const promotionCollection = await getCollection(offerRelationsCollectionName);
   return promotionCollection;
 };
+export const getOfferBiRelationsCollection = async (): Promise<Collection> => {
+  const promotionCollection = await getCollection(
+    offerBiRelationsCollectionName,
+  );
+  return promotionCollection;
+};
 
 export const updateOfferBiRelation = async (
   offerRelation: UpdateOfferRelationBody,
@@ -135,4 +141,18 @@ export const getBiRelationsForOfferUris = async (
       .toArray();
 
   return biRelations.map((x) => ({ uris: x.offerSet, title: x.title }));
+};
+
+export const getBiRelationById = async (
+  id: string,
+): Promise<IdenticalOfferRelation> => {
+  const biRelationsOffersCollection = await getCollection(
+    offerBiRelationsCollectionName,
+  );
+  const result: IdenticalOfferRelation =
+    await biRelationsOffersCollection.findOne({
+      _id: new ObjectId(id),
+    });
+
+  return result;
 };

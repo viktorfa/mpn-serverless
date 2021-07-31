@@ -18,11 +18,12 @@ import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
-import { FilterQuery } from "mongodb";
+import { FilterQuery, QuerySelector } from "mongodb";
 import { offerCollectionName } from "../utils/constants";
 import {
   getLimitFromQueryParam,
   limitQueryParams,
+  marketQueryParams,
   productCollectionAndLimitQueryParams,
   productCollectionQueryParams,
 } from "./typera-types";
@@ -356,38 +357,45 @@ export const relatedOffers: Route<
   | Response.Ok<{ identical: MpnOffer[]; interchangeable: MpnOffer[] }>
   | Response.NotFound
   | Response.BadRequest<string>
-> = route.get("/:id/related").handler(async (request) => {
-  const offerCollection = await getCollection(offerCollectionName);
+> = route
+  .get("/:id/related")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const offerCollection = await getCollection(offerCollectionName);
 
-  try {
-    const relationResults = await getOfferBiRelations(request.routeParams.id);
-    const identicalUris = _.get(
-      relationResults,
-      ["identical", "offerSet"],
-      [],
-    ).filter((x) => x !== request.routeParams.id);
-    const interchangeableUris = _.get(
-      relationResults,
-      ["interchangeable", "offerSet"],
-      [],
-    ).filter((x) => x !== request.routeParams.id);
-    const offers = await offerCollection
-      .find({
+    try {
+      const relationResults = await getOfferBiRelations(request.routeParams.id);
+      const identicalUris = _.get(
+        relationResults,
+        ["identical", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.id);
+      const interchangeableUris = _.get(
+        relationResults,
+        ["interchangeable", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.id);
+      const offerFilter: FilterQuery<OfferInstance> = {
         uri: { $in: [...identicalUris, ...interchangeableUris] },
-      })
-      .project(defaultOfferProjection)
-      .toArray();
+      };
+      if (request.query.market) {
+        offerFilter.market = request.query.market;
+      }
+      const offers = await offerCollection
+        .find(offerFilter)
+        .project(defaultOfferProjection)
+        .toArray();
 
-    return Response.ok({
-      identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
-      interchangeable: offers.filter((offer) =>
-        interchangeableUris.includes(offer.uri),
-      ),
-    });
-  } catch (e) {
-    return Response.notFound();
-  }
-});
+      return Response.ok({
+        identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
+        interchangeable: offers.filter((offer) =>
+          interchangeableUris.includes(offer.uri),
+        ),
+      });
+    } catch (e) {
+      return Response.notFound();
+    }
+  });
 
 const addTagToOffersBody = t.type({
   offerUris: t.array(t.string),

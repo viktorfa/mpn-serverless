@@ -159,6 +159,7 @@ declare type OfferRelationType =
   | "usedtogether";
 
 interface IdenticalOfferRelation {
+  _id: string;
   offerSet: string[];
   relationType: OfferRelationType;
   title: string;
@@ -187,6 +188,13 @@ interface OfferTag {
 interface SimilarOffersObject {
   offers: MpnOffer[];
   title: string;
+}
+interface SingleSimilarOffersObject extends SimilarOffersObject {
+  relationType: string;
+  imageUrl: string;
+  description: string;
+  subtitle: string;
+  shortDescription: string;
 }
 
 type ListResponse<T> = {

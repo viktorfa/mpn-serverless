@@ -6,10 +6,12 @@ export const productCollectionQueryParams = t.type({
 export const limitQueryParams = t.type({
   limit: t.union([t.string, t.undefined]),
 });
-
 export const productCollectionAndLimitQueryParams = t.type({
   productCollection: t.string,
   limit: t.union([t.string, t.undefined]),
+});
+export const marketQueryParams = t.type({
+  market: t.union([t.string, t.undefined]),
 });
 
 export const getLimitFromQueryParam = (
