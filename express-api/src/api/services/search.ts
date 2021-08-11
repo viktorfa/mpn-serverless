@@ -34,7 +34,7 @@ export const search = async (
     // Filter offers that only exist in Elastic and not in Mongo
     const resultUris = mpnResults.map((x) => x.uri);
     const urisFromMongoSet = new Set(
-      (await getOffersByUris(resultUris, { uri: 1 })).map((x) => x.uri),
+      (await getOffersByUris(resultUris, null, { uri: 1 })).map((x) => x.uri),
     );
 
     const validOffers = mpnResults.filter((x) => urisFromMongoSet.has(x.uri));

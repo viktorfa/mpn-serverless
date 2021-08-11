@@ -60,10 +60,12 @@ export const getOffers = async (
 
 export const getOffersByUris = async (
   uris: string[],
+  filter: object = {},
   projection: any = defaultOfferProjection,
   includeExpired = false,
 ): Promise<MpnOffer[]> => {
   const selection = {
+    ...filter,
     uri: { $in: uris },
   };
   return getOffers(selection, projection, uris.length, includeExpired);
@@ -168,10 +170,11 @@ export const getTagsForOffer = async (uri: string): Promise<string[]> => {
 
 export const getOffersInUriGroups = async (
   offerGroups: UriOfferGroup[],
+  filter: object = {},
 ): Promise<SimilarOffersObject[]> => {
   const uris = flatten(offerGroups.map((x) => x.uris));
 
-  const offers = await getOffersByUris(uris, defaultOfferProjection);
+  const offers = await getOffersByUris(uris, filter, defaultOfferProjection);
 
   const uriToOfferMap = offers.reduce((acc, offer) => {
     return { ...acc, [offer.uri]: offer };
@@ -191,6 +194,7 @@ export const getOffersInUriGroups = async (
 
 export const getSimilarGroupedOffersFromOfferUris = async (
   uris: string[],
+  filter: object = {},
 ): Promise<SimilarOffersObject[]> => {
   const biRelationGroups = await getBiRelationsForOfferUris(uris);
 
@@ -203,5 +207,5 @@ export const getSimilarGroupedOffersFromOfferUris = async (
     }
   });
 
-  return getOffersInUriGroups(offerGroups);
+  return getOffersInUriGroups(offerGroups, filter);
 };

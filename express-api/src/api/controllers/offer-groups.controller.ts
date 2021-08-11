@@ -10,6 +10,7 @@ import {
   getOfferBiRelationsCollection,
 } from "../services/offer-relations";
 import { get, flatten } from "lodash";
+import { marketQueryParams } from "./typera-types";
 
 const getOfferGroupFromBirelation = (
   biRelation: IdenticalOfferRelation,
@@ -31,6 +32,7 @@ const getOfferGroupFromBirelation = (
 const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
+  market: t.union([t.string, t.undefined]),
 });
 
 export const getOfferGroups: Route<
@@ -39,10 +41,14 @@ export const getOfferGroups: Route<
   .get("/")
   .use(Parser.query(offerGroupsQueryParams))
   .handler(async (request) => {
-    const { tags, limit } = request.query;
+    const { tags, limit, market } = request.query;
 
     let offerUris = [];
 
+    const offerFilter: { market?: string } = {};
+    if (market) {
+      offerFilter.market = market;
+    }
     if (tags) {
       offerUris = await getOfferUrisForTags(
         tags.split(","),
@@ -54,8 +60,9 @@ export const getOfferGroups: Route<
         .find({})
         .limit(32)
         .toArray();
+
       offerUris = flatten(biRelations.map((x) => x.offerSet));
-      const offers = await getOffersByUris(offerUris, null, true);
+      const offers = await getOffersByUris(offerUris, offerFilter, null);
       const offerMap = {};
       offers.forEach((x) => {
         offerMap[x.uri] = x;
@@ -70,7 +77,7 @@ export const getOfferGroups: Route<
     }
 
     return Response.ok({
-      items: await getSimilarGroupedOffersFromOfferUris(offerUris),
+      items: await getSimilarGroupedOffersFromOfferUris(offerUris, offerFilter),
     });
   });
 
@@ -78,19 +85,31 @@ export const getOfferGroup: Route<
   | Response.Ok<SingleSimilarOffersObject>
   | Response.BadRequest<string>
   | Response.NotFound<string>
-> = route.get("/:id").handler(async (request) => {
-  const biRelation = await getBiRelationById(request.routeParams.id);
-  if (!biRelation) {
-    return Response.notFound(
-      `Cound not find offer relation with id ${request.routeParams.id}`,
+> = route
+  .get("/:id")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const biRelation = await getBiRelationById(request.routeParams.id);
+    if (!biRelation) {
+      return Response.notFound(
+        `Cound not find offer relation with id ${request.routeParams.id}`,
+      );
+    }
+    const { market } = request.query;
+    const offerFilter: { market?: string } = {};
+    if (market) {
+      offerFilter.market = market;
+    }
+    const offers = await getOffersByUris(
+      biRelation.offerSet,
+      offerFilter,
+      null,
     );
-  }
-  const offers = await getOffersByUris(biRelation.offerSet, null, true);
 
-  return Response.ok(
-    getOfferGroupFromBirelation(
-      biRelation,
-      offers.reduce((acc, x) => ({ ...acc, [x.uri]: x }), {}),
-    ),
-  );
-});
+    return Response.ok(
+      getOfferGroupFromBirelation(
+        biRelation,
+        offers.reduce((acc, x) => ({ ...acc, [x.uri]: x }), {}),
+      ),
+    );
+  });
