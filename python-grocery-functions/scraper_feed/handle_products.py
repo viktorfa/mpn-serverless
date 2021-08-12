@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 from datetime import timedelta
+from parsing.property_extraction import standardize_additional_properties
+from parsing.dimension_extraction import extract_dimensions
 from typing import List
 
 import pydash
@@ -37,6 +39,7 @@ class MyTime(object):
     def set_time(self, time):
         self._time = time
         self._one_week_ahead = self._time + timedelta(days=7, hours=4)
+        self._ten_days_ahead = self._time + timedelta(days=10, hours=4)
 
     @property
     def time(self):
@@ -45,6 +48,10 @@ class MyTime(object):
     @property
     def one_week_ahead(self):
         return self._one_week_ahead
+
+    @property
+    def ten_days_ahead(self):
+        return self._ten_days_ahead
 
 
 global time
@@ -104,10 +111,19 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 
         result["uri"] = get_product_uri(namespace, provenanceId)
         result["pricing"] = get_product_pricing({**offer, **result})
-        result["validThrough"] = time.one_week_ahead
+        result["validThrough"] = time.ten_days_ahead
         result["validFrom"] = time.time
         result["dealer"] = offer.get("dealer", namespace)
         result["gtins"] = get_gtins({**offer, **result})
+
+        result["dimensions"] = extract_dimensions(
+            [
+                get_field_from_scraper_offer(offer, "dimensions"),
+                offer.get("title"),
+                offer.get("description", ""),
+                offer.get("subtitle", ""),
+            ]
+        )
 
         try:
             result["imageUrl"] = result["imageUrl"].replace("http://", "https://")
@@ -157,6 +173,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["market"] = config["market"]
     result["isPartner"] = config.get("is_partner", False)
 
+    result["additionalProperties"] = standardize_additional_properties(offer, config)
+
     result = analyze_quantity(result)
     result = standardize_quantity(result)
     quantity = result.get("quantity")
@@ -164,6 +182,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     final_result = {**offer, **result, **quantity}
 
     if config["ignore_none"]:
+        # Some offers with 2 provenances such as Byggmax.no and Byggmax feed will have ignore quantity
+        # on Byggmax feed
         final_result = remove_none_fields(final_result)
 
     return final_result

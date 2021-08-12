@@ -8,8 +8,6 @@ from parsing.parsing import (
     extract_numbers_with_context,
     extract_unit,
     extract_units_from_number_context,
-    get_si,
-    extract_number,
 )
 from parsing.enums import unit_types
 from amp_types.amp_product import MpnOffer, ScraperOffer, HandleConfig
@@ -22,9 +20,6 @@ from amp_types.quantity_types import (
 from parsing.constants import (
     quantity_units,
     piece_units,
-    quantity_value_units,
-    piece_value_units,
-    si_mappings,
     alt_unit_map,
 )
 

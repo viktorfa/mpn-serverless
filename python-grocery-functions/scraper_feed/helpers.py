@@ -81,6 +81,8 @@ def get_stock_status(product):
         "InStock",
         "http://schema.org/InStock",
         "https://schema.org/InStock",
+        "in stock",
+        "instock",
     ]:
         return "InStock"
     else:

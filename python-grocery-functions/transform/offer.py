@@ -9,7 +9,8 @@ def get_field_from_scraper_offer(offer: ScraperOffer, key: str, default=None):
         return get(offer, key, default)
     else:
         additional_property = find(
-            offer.get("additionalProperties", []), lambda x: x["key"] == key
+            offer.get("additionalProperties", []),
+            lambda x: x["key"].lower() == key.lower(),
         )
         if not additional_property:
             return default
