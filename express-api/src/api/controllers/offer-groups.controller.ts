@@ -1,16 +1,17 @@
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
+import { getOffersByUris } from "@/api/services/offers";
 import {
-  getOfferUrisForTags,
-  getSimilarGroupedOffersFromOfferUris,
-  getOffersByUris,
-} from "@/api/services/offers";
-import {
+  addTagToBiRelation,
   getBiRelationById,
+  getBiRelationsForTags,
   getOfferBiRelationsCollection,
+  getTagsForBiRelation,
+  removeTagFromBiRelation,
 } from "../services/offer-relations";
 import { get, flatten } from "lodash";
 import { marketQueryParams } from "./typera-types";
+import { ObjectId } from "bson";
 
 const getOfferGroupFromBirelation = (
   biRelation: IdenticalOfferRelation,
@@ -43,41 +44,41 @@ export const getOfferGroups: Route<
   .handler(async (request) => {
     const { tags, limit, market } = request.query;
 
-    let offerUris = [];
+    let biRelationIds: string[] = [];
+    let biRelations = [];
+    const biRelationCollection = await getOfferBiRelationsCollection();
 
     const offerFilter: { market?: string } = {};
     if (market) {
       offerFilter.market = market;
     }
     if (tags) {
-      offerUris = await getOfferUrisForTags(
+      biRelationIds = await getBiRelationsForTags(
         tags.split(","),
         limit ? Number.parseInt(limit) : undefined,
       );
-    } else {
-      const biRelationCollection = await getOfferBiRelationsCollection();
-      const biRelations = await biRelationCollection
-        .find({})
+      console.log("biRelationIds");
+      console.log(biRelationIds);
+      biRelations = await biRelationCollection
+        .find({ _id: { $in: biRelationIds.map((x) => new ObjectId(x)) } })
         .limit(32)
         .toArray();
-
-      offerUris = flatten(biRelations.map((x) => x.offerSet));
-      const offers = await getOffersByUris(offerUris, offerFilter, null);
-      const offerMap = {};
-      offers.forEach((x) => {
-        offerMap[x.uri] = x;
-      });
-      const result = [];
-      biRelations.forEach((x) => {
-        result.push(getOfferGroupFromBirelation(x, offerMap));
-      });
-      return Response.ok({
-        items: result.filter((x) => x.offers.length > 0),
-      });
+      console.log(biRelations);
+    } else {
+      biRelations = await biRelationCollection.find({}).limit(32).toArray();
     }
-
+    const offerUris = flatten(biRelations.map((x) => x.offerSet));
+    const offers = await getOffersByUris(offerUris, offerFilter, null);
+    const offerMap = {};
+    offers.forEach((x) => {
+      offerMap[x.uri] = x;
+    });
+    const result = [];
+    biRelations.forEach((x) => {
+      result.push(getOfferGroupFromBirelation(x, offerMap));
+    });
     return Response.ok({
-      items: await getSimilarGroupedOffersFromOfferUris(offerUris, offerFilter),
+      items: result.filter((x) => x.offers.length > 0),
     });
   });
 
@@ -113,3 +114,36 @@ export const getOfferGroup: Route<
       ),
     );
   });
+
+const addTagToOffersBody = t.type({
+  id: t.string,
+  tag: t.string,
+});
+
+export const postAddTagToOfferGroup: Route<
+  Response.NoContent<any> | Response.BadRequest<string>
+> = route
+  .post("/tags")
+  .use(Parser.body(addTagToOffersBody))
+  .handler(async (request) => {
+    return Response.noContent(
+      await addTagToBiRelation(request.body.id, request.body.tag),
+    );
+  });
+
+export const putRemoveTagFromOfferGroup: Route<
+  Response.NoContent<any> | Response.BadRequest<string>
+> = route
+  .put("/tags/remove")
+  .use(Parser.body(addTagToOffersBody))
+  .handler(async (request) => {
+    return Response.noContent(
+      await removeTagFromBiRelation(request.body.id, request.body.tag),
+    );
+  });
+
+export const getTagsForOfferGroupHandler: Route<
+  Response.Ok<string[]> | Response.BadRequest<string>
+> = route.get("/:id/tags").handler(async (request) => {
+  return Response.ok(await getTagsForBiRelation(request.routeParams.id));
+});

@@ -12,6 +12,7 @@ import {
   getTagsForOfferHandler,
   putRemoveTagFromOffers,
   extra,
+  putOfferQuantity,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -30,6 +31,7 @@ export default router(
   search,
   searchExtra,
   extra,
+  putOfferQuantity,
   querySuggestion,
   registerClick,
   searchPathParam,

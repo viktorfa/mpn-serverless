@@ -4,7 +4,9 @@ import {
   offerBiRelationsCollectionName,
   offerRelationsCollectionName,
   OfferRelation,
+  offerBiRelationTagsCollectionName,
 } from "@/api/utils/constants";
+import { getDaysAhead, getNowDate } from "../utils/helpers";
 
 export const getOfferRelationsCollection = async (): Promise<Collection> => {
   const promotionCollection = await getCollection(offerRelationsCollectionName);
@@ -155,4 +157,69 @@ export const getBiRelationById = async (
     });
 
   return result;
+};
+
+export const addTagToBiRelation = async (biRelationId: string, tag: string) => {
+  const tagsCollection = await getCollection(offerBiRelationTagsCollectionName);
+
+  const tagUpdate: Record<string, any> = {
+    $set: { tag, biRelationId, selectionType: "manual", status: "enabled" },
+  };
+  if (["promotion_good-offer", "promoted"].includes(tag)) {
+    tagUpdate.$set.validThrough = getDaysAhead(14);
+  }
+
+  return tagsCollection.updateOne({ tag, biRelationId }, tagUpdate, {
+    upsert: true,
+  });
+};
+export const removeTagFromBiRelation = async (
+  biRelationId: string,
+  tag: string,
+) => {
+  const tagsCollection = await getCollection(offerBiRelationTagsCollectionName);
+
+  const tagUpdate: Record<string, any> = {
+    $set: { status: "disabled" },
+  };
+
+  return tagsCollection.updateOne({ tag, biRelationId }, tagUpdate);
+};
+
+export const getTagsForBiRelation = async (
+  biRelationId: string,
+): Promise<string[]> => {
+  const tagsCollection = await getCollection(offerBiRelationTagsCollectionName);
+
+  const now = getNowDate();
+
+  return tagsCollection
+    .find({
+      biRelationId,
+      $or: [
+        { validThrough: { $gte: now } },
+        { validThrough: { $exists: false } },
+      ],
+    })
+    .toArray();
+};
+
+export const getBiRelationsForTags = async (
+  tags: string[],
+  limit: number = 128,
+): Promise<string[]> => {
+  const tagsCollection = await getCollection(offerBiRelationTagsCollectionName);
+
+  const now = getNowDate();
+  const tagObjects = await tagsCollection
+    .find({
+      tag: { $in: tags },
+      $or: [
+        { validThrough: { $gte: now } },
+        { validThrough: { $exists: false } },
+      ],
+    })
+    .limit(limit)
+    .toArray();
+  return tagObjects.map((x) => x.biRelationId);
 };

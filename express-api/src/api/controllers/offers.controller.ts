@@ -1,6 +1,6 @@
 import _ from "lodash";
 import * as t from "io-ts";
-import { Parser, Response, Route, route, URL } from "typera-express";
+import { Parser, Response, Route, route } from "typera-express";
 import {
   addTagToOffers,
   findOne,
@@ -27,6 +27,7 @@ import {
   productCollectionAndLimitQueryParams,
   productCollectionQueryParams,
 } from "./typera-types";
+import { getQuantityObject, getValueObject } from "../utils/quantity";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
@@ -434,3 +435,46 @@ export const getTagsForOfferHandler: Route<
 > = route.get("/:id/tags").handler(async (request) => {
   return Response.ok(await getTagsForOffer(request.routeParams.id));
 });
+
+const putQuantityPutBody = t.type({
+  uri: t.string,
+  quantityValue: t.number,
+  quantityUnit: t.string,
+});
+
+export const putOfferQuantity: Route<
+  Response.Ok | Response.NotFound<string> | Response.BadRequest<string>
+> = route
+  .put("/quantity")
+  .use(Parser.body(putQuantityPutBody))
+  .handler(async (request) => {
+    const offerCollection = await getCollection(offerCollectionName);
+    const offer: MpnMongoOffer = await offerCollection.findOne({
+      uri: request.body.uri,
+    });
+    if (!offer) {
+      return Response.notFound(`Not found offer with uri: ${request.body.uri}`);
+    }
+    const size = getQuantityObject({
+      quantityUnit: request.body.quantityUnit,
+      quantityValue: request.body.quantityValue,
+    });
+    const sizeValue = getValueObject({
+      price: offer.pricing.price,
+      quantity: offer.quantity.size,
+    });
+    const mongoResponse = await offerCollection.updateOne(
+      { uri: request.body.uri },
+      {
+        $set: {
+          quantity: {
+            size,
+            pieces: offer.quantity.pieces,
+          },
+          value: { size: sizeValue, pieces: offer.value.pieces },
+        },
+      },
+    );
+
+    return Response.ok();
+  });
