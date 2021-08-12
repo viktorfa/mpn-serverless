@@ -144,6 +144,11 @@ def add_buildor_se_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": ahref}
 
 
+def add_strawberrynet_affiliate_link(product: dict) -> dict:
+    ahref = f"{product['href']}?trackid=3001500004"
+    return {**product, "ahref": ahref}
+
+
 def get_affiliate_handler(product: dict):
     if "byggmax.no" in product["href"]:
         return add_byggmax_affiliate_link
@@ -177,6 +182,8 @@ def get_affiliate_handler(product: dict):
         return add_natur_no_affiliate_link
     elif "www.buildor.se" in product["href"]:
         return add_buildor_se_affiliate_link
+    elif "www.strawberrynet.com" in product["href"]:
+        return add_strawberrynet_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
