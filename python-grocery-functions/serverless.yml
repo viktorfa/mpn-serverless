@@ -36,6 +36,11 @@ provider:
     HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
 
   iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "lambda:InvokeFunction"
+      Resource:
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:mpn-crawler-${self:provider.stage}-scrape"
     - Effect: "Allow"
       Action:
         - "s3:GetObject"
@@ -63,6 +68,7 @@ package:
     - offer_feed/**
     - scraper_feed/**
     - book_feed/**
+    - scraper_management/**
     - storage/**
     - util/**
     - parsing/**
@@ -110,6 +116,16 @@ functions:
           rate: rate(1 day)
           enabled: true
           description: "Every day"
+
+  invokeScrapeHttp:
+    environment:
+      SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-scrape
+    handler: scraper_management.handler.handle_scrape
+    events:
+      - http:
+          path: scrape/{id}
+          method: post
+          cors: true
 
 resources:
   - ${file(../s3-sns-cloudformation.yml)}
