@@ -1,5 +1,5 @@
 import { getCollection } from "@/config/mongo";
-import { flatten } from "lodash";
+import { flatten, intersection } from "lodash";
 import { ObjectId, FindOneOptions, FilterQuery } from "mongodb";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import {
@@ -186,7 +186,12 @@ export const getOffersInUriGroups = async (
       .filter((uri) => !!uriToOfferMap[uri])
       .map((uri) => uriToOfferMap[uri]);
     if (offers.length > 0) {
-      result.push({ offers, title: offerGroup.title ?? offers[0].title });
+      result.push({
+        offers,
+        title: offerGroup.title ?? offers[0].title,
+        _id: offerGroup._id,
+        relationType: offerGroup.relationType,
+      });
     }
   });
   return result;
@@ -195,8 +200,12 @@ export const getOffersInUriGroups = async (
 export const getSimilarGroupedOffersFromOfferUris = async (
   uris: string[],
   filter: object = {},
+  biRelationFilter = {},
 ): Promise<SimilarOffersObject[]> => {
-  const biRelationGroups = await getBiRelationsForOfferUris(uris);
+  const biRelationGroups = await getBiRelationsForOfferUris(
+    uris,
+    biRelationFilter,
+  );
 
   const offerGroups = [...biRelationGroups];
 

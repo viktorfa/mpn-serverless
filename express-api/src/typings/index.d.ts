@@ -188,6 +188,8 @@ interface OfferTag {
 interface SimilarOffersObject {
   offers: MpnOffer[];
   title: string;
+  relationType?: string;
+  _id?: string;
 }
 interface SingleSimilarOffersObject extends SimilarOffersObject {
   relationType: string;
@@ -209,4 +211,6 @@ type UpdateOfferRelationBody = {
 type UriOfferGroup = {
   uris: string[];
   title?: string;
+  _id?: string;
+  relationType?: string;
 };

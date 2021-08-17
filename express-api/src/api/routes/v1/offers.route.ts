@@ -13,6 +13,7 @@ import {
   putRemoveTagFromOffers,
   extra,
   putOfferQuantity,
+  getOfferGroups,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -23,6 +24,7 @@ import {
 } from "@/api/controllers/search.controller";
 
 export default router(
+  getOfferGroups,
   list,
   promoted,
   similar,

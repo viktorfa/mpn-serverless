@@ -18,7 +18,6 @@ export const search = async (
       message,
     });
   }
-  console.log(`Searching for ${query} on engine ${engineName}.`);
   const now = getNowDate();
   const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
     engineName,
@@ -59,7 +58,6 @@ export const querySuggestion = async (query, engineName): Promise<string[]> => {
     });
   }
   const elasticClient = await getElasticClient();
-  console.log(`Getting querySuggestion for ${query} on engine ${engineName}.`);
   const searchResponse = await elasticClient.querySuggestion(engineName, query);
 
   return searchResponse.results.documents.map(({ suggestion }) => suggestion);
@@ -70,9 +68,6 @@ export const registerClick = async (
   engineName,
 ): Promise<void> => {
   const elasticClient = await getElasticClient();
-  console.log(
-    `Registering click for for ${registerClickArgs.query} on engine ${engineName}.`,
-  );
   const searchResponse = await elasticClient.client.post(
     `engines/${encodeURIComponent(engineName)}/click`,
     registerClickArgs,

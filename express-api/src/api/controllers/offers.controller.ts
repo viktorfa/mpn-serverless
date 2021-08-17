@@ -5,8 +5,10 @@ import {
   addTagToOffers,
   findOne,
   findOneFull,
+  getOffersByUris,
   getOffersForSiteCollection,
   getOfferUrisForTags,
+  getSimilarGroupedOffersFromOfferUris,
   getTagsForOffer,
   removeTagFromOffers,
 } from "@/api/services/offers";
@@ -16,7 +18,11 @@ import { getNowDate } from "../utils/helpers";
 import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
-import { getOfferBiRelations } from "../services/offer-relations";
+import {
+  getOfferBiRelations,
+  getOfferBiRelationsCollection,
+  getOfferGroupFromBirelation,
+} from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
 import { FilterQuery, QuerySelector } from "mongodb";
 import { offerCollectionName } from "../utils/constants";
@@ -28,6 +34,7 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { getQuantityObject, getValueObject } from "../utils/quantity";
+import { response } from "express";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
@@ -85,8 +92,6 @@ export const addToElastic: Route<
       [offer],
       getEngineName(productCollection),
     );
-    console.log("indexResult");
-    console.log(indexResult);
     return Response.noContent();
   });
 
@@ -461,20 +466,65 @@ export const putOfferQuantity: Route<
     });
     const sizeValue = getValueObject({
       price: offer.pricing.price,
-      quantity: offer.quantity.size,
+      quantity: size,
     });
+    const quantityObject = {
+      size,
+      pieces: offer.quantity.pieces,
+    };
+    const valueObject = { size: sizeValue, pieces: offer.value.pieces };
     const mongoResponse = await offerCollection.updateOne(
       { uri: request.body.uri },
       {
         $set: {
-          quantity: {
-            size,
-            pieces: offer.quantity.pieces,
-          },
-          value: { size: sizeValue, pieces: offer.value.pieces },
+          quantity__manual: { value: quantityObject, updated: getNowDate() },
+          quantity: quantityObject,
+          value: valueObject,
         },
       },
     );
 
     return Response.ok();
+  });
+
+const offerGroupsQueryParams = t.type({
+  tags: t.string,
+  limit: t.union([t.string, t.undefined]),
+  market: t.union([t.string, t.undefined]),
+  productCollection: t.union([t.string, t.undefined]),
+});
+
+export const getOfferGroups: Route<
+  Response.Ok<ListResponse<SimilarOffersObject>> | Response.BadRequest<string>
+> = route
+  .get("/offer-groups")
+  .use(Parser.query(offerGroupsQueryParams))
+  .handler(async (request) => {
+    const { tags, limit, market, productCollection } = request.query;
+
+    if (!tags) {
+      return Response.badRequest("Need at least one tag to get offer groups.");
+    }
+
+    let offerUris = [];
+
+    const offerFilter: Record<string, string> = {};
+    if (market) {
+      offerFilter.market = market;
+    }
+    if (productCollection) {
+      offerFilter.siteCollection = productCollection;
+    }
+    offerUris = await getOfferUrisForTags(
+      tags.split(","),
+      limit ? Number.parseInt(limit) : undefined,
+    );
+
+    return Response.ok({
+      items: await getSimilarGroupedOffersFromOfferUris(
+        offerUris,
+        offerFilter,
+        { relationType: { $in: ["identical", "identicaldifferentsize"] } },
+      ),
+    });
   });

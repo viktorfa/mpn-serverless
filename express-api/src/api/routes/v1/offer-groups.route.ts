@@ -6,6 +6,7 @@ import {
   postAddTagToOfferGroup,
   getTagsForOfferGroupHandler,
   putRemoveTagFromOfferGroup,
+  getOfferGroupsForOffer,
 } from "@/api/controllers/offer-groups.controller";
 
 export default router(
@@ -14,4 +15,5 @@ export default router(
   postAddTagToOfferGroup,
   getTagsForOfferGroupHandler,
   putRemoveTagFromOfferGroup,
+  getOfferGroupsForOffer,
 ).handler();

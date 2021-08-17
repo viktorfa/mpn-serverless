@@ -1,3 +1,4 @@
+import { get } from "lodash";
 import { getCollection } from "@/config/mongo";
 import { Collection, ObjectId } from "mongodb";
 import {
@@ -131,6 +132,7 @@ export const getOfferBiRelations = async (
 
 export const getBiRelationsForOfferUris = async (
   uris: string[],
+  filter = {},
 ): Promise<UriOfferGroup[]> => {
   const biRelationsOffersCollection = await getCollection(
     offerBiRelationsCollectionName,
@@ -139,10 +141,15 @@ export const getBiRelationsForOfferUris = async (
     await biRelationsOffersCollection
       .find({
         offerSet: { $in: uris },
+        ...filter,
       })
       .toArray();
 
-  return biRelations.map((x) => ({ uris: x.offerSet, title: x.title }));
+  return biRelations.map((x) => ({
+    uris: x.offerSet,
+    title: x.title,
+    relationType: x.relationType,
+  }));
 };
 
 export const getBiRelationById = async (
@@ -222,4 +229,21 @@ export const getBiRelationsForTags = async (
     .limit(limit)
     .toArray();
   return tagObjects.map((x) => x.biRelationId);
+};
+
+export const getOfferGroupFromBirelation = (
+  biRelation: IdenticalOfferRelation,
+  offerMap: { [key: string]: MpnMongoOffer },
+) => {
+  const offers = biRelation.offerSet.map((x) => offerMap[x]).filter((x) => !!x);
+  return {
+    _id: biRelation._id,
+    offers,
+    relationType: biRelation.relationType,
+    title: biRelation.title ?? get(offers, [0, "title"]),
+    description: get(offers, [0, "description"]),
+    subtitle: get(offers, [0, "subtitle"]),
+    shortDescription: get(offers, [0, "shortDescription"]),
+    imageUrl: get(offers, [0, "imageUrl"]),
+  };
 };

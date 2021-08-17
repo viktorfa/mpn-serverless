@@ -5,30 +5,15 @@ import {
   addTagToBiRelation,
   getBiRelationById,
   getBiRelationsForTags,
+  getOfferBiRelations,
   getOfferBiRelationsCollection,
+  getOfferGroupFromBirelation,
   getTagsForBiRelation,
   removeTagFromBiRelation,
 } from "../services/offer-relations";
 import { get, flatten } from "lodash";
 import { marketQueryParams } from "./typera-types";
 import { ObjectId } from "bson";
-
-const getOfferGroupFromBirelation = (
-  biRelation: IdenticalOfferRelation,
-  offerMap: { [key: string]: MpnMongoOffer },
-) => {
-  const offers = biRelation.offerSet.map((x) => offerMap[x]).filter((x) => !!x);
-  return {
-    _id: biRelation._id,
-    offers,
-    relationType: biRelation.relationType,
-    title: biRelation.title ?? get(offers, [0, "title"]),
-    description: get(offers, [0, "description"]),
-    subtitle: get(offers, [0, "subtitle"]),
-    shortDescription: get(offers, [0, "shortDescription"]),
-    imageUrl: get(offers, [0, "imageUrl"]),
-  };
-};
 
 const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
@@ -57,13 +42,10 @@ export const getOfferGroups: Route<
         tags.split(","),
         limit ? Number.parseInt(limit) : undefined,
       );
-      console.log("biRelationIds");
-      console.log(biRelationIds);
       biRelations = await biRelationCollection
         .find({ _id: { $in: biRelationIds.map((x) => new ObjectId(x)) } })
         .limit(32)
         .toArray();
-      console.log(biRelations);
     } else {
       biRelations = await biRelationCollection.find({}).limit(32).toArray();
     }
@@ -113,6 +95,17 @@ export const getOfferGroup: Route<
         offers.reduce((acc, x) => ({ ...acc, [x.uri]: x }), {}),
       ),
     );
+  });
+
+export const getOfferGroupsForOffer: Route<
+  | Response.Ok<Record<string, IdenticalOfferRelation>>
+  | Response.BadRequest<string>
+> = route
+  .get("/offer/:uri")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const biRelations = await getOfferBiRelations(request.routeParams.uri);
+    return Response.ok(biRelations);
   });
 
 const addTagToOffersBody = t.type({
