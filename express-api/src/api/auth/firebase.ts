@@ -35,6 +35,8 @@ const canBypassAuthentication = (req: Request) => {
     return true;
   } else if (req.method === "POST" && req.path.startsWith("/v1/reviews")) {
     return true;
+  } else if (process.env.NODE_ENV !== "production") {
+    return true;
   }
   return false;
 };
@@ -44,9 +46,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     const bearerToken = getBearerToken(req);
     if (bearerToken) {
       try {
-        const decodedToken: auth.DecodedIdToken = await getFirebaseAuth().verifyIdToken(
-          bearerToken,
-        );
+        const decodedToken: auth.DecodedIdToken =
+          await getFirebaseAuth().verifyIdToken(bearerToken);
         req["user"] = decodedToken;
       } catch (error) {
         res
@@ -65,9 +66,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         .end();
     }
     try {
-      const decodedToken: auth.DecodedIdToken = await getFirebaseAuth().verifyIdToken(
-        bearerToken,
-      );
+      const decodedToken: auth.DecodedIdToken =
+        await getFirebaseAuth().verifyIdToken(bearerToken);
       if (decodedToken.email) {
         req["user"] = decodedToken;
       } else {
