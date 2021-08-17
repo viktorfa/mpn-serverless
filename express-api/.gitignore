@@ -51,3 +51,4 @@ jspm_packages
 
 _node_modules/
 artifact.zip
+.serverless-offline/

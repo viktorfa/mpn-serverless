@@ -104,6 +104,10 @@ functions:
           rate: rate(70 minutes)
           input:
             engineName: beautyoffers
+      - schedule:
+          rate: rate(75 minutes)
+          input:
+            engineName: sebeautyoffers
 
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
