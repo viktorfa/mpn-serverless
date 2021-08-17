@@ -6,7 +6,7 @@ const { getMessageFromSnsEvent } = require("../utils");
 const Sentry = require("@sentry/serverless");
 
 Sentry.AWSLambda.init({
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.1,
 });
 
 /**

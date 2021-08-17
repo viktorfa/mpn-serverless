@@ -10,7 +10,7 @@ const { defaultOfferCollection } = require("../utils/constants");
 const Sentry = require("@sentry/serverless");
 
 Sentry.AWSLambda.init({
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.1,
 });
 
 const UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE = 100;
@@ -60,6 +60,8 @@ const getEngineName = (engineName) => {
     result = "sebyggoffers";
   } else if (engineName.startsWith("segrocery")) {
     result = "segroceryoffers";
+  } else if (engineName.startsWith("sebeauty")) {
+    result = "sebeautyoffers";
   } else {
     return "";
   }

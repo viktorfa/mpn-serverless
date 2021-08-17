@@ -5,7 +5,7 @@ const { getCollection } = require("../config/mongo");
 const Sentry = require("@sentry/serverless");
 
 Sentry.AWSLambda.init({
-  tracesSampleRate: 1.0,
+  tracesSampleRate: 0.1,
 });
 
 const secretValue = "mrworldwidemrworldwidemrworldwide";
