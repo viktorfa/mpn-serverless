@@ -87,29 +87,29 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
         except Exception as e:
             log_traceback(e)
             raise e
+    else:
+        try:
+            # Only 512 offers when in dev to avoid filling up Elastic Search storage
+            if os.getenv("STAGE") == "dev":
+                result = save_scraped_products(products[:512])
+            else:
+                result = save_scraped_products(products)
+        except Exception as e:
+            log_traceback(e)
+            raise e
 
-    try:
-        # Only 512 offers when in dev to avoid filling up Elastic Search storage
-        if os.getenv("STAGE") == "dev":
-            result = save_scraped_products(products[:512], config["collection_name"])
-        else:
-            result = save_scraped_products(products, config["collection_name"])
-    except Exception as e:
-        log_traceback(e)
-        raise e
+        # To allow event-driven behaviour, we publish an sns topic when products are saved successfully.
+        sns_message_data = {
+            **config,
+            "collection_name": config["collection_name"],
+        }
+        sns_message = json.dumps(
+            {"default": json.dumps(sns_message_data, default=json_handler)}
+        )
+        sns_client.publish(
+            Message=sns_message,
+            MessageStructure="json",
+            TargetArn=SCRAPER_FEED_HANDLED_TOPIC_ARN,
+        )
 
-    # To allow event-driven behaviour, we publish an sns topic when products are saved successfully.
-    sns_message_data = {
-        **config,
-        "collection_name": config["collection_name"],
-    }
-    sns_message = json.dumps(
-        {"default": json.dumps(sns_message_data, default=json_handler)}
-    )
-    sns_client.publish(
-        Message=sns_message,
-        MessageStructure="json",
-        TargetArn=SCRAPER_FEED_HANDLED_TOPIC_ARN,
-    )
-
-    return result.bulk_api_result
+        return result.bulk_api_result

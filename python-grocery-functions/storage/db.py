@@ -3,18 +3,30 @@ from datetime import datetime
 from datetime import timedelta
 from bson.objectid import ObjectId
 from pymongo import UpdateOne, InsertOne
+from copy import deepcopy
 
 from config.mongo import get_collection
 from util.helpers import get_product_uri
 from util.enums import select_methods, provenances
-from storage.helpers import meta_fields_result_to_dict, remove_protected_fields
+from storage.helpers import (
+    add_meta_fields_to_scraper_offers,
+)
 from util.errors import NoHandleConfigError
 
 OVERWRITE_EDIT_LIMIT_DAYS = 365
 
 
-def get_update_one(product, id_field: str = "uri"):
-    return UpdateOne({id_field: product[id_field]}, {"$set": product}, upsert=True)
+def get_update_one(offer, id_field: str = "uri"):
+    _offer = deepcopy(offer)
+    quantity = offer.get("quantity")
+    value = offer.get("value")
+    del _offer["quantity"]
+    del _offer["value"]
+    return UpdateOne(
+        {id_field: offer[id_field]},
+        {"$set": _offer, "$setOnInsert": {"quantity": quantity, "value": value}},
+        upsert=True,
+    )
 
 
 def bulk_upsert(iterable: Iterable, collection_name: str, id_field: str = "uri"):
@@ -40,16 +52,9 @@ def save_promoted_offers(df, collection_name: str):
     return collection.bulk_write(requests)
 
 
-def save_scraped_products(products: Iterable, offers_collection_name: str):
-    last_update_limit = datetime.utcnow() - timedelta(OVERWRITE_EDIT_LIMIT_DAYS)
-    meta_fields_collection = get_collection(f"mpnoffersmeta")
-    meta_fields = meta_fields_collection.find(
-        dict(updatedAt={"$gt": last_update_limit})
-    )
-    uri_field_dict = meta_fields_result_to_dict(meta_fields)
-    return bulk_upsert(
-        remove_protected_fields(products, uri_field_dict), "mpnoffers", "uri"
-    )
+def save_scraped_products(offers: Iterable):
+    offer_updates = (add_meta_fields_to_scraper_offers(x) for x in offers)
+    return bulk_upsert(offer_updates, "mpnoffers")
 
 
 def get_handle_configs(provenance: str):
