@@ -1,8 +1,11 @@
 import logging
 from datetime import datetime
 from datetime import timedelta
-from parsing.property_extraction import standardize_additional_properties
-from parsing.dimension_extraction import extract_dimensions
+from parsing.property_extraction import (
+    extract_dimensions,
+    extract_properties,
+    standardize_additional_properties,
+)
 from typing import List
 
 import pydash
@@ -119,6 +122,13 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         result["dimensions"] = extract_dimensions(
             [
                 get_field_from_scraper_offer(offer, "dimensions"),
+                offer.get("title"),
+                offer.get("description", ""),
+                offer.get("subtitle", ""),
+            ]
+        )
+        result["properties"] = extract_properties(
+            [
                 offer.get("title"),
                 offer.get("description", ""),
                 offer.get("subtitle", ""),
