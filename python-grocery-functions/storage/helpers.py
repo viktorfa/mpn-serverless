@@ -32,5 +32,5 @@ def add_meta_fields_to_scraper_offers(offer: dict) -> dict:
     now = datetime.utcnow()
     return {
         **offer,
-        "quantity__auto": {"value": offer.get("quantity"), "updated": now},
+        "meta.quantity.auto": {"value": offer.get("quantity"), "updated": now},
     }
