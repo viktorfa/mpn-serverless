@@ -1,5 +1,17 @@
 import { router } from "typera-express";
 
-import { getReviews, add, remove } from "@/api/controllers/reviews.controller";
+import {
+  getReviews,
+  add,
+  remove,
+  listReviewsWithOffers,
+  approve,
+} from "@/api/controllers/reviews.controller";
 
-export default router(getReviews, add, remove).handler();
+export default router(
+  listReviewsWithOffers,
+  getReviews,
+  add,
+  remove,
+  approve,
+).handler();

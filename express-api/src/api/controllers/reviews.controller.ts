@@ -1,11 +1,15 @@
 import { Parser, Response, Route, route, URL } from "typera-express";
 import * as t from "io-ts";
-import { addReview, removeReview } from "../services/reviews";
+import { addReview, approveReview, removeReview } from "../services/reviews";
 import { findOne } from "../services/offers";
 import { getCollection } from "@/config/mongo";
-import { offerReviewsCollectionName } from "../utils/constants";
+import {
+  offerCollectionName,
+  offerReviewsCollectionName,
+} from "../utils/constants";
 import { NotFound } from "typera-common/response";
 import { get } from "lodash";
+import { defaultOfferProjection } from "../models/mpnOffer.model";
 
 const productCollectionQueryParams = t.type({
   productCollection: t.string,
@@ -61,6 +65,19 @@ export const remove: Route<
     );
   }
 });
+export const approve: Route<
+  Response.NoContent<any> | Response.BadRequest<string> | NotFound<string>
+> = route.put("/:id/approve").handler(async (request) => {
+  const createReviewResult = await approveReview(request.routeParams.id);
+
+  if (createReviewResult.nModified > 0) {
+    return Response.noContent();
+  } else {
+    return Response.notFound(
+      `Could not approve review with id ${request.routeParams.id}`,
+    );
+  }
+});
 
 export const getReviews: Route<
   Response.Ok<OfferReview[]> | Response.BadRequest<string>
@@ -77,4 +94,25 @@ export const getReviews: Route<
         .toArray(),
     );
   }
+});
+
+export const listReviewsWithOffers: Route<
+  Response.Ok<OfferReview[]> | Response.BadRequest<string>
+> = route.get("/offers").handler(async (request) => {
+  const reviewCollection = await getCollection(offerReviewsCollectionName);
+  const offerCollection = await getCollection(offerCollectionName);
+  const reviews = await reviewCollection.find({}).toArray();
+  const uris = Array.from(new Set(reviews.map((x) => x.uri)));
+  const offers = await offerCollection
+    .find({ uri: { $in: uris } }, defaultOfferProjection)
+    .toArray();
+
+  const offersMap = {};
+  offers.forEach((offer) => (offersMap[offer.uri] = { ...offer, reviews: [] }));
+
+  reviews.forEach((review) => {
+    offersMap[review.uri].reviews.push(review);
+  });
+
+  return Response.ok(Object.values(offersMap));
 });
