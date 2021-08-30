@@ -149,6 +149,7 @@ export const getBiRelationsForOfferUris = async (
     uris: x.offerSet,
     title: x.title,
     relationType: x.relationType,
+    _id: x._id,
   }));
 };
 

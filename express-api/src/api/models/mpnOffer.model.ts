@@ -28,6 +28,7 @@ const defaultOfferFields = [
   "mpnStock",
   "validFrom",
   "validThrough",
+  "additionalProperties",
 ];
 
 export const defaultOfferProjection = defaultOfferFields.reduce(

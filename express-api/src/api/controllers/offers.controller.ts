@@ -314,6 +314,7 @@ export const promoted: Route<
       validThrough: { $gte: now },
       uri: { $in: promotedOfferUris },
       siteCollection: productCollection,
+      isPromotionRestricted: { $ne: true },
     };
 
     const offerCollection = await getCollection(offerCollectionName);
@@ -330,6 +331,7 @@ export const promoted: Route<
         .find({
           validThrough: { $gte: now },
           siteCollection: productCollection,
+          isPromotionRestricted: { $ne: true },
         })
         .project(defaultOfferProjection)
         .sort({ pageviews: -1 })
@@ -477,7 +479,10 @@ export const putOfferQuantity: Route<
       { uri: request.body.uri },
       {
         $set: {
-          quantity__manual: { value: quantityObject, updated: getNowDate() },
+          "meta.quantity.manual": {
+            value: quantityObject,
+            updated: getNowDate(),
+          },
           quantity: quantityObject,
           value: valueObject,
         },
