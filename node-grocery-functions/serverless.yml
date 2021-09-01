@@ -76,6 +76,14 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "beautyoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "sebeautyoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "degroceryoffers"
 
   deleteOffersFromElastic:
     handler: elastic/handler.handleTriggerDeleteEvent
@@ -108,6 +116,10 @@ functions:
           rate: rate(75 minutes)
           input:
             engineName: sebeautyoffers
+      - schedule:
+          rate: rate(72 minutes)
+          input:
+            engineName: degroceryoffers
 
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent

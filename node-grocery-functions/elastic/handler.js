@@ -62,6 +62,12 @@ const getEngineName = (engineName) => {
     result = "segroceryoffers";
   } else if (engineName.startsWith("sebeauty")) {
     result = "sebeautyoffers";
+  } else if (engineName.startsWith("degrocery")) {
+    result = "degroceryoffers";
+  } else if (engineName.startsWith("debygg")) {
+    result = "debyggoffers";
+  } else if (engineName.startsWith("debeauty")) {
+    result = "debeautyoffers";
   } else {
     return "";
   }
