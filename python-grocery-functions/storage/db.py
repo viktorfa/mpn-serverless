@@ -20,8 +20,10 @@ def get_update_one(offer, id_field: str = "uri"):
     _offer = deepcopy(offer)
     quantity = offer.get("quantity")
     value = offer.get("value")
-    del _offer["quantity"]
-    del _offer["value"]
+    if "quantity" in _offer.keys():
+        del _offer["quantity"]
+    if "value" in _offer.keys():
+        del _offer["value"]
     return UpdateOne(
         {id_field: offer[id_field]},
         {"$set": _offer, "$setOnInsert": {"quantity": quantity, "value": value}},
