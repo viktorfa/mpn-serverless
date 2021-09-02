@@ -1,3 +1,7 @@
+import logging
+import json
+
+from pydash.utilities import result
 from transform.offer import get_field_from_scraper_offer
 from amp_types.amp_product import MpnOffer
 from typing import List
@@ -12,6 +16,7 @@ from parsing.parsing import (
 from parsing.enums import unit_types
 from amp_types.amp_product import MpnOffer, ScraperOffer, HandleConfig
 from amp_types.quantity_types import (
+    Quantity,
     QuantityField,
     ItemsField,
     ExtractQuantityReturnType,
@@ -49,10 +54,23 @@ def standardize_quantity(offer: MpnOffer):
     return offer
 
 
+def get_value_from_quantity(offer: MpnOffer, quantity: Quantity) -> Quantity:
+    price = offer["pricing"]["price"]
+    result = {
+        "amount": {
+            "min": price / quantity["amount"]["min"],
+            "max": price / quantity["amount"]["max"],
+        },
+        "unit": quantity["unit"],
+    }
+    return result
+
+
 def analyze_quantity(offer: MpnOffer) -> MpnOffer:
     # Use price unit as size when the product price is denominated as a unit.
     price_unit_string: str = offer["pricing"].get("priceUnit")
     if price_unit_string:
+        logging.debug("price_unit_string")
         price_unit = extract_unit(price_unit_string)
         if price_unit and price_unit["type"] in (
             unit_types.QUANTITY,
@@ -63,6 +81,15 @@ def analyze_quantity(offer: MpnOffer) -> MpnOffer:
                     "amount": {"min": 1, "max": 1},
                     "unit": price_unit,
                 }
+
+    if offer.get("altPrice") and offer.get("altPriceUnit"):
+        if pydash.get(offer, ["quantity", "size"]) == {} or pydash.get(
+            offer, ["quantity", "size", "unit", "symbol"]
+        ) in ["stk", "pcs"]:
+            unit_string = f"{pydash.get(offer, ['pricing', 'price']) / offer.get('altPrice')}{offer.get('altPriceUnit')}"
+            quantity = parse_quantity([unit_string])
+            offer["quantity"] = quantity["quantity"]
+
     size_amount = pydash.get(offer, ["quantity", "size", "amount"])
     if size_amount and not pydash.get(offer, ["value", "size", "amount"]):
         # Has quantity but not value. Let's calculate value.

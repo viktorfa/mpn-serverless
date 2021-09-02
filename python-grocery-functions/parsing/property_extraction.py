@@ -17,7 +17,8 @@ known_property_names = {
 
 def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig):
     property_strings = list(
-        get_field_from_scraper_offer(offer, key) for key in ["title", "subtitle"]
+        get_field_from_scraper_offer(offer, key)
+        for key in config["extractPropertiesFields"]
     )
     property_strings = list(x for x in property_strings if x)
 
@@ -32,13 +33,18 @@ def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig)
             )
 
     parsed_properties = extract_properties(
-        [
-            *property_strings,
-            *list(
-                prop.get("value", "")
-                for prop in offer.get("additionalProperties", []) or []
-            ),
-        ]
+        list(
+            map(
+                str,
+                [
+                    *property_strings,
+                    *list(
+                        prop.get("value", "")
+                        for prop in offer.get("additionalProperties", []) or []
+                    ),
+                ],
+            )
+        )
     )
 
     return {
@@ -127,7 +133,7 @@ def extract_properties(strings: List[str]):
             if not string:
                 continue
             for pattern in config["patterns"]:
-                match = re.findall(pattern, string)
+                match = re.findall(pattern, string, flags=re.IGNORECASE)
                 if match:
                     value = config.get("value", match[0])
                     properties.append({"property": config["property"], "value": value})

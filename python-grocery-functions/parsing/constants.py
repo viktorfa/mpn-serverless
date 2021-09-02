@@ -1,4 +1,14 @@
-alt_unit_map = dict(liter="l", kilo="kg", gram="g", kvm="m2", lm="m")
+alt_unit_map = {
+    "liter": "l",
+    "ltr": "l",
+    "kilo": "kg",
+    "gr": "g",
+    "gram": "g",
+    "m²": "m2",
+    "kvm": "m2",
+    "sqm": "m2",
+    "lm": "m",
+}
 
 si_mappings = dict(
     g=dict(symbol="kg", factor=0.001),

@@ -21,6 +21,9 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": False,
             "collection_name": "byggoffers",
         }
@@ -37,6 +40,9 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": False,
             "collection_name": "groceryoffers",
         }
@@ -54,6 +60,9 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": ["title"],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": False,
             "collection_name": "groceryoffers",
         }
@@ -70,6 +79,9 @@ class TestHandleProducts(TestCase):
             "fieldMapping": get_field_mapping(),
             "categoriesLimits": [],
             "extractQuantityFields": [],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": True,
             "collection_name": "groceryoffers",
         }

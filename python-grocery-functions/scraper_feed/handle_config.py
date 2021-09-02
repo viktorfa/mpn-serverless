@@ -1,9 +1,10 @@
 import logging
+import pydash
 from typing import List
-from pydash import get
 
 
 from scraper_feed.scraper_configs import (
+    DEFAULT_EXTRACT_PROPERTIES_FIELDS,
     get_field_mapping,
     DEFAULT_EXTRACT_QUANTITY_FIELDS,
 )
@@ -19,10 +20,10 @@ def generate_handle_config(config: dict) -> HandleConfig:
     result["collection_name"] = config["collection_name"]
     result["market"] = config["market"]
     result["is_partner"] = config.get("is_partner", False)
-    result["categoriesLimits"] = get(
+    result["categoriesLimits"] = pydash.get(
         config, ["additionalConfig", "categoriesLimits"], []
     )
-    result["filters"] = get(config, ["additionalConfig", "filters"], [])
+    result["filters"] = pydash.get(config, ["additionalConfig", "filters"], [])
     result["fieldMapping"] = get_field_mapping(config.get("fieldMapping", []))
     extract_quantity_fields = config.get(
         "extractQuantityFields", DEFAULT_EXTRACT_QUANTITY_FIELDS
@@ -32,7 +33,19 @@ def generate_handle_config(config: dict) -> HandleConfig:
         if type(extract_quantity_fields) is list
         else DEFAULT_EXTRACT_QUANTITY_FIELDS
     )
-    result["ignore_none"] = get(config, ["additionalConfig", "ignoreNone"], False)
+    extract_properties_fields = pydash.get(
+        config,
+        ["additionalConfig", "extractPropertiesFields"],
+        DEFAULT_EXTRACT_PROPERTIES_FIELDS,
+    )
+    result["extractPropertiesFields"] = (
+        extract_properties_fields
+        if type(extract_properties_fields) is list
+        else DEFAULT_EXTRACT_PROPERTIES_FIELDS
+    )
+    result["ignore_none"] = pydash.get(
+        config, ["additionalConfig", "ignoreNone"], False
+    )
     return result
 
 

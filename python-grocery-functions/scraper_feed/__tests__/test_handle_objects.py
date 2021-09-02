@@ -1,3 +1,4 @@
+import logging
 import json
 from unittest import TestCase
 from pprint import pprint
@@ -37,6 +38,9 @@ class TestWithConfig(TestCase):
             "categoriesLimits": [],
             "fieldMapping": [],
             "extractQuantityFields": ["title"],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": False,
             "collection_name": "byggoffers",
             "filters": [
@@ -60,6 +64,9 @@ class TestWithConfig(TestCase):
             "categoriesLimits": [],
             "fieldMapping": [],
             "extractQuantityFields": ["title"],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
             "ignore_none": False,
             "collection_name": "byggoffers",
             "filters": [
@@ -84,6 +91,9 @@ class TestWithConfig(TestCase):
                 "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "subtitle", "title"],
+                "extractPropertiesFields": [],
+                "extractIngredientsFields": [],
+                "extractNutritionFields": [],
                 "fieldMapping": [
                     {"source": "sku", "destination": "ean", "replace_type": "key"},
                     {
@@ -334,6 +344,9 @@ class TestWithConfig(TestCase):
                 "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],
+                "extractPropertiesFields": [],
+                "extractIngredientsFields": [],
+                "extractNutritionFields": [],
                 "fieldMapping": [
                     {"source": "sku", "destination": "ean", "replace_type": "key"},
                     {
@@ -366,3 +379,54 @@ class TestWithConfig(TestCase):
         result = handle_products([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 39.9)
+
+    def test_single_jemogfix_product(self):
+        config = generate_handle_config(
+            {
+                "provenance": "jemogfix",
+                "namespace": "jemogfix",
+                "market": "no",
+                "collection_name": "byggoffers",
+                "categoriesLimits": [],
+                "extractQuantityFields": [],
+                "extractPropertiesFields": [],
+                "extractIngredientsFields": [],
+                "extractNutritionFields": [],
+                "additionalConfig": {
+                    "extractPropertiesFields": ["title", "description"]
+                },
+                "fieldMapping": [],
+            }
+        )
+        scraper_offer = {
+            "price": 204.0,
+            "priceCurrency": "NOK",
+            "mpn": "9054481",
+            "title": "Rundstokk",
+            "image": "https://medieserver.jemogfix.dk/api/v1/products/GetPrimaryProductImage?productGroupNumber=4222&productNumber=9054481&shopLanguage=3&previewSize=700",
+            "description": "Ubehandlet furu. Fast lengde av 2,4 meter. 28 mm. 10 x 58 x 4400 mm.",
+            "availability": "http://schema.org/OutOfStock",
+            "categories": [
+                "Forside",
+                "Byggevarer & trelast",
+                "Trematerialer og bord",
+                "Ubehandlet tre",
+            ],
+            "sku": "9054481",
+            "priceUnit": "pcs",
+            "altPrice": 85.0,
+            "altPriceUnit": "m",
+            "provenance": "www.jemogfix.no",
+            "url": "https://www.jemogfix.no/rundstokk/4222/9054481/",
+            "url_fingerprint": "99770c4615456e4764934ec05e22deec7f159bde",
+            "canonical_url": "https://www.jemogfix.no/rundstokk/4222/9054481/",
+            "provenanceId": "9054481",
+        }
+
+        result = handle_products([scraper_offer], config)
+        # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
+        self.assertEqual(result[0]["quantity"]["size"]["standard"]["min"], 2.4)
+        self.assertEqual(result[0]["quantity"]["size"]["unit"]["symbol"], "m")
+        self.assertEqual(
+            result[0]["mpnProperties"]["dimensions"]["value"], "10x58x4400"
+        )

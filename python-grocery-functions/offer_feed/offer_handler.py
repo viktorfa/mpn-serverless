@@ -1,4 +1,7 @@
+from parsing.quantity_extraction import get_value_from_quantity, standardize_quantity
+from amp_types.amp_product import MpnOffer
 import json
+import pydash
 from bson import json_util
 import logging
 import os
@@ -37,6 +40,56 @@ class SnsMessage(TypedDict):
     collection_name: str
     scrape_time: str
     provenance: str
+
+
+def handle_offers_for_meta(
+    offers: Iterable[dict],
+):
+    """
+    Updates offers according to meta fields."""
+    operations = []
+
+    for offer in offers:
+        manual_quantity = pydash.get(offer, ["meta", "quantity", "manual", "value"])
+        auto_quantity = pydash.get(offer, ["meta", "quantity", "auto", "value"])
+        if manual_quantity:
+            value = get_value_from_quantity(offer, manual_quantity["size"])
+            new_offer = {"quantity": manual_quantity, "value": {"size": value}}
+            new_offer = standardize_quantity(new_offer)
+            operations.append(
+                UpdateOne(
+                    {"uri": offer["uri"]},
+                    {
+                        "$set": {
+                            "quantity": new_offer["quantity"],
+                            "value.size": new_offer["value"]["size"],
+                        }
+                    },
+                )
+            )
+        elif auto_quantity:
+            value = get_value_from_quantity(offer, auto_quantity["size"])
+            new_offer = {"quantity": auto_quantity, "value": {"size": value}}
+            new_offer = standardize_quantity(new_offer)
+            operations.append(
+                UpdateOne(
+                    {"uri": offer["uri"]},
+                    {
+                        "$set": {
+                            "quantity": new_offer["quantity"],
+                            "value.size": new_offer["value"]["size"],
+                        }
+                    },
+                )
+            )
+
+    collection = get_collection("mpnoffers")
+
+    logging.info(f"Updating quantity of {len(operations)} offers")
+
+    bulk_write_result = collection.bulk_write(operations)
+
+    return {"message": json_util.dumps(bulk_write_result.bulk_api_result)}
 
 
 def handle_offers(
@@ -87,6 +140,23 @@ def handle_offers(
     bulk_write_result = collection.bulk_write(operations, ordered=True)
 
     return {"message": json_util.dumps(bulk_write_result.bulk_api_result)}
+
+
+def get_scraped_offers(provenance: str) -> List[dict]:
+    now = datetime.now()
+    collection = get_collection("mpnoffers")
+    scraped_offers = collection.find(
+        {
+            "provenance": provenance,
+            "validThrough": {"$gt": now},
+            "$or": [
+                {"meta.quantity.auto.value.size.amount": {"$exists": True}},
+                {"meta.quantity.manual.value.size.amount": {"$exists": True}},
+            ],
+        },
+        {"uri": 1, "meta": 1, "quantity": 1, "pricing": 1},
+    )
+    return list(scraped_offers)
 
 
 def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
@@ -156,6 +226,41 @@ def offer_feed_trigger(event, context):
             return handle_offers(offers_list)
         else:
             return {"message": f"No offers with gtins for {provenance}"}
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        return {"message": str(e)}
+
+
+def offer_feed_meta_sns(event, context):
+    logging.info("event")
+    logging.info(event)
+    aws_config.lambda_context = context
+    sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
+    provenance = sns_message["provenance"]
+    try:
+        offers_list = get_scraped_offers(provenance)
+        if len(offers_list) > 0:
+            return handle_offers_for_meta(offers_list)
+        else:
+            return {"message": f"No offers for {provenance}"}
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        return {"message": str(e)}
+
+
+def offer_feed_meta_trigger(event, context):
+    logging.info("event")
+    logging.info(event)
+    aws_config.lambda_context = context
+    provenance = event["provenance"]
+    try:
+        offers_list = get_scraped_offers(provenance)
+        if len(offers_list) > 0:
+            return handle_offers_for_meta(offers_list)
+        else:
+            return {"message": f"No offers for {provenance}"}
     except Exception as e:
         logging.error(e)
         log_traceback(e)

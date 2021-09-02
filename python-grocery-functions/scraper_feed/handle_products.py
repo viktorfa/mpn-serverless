@@ -144,7 +144,7 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         extra_quantity_string = " ".join(
             (
                 str(offer[key])
-                for key in ("rawQuantity", "quantityValue", "quantityUnit")
+                for key in ("rawQuantity", "rawValue", "quantityValue", "quantityUnit")
                 if offer.get(key)
             ),
         )
@@ -183,9 +183,9 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["market"] = config["market"]
     result["isPartner"] = config.get("is_partner", False)
 
-    result["additionalProperties"] = standardize_additional_properties(offer, config)
+    result["mpnProperties"] = standardize_additional_properties(offer, config)
 
-    result = analyze_quantity(result)
+    result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)
     quantity = result.get("quantity")
 

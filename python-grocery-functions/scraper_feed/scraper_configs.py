@@ -3,6 +3,7 @@ from typing import List
 from amp_types.amp_product import MappingConfigField
 
 DEFAULT_EXTRACT_QUANTITY_FIELDS = []
+DEFAULT_EXTRACT_PROPERTIES_FIELDS = ["title", "subtitle"]
 
 DEFAULT_FIELD_MAPPING = [
     {

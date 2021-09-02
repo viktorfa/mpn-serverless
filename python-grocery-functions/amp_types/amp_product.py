@@ -51,6 +51,7 @@ class MpnOffer(TypedDict):
     isPromoted: bool
     availability: str
     additionalProperties: Mapping[str, AdditionalProperty]
+    mpnProperties: Mapping[str, AdditionalProperty]
     categories: List[str]
     categories2: List[str]
     gtin: str
@@ -122,6 +123,7 @@ class DbHandleConfig(TypedDict):
     fieldMapping: List[MappingConfigField]
     filters: List[OfferFilterConfig]
     extractQuantityFields: List[str]
+    extractPropertiesFields: List[str]
     categoriesLimits: List[int]
     ignore_none: bool
     provenance: str

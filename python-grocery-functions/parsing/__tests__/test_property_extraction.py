@@ -64,11 +64,21 @@ class TestExtractProperties(TestCase):
         )
         self.assertIn({"property": "styrkegrad", "value": "c24"}, actual)
 
+    def test_extract_properties_with_dimensions(self):
+        actual = extract_properties(
+            ["Ubehandlet furu. Fast lengde av 2,4 meter. 28 mm. 10 x 58 x 4400 mm."]
+        )
+        print(actual)
+        self.assertIn({"property": "dimensions", "value": "10x58x4400"}, actual)
+
 
 class TestExtractPropertiesFromOffer(TestCase):
     def test_standardize_additional_properties(self):
         actual = standardize_additional_properties(
-            {"title": "Furu terrassebord 28 X 120 c24", "subtitle": ""}, {}
+            {"title": "Furu terrassebord 28 X 120 c24", "subtitle": ""},
+            {
+                "extractPropertiesFields": ["title"],
+            },
         )
         self.assertDictEqual(
             {"property": "styrkegrad", "value": "c24"}, actual["styrkegrad"]

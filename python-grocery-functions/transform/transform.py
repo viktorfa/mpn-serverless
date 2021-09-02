@@ -53,6 +53,8 @@ def add_to_destination(
 def transform_fields(
     offer: ScraperOffer, field_mapping: List[MappingConfigField]
 ) -> ScraperOffer:
+    """
+    Rename , add and remove fields according to config."""
     result = {**offer}
     for field_config in field_mapping:
         if field_config["replace_type"] == "fixed":
