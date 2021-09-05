@@ -4,6 +4,7 @@ from amp_types.amp_product import MappingConfigField
 
 DEFAULT_EXTRACT_QUANTITY_FIELDS = []
 DEFAULT_EXTRACT_PROPERTIES_FIELDS = ["title", "subtitle"]
+DEFAULT_EXTRACT_INGREDIENTS_FIELDS = ["rawIngredients"]
 
 DEFAULT_FIELD_MAPPING = [
     {

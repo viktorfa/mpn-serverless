@@ -430,3 +430,51 @@ class TestWithConfig(TestCase):
         self.assertEqual(
             result[0]["mpnProperties"]["dimensions"]["value"], "10x58x4400"
         )
+
+    def test_single_kolonial_product(self):
+        config = generate_handle_config(
+            {
+                "provenance": "jemogfix",
+                "namespace": "jemogfix",
+                "market": "no",
+                "collection_name": "byggoffers",
+                "categoriesLimits": [],
+                "extractQuantityFields": [],
+                "extractPropertiesFields": [],
+                "extractIngredientsFields": [],
+                "extractNutritionFields": [],
+                "additionalConfig": {
+                    "extractPropertiesFields": ["title", "description"]
+                },
+                "fieldMapping": [
+                    {
+                        "source": "Ingredienser",
+                        "destination": "rawIngredients",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "Protein",
+                        "destination": "proteins",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "hvorav sukkerarter",
+                        "destination": "sugars",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "Karbohydrater",
+                        "destination": "carbohydrates",
+                        "replace_type": "key",
+                    },
+                ],
+            }
+        )
+        scraper_offer = self.kolonial_products[0]
+
+        result = handle_products([scraper_offer], config)
+        # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
+        logging.debug("kolonial product:")
+        logging.debug(json.dumps(result, default=str))
+        self.assertIn("karbondioksid", result[0]["mpnIngredients"])
+        self.assertEqual(9.7, result[0]["mpnNutrition"]["carbohydrates"]["value"])

@@ -124,6 +124,7 @@ class DbHandleConfig(TypedDict):
     filters: List[OfferFilterConfig]
     extractQuantityFields: List[str]
     extractPropertiesFields: List[str]
+    extractIngredientsFields: List[str]
     categoriesLimits: List[int]
     ignore_none: bool
     provenance: str

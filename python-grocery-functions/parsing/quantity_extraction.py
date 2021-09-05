@@ -1,7 +1,7 @@
 import logging
 import json
+from util.utils import log_traceback
 
-from pydash.utilities import result
 from transform.offer import get_field_from_scraper_offer
 from amp_types.amp_product import MpnOffer
 from typing import List

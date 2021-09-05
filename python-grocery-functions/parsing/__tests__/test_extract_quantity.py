@@ -54,6 +54,15 @@ class TestExtractQuantity(TestCase):
         self.assertEqual(pydash.get(actual, "size.amount.min"), 4)
         self.assertEqual(pydash.get(actual, "size.unit.symbol"), "dl")
 
+    def test_with_number_that_can_raise_error(self):
+        actual = extract_quantity(
+            [
+                "Kjente metallbiler i størrelse 1:43 (9-10cm). Velg mellom: BMW Z8 Softtop, BMW Z4 Roadster, VW New Beetle Cabrio, Porsche Carrera GT. Alder 3+."
+            ],
+        )
+        print("actual")
+        print(actual)
+
 
 class TestAnalyzeQuantity(TestCase):
     def test_basic_without_size(self):

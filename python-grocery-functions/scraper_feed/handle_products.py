@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 from datetime import timedelta
+from parsing.ingredients_extraction import extract_ingredients
+from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
     extract_dimensions,
     extract_properties,
@@ -184,6 +186,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["isPartner"] = config.get("is_partner", False)
 
     result["mpnProperties"] = standardize_additional_properties(offer, config)
+    result["mpnIngredients"] = extract_ingredients(offer, config)
+    result["mpnNutrition"] = extract_nutritional_data(offer, config)
 
     result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)

@@ -4,6 +4,7 @@ from typing import List
 
 
 from scraper_feed.scraper_configs import (
+    DEFAULT_EXTRACT_INGREDIENTS_FIELDS,
     DEFAULT_EXTRACT_PROPERTIES_FIELDS,
     get_field_mapping,
     DEFAULT_EXTRACT_QUANTITY_FIELDS,
@@ -28,6 +29,7 @@ def generate_handle_config(config: dict) -> HandleConfig:
     extract_quantity_fields = config.get(
         "extractQuantityFields", DEFAULT_EXTRACT_QUANTITY_FIELDS
     )
+
     result["extractQuantityFields"] = (
         extract_quantity_fields
         if type(extract_quantity_fields) is list
@@ -38,10 +40,20 @@ def generate_handle_config(config: dict) -> HandleConfig:
         ["additionalConfig", "extractPropertiesFields"],
         DEFAULT_EXTRACT_PROPERTIES_FIELDS,
     )
+    extract_ingredients_fields = pydash.get(
+        config,
+        ["additionalConfig", "extractIngredientsFields"],
+        DEFAULT_EXTRACT_INGREDIENTS_FIELDS,
+    )
     result["extractPropertiesFields"] = (
         extract_properties_fields
         if type(extract_properties_fields) is list
         else DEFAULT_EXTRACT_PROPERTIES_FIELDS
+    )
+    result["extractIngredientsFields"] = (
+        extract_ingredients_fields
+        if type(extract_ingredients_fields) is list
+        else DEFAULT_EXTRACT_INGREDIENTS_FIELDS
     )
     result["ignore_none"] = pydash.get(
         config, ["additionalConfig", "ignoreNone"], False

@@ -32,6 +32,7 @@ def extract_number(string: str) -> Optional[float]:
 def extract_numbers_with_context(string: str) -> Optional[list]:
     """
     Finds numbers and returns a list of tuples with the number and its prefix and suffix.
+    TODO Support different decimal separators such as "," or ":"
     """
     number_pattern = r"(\d+(?:[,\.\:]\d+)?)"
     compiled_number_pattern = re.compile(number_pattern, re.A)
@@ -111,7 +112,7 @@ def extract_number_unit_pairs(string: str) -> Optional[list]:
 
 def format_number(string: str, loader_context: dict = dict()) -> Optional[str]:
     try:
-        return string.replace(",", ".")
+        return string.replace(",", ".").replace(":", ".")
     except AttributeError as exc:
         logging.warning(
             ""
