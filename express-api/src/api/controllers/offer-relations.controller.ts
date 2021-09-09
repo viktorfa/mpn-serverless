@@ -73,6 +73,12 @@ export const addIdenticalOffers: Route<
         request.body.relationType,
       )
     ) {
+      if (OfferRelation.identical === request.body.relationType) {
+        await addBiRelationalOffers(
+          [sourceOffer, ...targetOffers],
+          OfferRelation.interchangeable,
+        );
+      }
       const dbResult = await addBiRelationalOffers(
         [sourceOffer, ...targetOffers],
         request.body.relationType,
