@@ -28,7 +28,10 @@ const defaultOfferFields = [
   "mpnStock",
   "validFrom",
   "validThrough",
-  "additionalProperties",
+  "mpnProperties",
+  "mpnNutrition",
+  "mpnIngredients",
+  "mpnCategories",
 ];
 
 export const defaultOfferProjection = defaultOfferFields.reduce(

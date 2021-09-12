@@ -5,11 +5,11 @@ import {
   search as searchElastic,
   querySuggestion as querySuggestionElastic,
   registerClick as registerClickElastic,
+  searchWithFilter,
 } from "@/api/services/search";
 import { stage } from "@/config/vars";
 import {
   getLimitFromQueryParam,
-  productCollectionAndLimitQueryParams,
   productCollectionQueryParams,
 } from "./typera-types";
 
@@ -28,6 +28,20 @@ const searchQueryParams = t.type({
   query: t.string,
   productCollection: t.string,
   limit: t.union([t.string, t.undefined]),
+  page: t.union([t.string, t.undefined]),
+  dealers: t.union([t.string, t.undefined]),
+  categories: t.union([t.string, t.undefined]),
+  price: t.union([t.string, t.undefined]),
+  sort: t.union([t.string, t.undefined]),
+});
+const searchQueryParamsNoQuery = t.type({
+  productCollection: t.string,
+  limit: t.union([t.string, t.undefined]),
+  page: t.union([t.string, t.undefined]),
+  dealers: t.union([t.string, t.undefined]),
+  categories: t.union([t.string, t.undefined]),
+  price: t.union([t.string, t.undefined]),
+  sort: t.union([t.string, t.undefined]),
 });
 
 export const searchExtra: Route<
@@ -50,42 +64,112 @@ export const searchExtra: Route<
   });
 
 export const search: Route<
-  Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
+  Response.Ok<{ items: MpnResultOffer[] }> | Response.BadRequest<string>
 > = route
   .get("/search")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
-    const { limit, query, productCollection } = request.query;
+    const {
+      query,
+      productCollection,
+      limit,
+      page,
+      dealers,
+      price,
+      categories,
+      sort,
+    } = request.query;
     if (query.length > 128) {
       return Response.badRequest("Query longer than 128 characters");
     }
+
     const _limit = getLimitFromQueryParam(limit, 256);
 
-    const searchResults = await searchElastic(
+    const _sort = sort ? sort.split(":") : null;
+    const sortField = _.get(_sort, [0], "");
+    const sortDirection = _.get(_sort, [1]) === "desc" ? "desc" : "asc";
+    const sortConfig: { [x: string]: "asc" | "desc" } = sortField
+      ? { [sortField]: sortDirection }
+      : null;
+
+    const searchArgs = {
+      dealers: dealers ? dealers.split(",") : null,
+      categories: categories ? categories.split(",") : null,
+      sort: sortConfig,
+      price: null,
+      page: Number.parseInt(page || "1"),
+    };
+    const [priceMin, priceMax] = (price || "").split(",");
+    const _price: { from?: number; to?: number } = {};
+    if (priceMin) {
+      _price.from = priceMin ? Number.parseInt(priceMin) : null;
+    }
+    if (priceMax) {
+      _price.to = priceMax ? Number.parseInt(priceMax) : null;
+    }
+    if (_price.from || _price.to) {
+      searchArgs.price = _price;
+    }
+
+    const searchResults = await searchWithFilter({
       query,
-      getEngineName(productCollection),
-      _limit,
-    );
-    return Response.ok(filterDuplicateOffers(searchResults));
+      engineName: getEngineName(productCollection),
+      limit: _limit,
+      ...searchArgs,
+    });
+    return Response.ok({
+      facets: searchResults.facets,
+      meta: searchResults.meta,
+      items: filterDuplicateOffers(searchResults.items),
+    });
   });
+
 export const searchPathParam: Route<
   Response.Ok<MpnResultOffer[]> | Response.BadRequest<string>
 > = route
   .get("/search/:query")
-  .use(Parser.query(productCollectionAndLimitQueryParams))
+  .use(Parser.query(searchQueryParamsNoQuery))
   .handler(async (request) => {
     const query = request.routeParams.query;
     if (query.length > 128) {
       return Response.badRequest("Query longer than 128 characters");
     }
-    const { productCollection, limit } = request.query;
+    const { productCollection, limit, dealers, price, categories, sort } =
+      request.query;
     const _limit = getLimitFromQueryParam(limit, 256);
-    const searchResults = await searchElastic(
+
+    const _sort = sort ? sort.split(":") : null;
+    const sortField = _.get(_sort, [0], "");
+    const sortDirection = _.get(_sort, [1]) === "desc" ? "desc" : "asc";
+    const sortConfig: { [x: string]: "asc" | "desc" } = sortField
+      ? { [sortField]: sortDirection }
+      : null;
+
+    const searchArgs = {
+      dealers: dealers ? dealers.split(",") : null,
+      categories: categories ? categories.split(",") : null,
+      sort: sortConfig,
+      price: null,
+    };
+    const [priceMin, priceMax] = (price || "").split(",");
+    const _price: { from?: number; to?: number } = {};
+    if (priceMin) {
+      _price.from = Number.parseInt(priceMin);
+    }
+    if (priceMax) {
+      _price.to = Number.parseInt(priceMax);
+    }
+    if (_price.from || _price.to) {
+      searchArgs.price = _price;
+    }
+
+    const searchResults = await searchWithFilter({
       query,
-      getEngineName(productCollection),
-      _limit,
-    );
-    return Response.ok(filterDuplicateOffers(searchResults));
+      engineName: getEngineName(productCollection),
+      limit: _limit,
+      ...searchArgs,
+    });
+    return Response.ok(filterDuplicateOffers(searchResults.items));
   });
 
 export const querySuggestion: Route<

@@ -8,10 +8,21 @@ interface AppSearchParams {
     current?: number;
     search_fields?: Record<string, number>;
   };
-  filters?: Record<
-    string,
-    string[] | { from?: string | number | Date; to?: string | number | Date }
-  >;
+  filters?:
+    | Record<
+        string,
+        | string[]
+        | { from?: string | number | Date; to?: string | number | Date }
+      >
+    | {
+        all: Record<
+          string,
+          | string[]
+          | { from?: string | number | Date; to?: string | number | Date }
+        >[];
+      };
+  sort?: Record<string, "asc" | "desc">;
+  facets?: Record<string, { type: "value" }[]>;
 }
 
 interface AppSearchEngine {
@@ -52,6 +63,7 @@ interface ElasticResponse<T> {
     request_id: string;
   };
   results: T[];
+  facets: any;
 }
 interface ElasticQuerySuggestionResponse {
   meta: {

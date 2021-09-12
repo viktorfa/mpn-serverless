@@ -5,8 +5,6 @@ import {
   addTagToOffers,
   findOne,
   findOneFull,
-  getOffersByUris,
-  getOffersForSiteCollection,
   getOfferUrisForTags,
   getSimilarGroupedOffersFromOfferUris,
   getTagsForOffer,
@@ -18,13 +16,9 @@ import { getNowDate } from "../utils/helpers";
 import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
-import {
-  getOfferBiRelations,
-  getOfferBiRelationsCollection,
-  getOfferGroupFromBirelation,
-} from "../services/offer-relations";
+import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
-import { FilterQuery, QuerySelector } from "mongodb";
+import { FilterQuery } from "mongodb";
 import { offerCollectionName } from "../utils/constants";
 import {
   getLimitFromQueryParam,
@@ -34,12 +28,13 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { getQuantityObject, getValueObject } from "../utils/quantity";
-import { response } from "express";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
   tags: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
+  category: t.union([t.string, t.undefined]),
+  dealer: t.union([t.string, t.undefined]),
 });
 
 interface ListOffersResponse {
@@ -52,20 +47,34 @@ export const list: Route<
   .get("/")
   .use(Parser.query(offersQueryParams))
   .handler(async (request) => {
-    const { productCollection, tags, limit } = request.query;
+    const { productCollection, tags, limit, category, dealer } = request.query;
 
     let _limit = getLimitFromQueryParam(limit, 32, 128);
 
-    const selection: FilterQuery<FullMpnOffer> = {};
+    const selection: FilterQuery<FullMpnOffer> = {
+      siteCollection: productCollection,
+    };
     if (tags) {
       selection.uri = { $in: await getOfferUrisForTags(getStringList(tags)) };
     }
-    const result = await getOffersForSiteCollection(
-      productCollection,
-      selection,
-      defaultOfferProjection,
-      _limit,
-    );
+    if (category) {
+      selection["mpnCategories.key"] = category;
+    }
+    if (dealer) {
+      selection.dealer = dealer;
+    }
+
+    const now = getNowDate();
+    selection.validThrough = { $gte: now };
+
+    const offerCollection = await getCollection(offerCollectionName);
+
+    const result = await offerCollection
+      .find(selection, defaultOfferProjection)
+      .sort({ pageviews: -1, url_fingerprint: 1 })
+      .limit(_limit)
+      .toArray();
+
     return Response.ok({ items: result });
   });
 

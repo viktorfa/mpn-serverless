@@ -1,4 +1,5 @@
 import { router } from "typera-express";
+import { Router } from "express";
 
 import {
   putOffer,
@@ -7,4 +8,6 @@ import {
   putConfig,
 } from "@/api/controllers/comparisons.controller";
 
-export default router(putOffer, getBors, getData, putConfig).handler();
+const routes: Router = router(putOffer, getBors, getData, putConfig).handler();
+
+export default routes;

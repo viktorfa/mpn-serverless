@@ -47,6 +47,102 @@ export const search = async (
     });
   }
 };
+export const searchWithFilter = async ({
+  query,
+  engineName,
+  limit = 32,
+  page = 1,
+  dealers,
+  categories,
+  price,
+  sort,
+}: {
+  query: string;
+  engineName: string;
+  limit?: number;
+  page?: number;
+  dealers?: string[];
+  categories?: string[];
+  price?: { from?: number; to?: number };
+  sort?: { [key: string]: "desc" | "asc" };
+}): Promise<{ items: MpnResultOffer[]; facets: any; meta: any }> => {
+  const elasticClient = await getElasticClient();
+  if (query.length > 127) {
+    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
+    console.error(message);
+    throw new APIError({
+      status: 500,
+      message,
+    });
+  }
+  const now = getNowDate();
+  const filters: { all: Record<string, any>[] } = {
+    all: [{ valid_through: { from: now } }],
+  };
+
+  if (dealers) {
+    filters.all.push({ dealer: dealers });
+  }
+  if (categories) {
+    filters.all.push({ mpn_categories: categories });
+  }
+
+  if (price) {
+    filters.all.push({ price });
+  }
+  const searchOptions: AppSearchParams = {
+    page: { size: limit, current: page },
+    filters,
+    facets: {
+      dealer: [
+        {
+          type: "value",
+        },
+      ],
+      mpn_categories: [
+        {
+          type: "value",
+        },
+      ],
+    },
+  };
+
+  if (sort) {
+    searchOptions.sort = sort;
+  }
+
+  const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
+    engineName,
+    query,
+    searchOptions,
+  );
+
+  try {
+    const mpnResults = searchResponse.results.map((x) => {
+      return elasticOfferToMpnOffer(x);
+    });
+
+    // Filter offers that only exist in Elastic and not in Mongo
+    const resultUris = mpnResults.map((x) => x.uri);
+    const urisFromMongoSet = new Set(
+      (await getOffersByUris(resultUris, null, { uri: 1 })).map((x) => x.uri),
+    );
+
+    const validOffers = mpnResults.filter((x) => urisFromMongoSet.has(x.uri));
+
+    return {
+      facets: searchResponse.facets,
+      meta: searchResponse.meta,
+      items: validOffers,
+    };
+  } catch (e) {
+    console.error(e);
+    throw new APIError({
+      status: 500,
+      message: `Could not search for ${query}`,
+    });
+  }
+};
 
 export const querySuggestion = async (query, engineName): Promise<string[]> => {
   if (query.length > 127) {
