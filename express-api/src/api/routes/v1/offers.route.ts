@@ -1,4 +1,5 @@
 import { router } from "typera-express";
+import { Router } from "express";
 
 import {
   list,
@@ -23,7 +24,7 @@ import {
   searchExtra,
 } from "@/api/controllers/search.controller";
 
-export default router(
+const routes: Router = router(
   getOfferGroups,
   list,
   promoted,
@@ -43,3 +44,5 @@ export default router(
   getTagsForOfferHandler,
   putRemoveTagFromOffers,
 ).handler();
+
+export default routes;

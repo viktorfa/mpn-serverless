@@ -1,4 +1,5 @@
 import { router } from "typera-express";
+import { Router } from "express";
 
 import {
   addIdenticalOffers,
@@ -6,8 +7,10 @@ import {
   updateOfferRelation,
 } from "@/api/controllers/offer-relations.controller";
 
-export default router(
+const routes: Router = router(
   addIdenticalOffers,
   removeOfferRelation,
   updateOfferRelation,
 ).handler();
+
+export default routes;

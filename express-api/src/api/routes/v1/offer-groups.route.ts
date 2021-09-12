@@ -1,4 +1,5 @@
 import { router } from "typera-express";
+import { Router } from "express";
 
 import {
   getOfferGroup,
@@ -9,7 +10,7 @@ import {
   getOfferGroupsForOffer,
 } from "@/api/controllers/offer-groups.controller";
 
-export default router(
+const routes: Router = router(
   getOfferGroups,
   getOfferGroup,
   postAddTagToOfferGroup,
@@ -17,3 +18,5 @@ export default router(
   putRemoveTagFromOfferGroup,
   getOfferGroupsForOffer,
 ).handler();
+
+export default routes;
