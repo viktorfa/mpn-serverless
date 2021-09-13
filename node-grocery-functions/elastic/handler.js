@@ -38,6 +38,13 @@ const includeFields = [
   "gtins",
   "provenance",
   "mpnStock",
+  "mpnProperties",
+  "mpnCategories",
+  "mpnIngredients",
+
+  "market",
+  "isPartner",
+  "siteCollection",
 ];
 
 /**

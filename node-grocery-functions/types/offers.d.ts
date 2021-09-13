@@ -61,6 +61,14 @@ export interface MpnOffer {
   provenance: string;
   gtins?: Record<string, string>;
   mpnStock: string;
+  mpnProperties: Record<string, { value: string }>;
+  mpnIngredients: Record<string, { key: string }>;
+  mpnCategories: { key: string; name: string; level: number }[];
+  ingredients: string[];
+
+  market: string;
+  isPartner: boolean;
+  siteCollection: string;
 }
 
 export interface ElasticMpnOffer {
@@ -90,4 +98,10 @@ export interface ElasticMpnOffer {
   provenance: string;
   gtins: Record<string, string>;
   mpn_stock: string;
+  mpn_properties: Record<string, object>;
+  ingredients: string[];
+
+  market: string;
+  is_partner: boolean;
+  site_collection: string;
 }

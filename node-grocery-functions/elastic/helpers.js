@@ -39,10 +39,21 @@ const mpnOfferToElasticOffer = (offer) => {
     provenance: offer.provenance,
     gtins: get(offer, ["gtins"], {}),
     mpn_stock: offer.mpnStock,
+    mpn_properties: Object.values(offer.mpnProperties || []).map(
+      (x) => x.value,
+    ),
+    mpn_ingredients: Object.values(offer.mpnIngredients || []).map(
+      (x) => x.key,
+    ),
+    mpn_categories: (offer.mpnCategories || []).map((x) => x.key),
 
     pricing: offer.pricing,
     value: offer.value,
     quantity: offer.quantity,
+
+    market: offer.market,
+    is_partner: offer.isPartner,
+    site_collection: offer.siteCollection,
   };
   return result;
 };
