@@ -94,6 +94,7 @@ class TestWithConfig(TestCase):
                 "extractPropertiesFields": [],
                 "extractIngredientsFields": [],
                 "extractNutritionFields": [],
+                "additionalConfig": {"categoriesField": "slugCategories"},
                 "fieldMapping": [
                     {"source": "sku", "destination": "ean", "replace_type": "key"},
                     {
@@ -115,6 +116,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
+        self.assertEqual(actual[0]["mpnCategories"][-1]["key"], "bananer_2")
 
     def test_kolonial_products(self):
         config = generate_handle_config(
@@ -476,5 +478,5 @@ class TestWithConfig(TestCase):
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         logging.debug("kolonial product:")
         logging.debug(json.dumps(result, default=str))
-        self.assertIn("karbondioksid", result[0]["mpnIngredients"])
+        self.assertEqual(result[0]["mpnIngredients"]["co2"]["key"], "co2")
         self.assertEqual(9.7, result[0]["mpnNutrition"]["carbohydrates"]["value"])

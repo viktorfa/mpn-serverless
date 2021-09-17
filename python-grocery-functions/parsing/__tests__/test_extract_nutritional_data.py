@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from parsing.nutrition_extraction import extract_nutritional_data
-from scraper_feed.handle_config import generate_handle_config
+from transform.transform import transform_fields
 
 
 class TestExtractNutrionalData(TestCase):
@@ -66,6 +66,110 @@ class TestExtractNutrionalData(TestCase):
         config = {}
         actual = extract_nutritional_data(offer, config)
         self.assertEqual(actual["sugars"]["value"], 9.7)
+
+    def test_with_kolonial_offer_2(self):
+        offer = {
+            "price": 22.3,
+            "priceCurrency": "NOK",
+            "brand": "Tine",
+            "title": "Tine Lettmelk Med Sjokoladesmak 1 l",
+            "url": "https://oda.com/no/products/28341-tine-tine-lettmelk-med-sjokoladesmak/",
+            "image": "https://bilder.kolonial.no/produkter/b67c01e3-243c-4672-9d6c-0f5603158ad3.jpeg?fit=max&w=500&s=40956a8d20e671056fcc846b967349a2",
+            "description": "Inneholder ekte kakao, noe som gir en mild og god sjokoladesmak. Den er uten tilsatt sukker, men med et naturlig innhold av sukker fra melken. Lett Tinemelk® Sjokolade har et lavt fettinnhold, er laktoseredusert og tilsatt vitamin D. Prøv den gjerne oppvarmet med krem – verdens kanskje enkleste kopp med kakao. Sett farge på hverdagen med Tinemelk® Sjokolade!",
+            "availability": "http://schema.org/InStock",
+            "itemCondition": "http://schema.org/NewCondition",
+            "additionalProperties": [
+                {
+                    "@type": "PropertyValue",
+                    "name": "Størrelse",
+                    "value": "1",
+                    "unitText": "liter",
+                },
+                {
+                    "@type": "PropertyValue",
+                    "name": "Utleveringsdager",
+                    "value": "Alle dager",
+                },
+                {"value": "1 liter", "key": "Størrelse", "type": None},
+                {"value": "Alle dager", "key": "Utleveringsdager", "type": None},
+                {
+                    "value": "lettmelk, kakao, aroma, stabilisator (karragenan), vitamin D Allergikere kan reagere på: lettmelk",
+                    "key": "Ingredienser",
+                    "type": None,
+                },
+                {"value": "Norge", "key": "Opprinnelsesland", "type": None},
+                {"value": "Tine SA", "key": "Leverandør", "type": None},
+                {
+                    "value": "Kjølevare Må oppbevares mellom 0-4°C",
+                    "key": "Oppbevaring",
+                    "type": None,
+                },
+                {
+                    "value": "7 dager Les mer...",
+                    "key": "Holdbarhetsgaranti",
+                    "type": None,
+                },
+                {"value": "188 kJ / 45 kcal", "key": "Energi", "type": None},
+                {"value": "1,30 g", "key": "Fett", "type": None},
+                {"value": "0,90 g", "key": "hvorav mettede fettsyrer", "type": None},
+                {"value": "4,60 g", "key": "Karbohydrater", "type": None},
+                {"value": "4,50 g", "key": "hvorav sukkerarter", "type": None},
+                {"value": "3,70 g", "key": "Protein", "type": None},
+                {"value": "0,10 g", "key": "Salt", "type": None},
+            ],
+            "categories": ["Alle varer", "Meieri, ost og egg", "Melk", "Melk med smak"],
+            "canonical_url": "https://oda.com/no/products/28341-tine-tine-lettmelk-med-sjokoladesmak/",
+            "sku": "28341",
+            "unit_price_raw": "kr 22,30 per l",
+            "quantity_info": "1 l",
+            "subtitle": "1 l",
+            "provenance": "kolonial_spider",
+            "url_fingerprint": "65086aa852388fc703a2b9ec2f9e8be26e32987b",
+            "provenanceId": "28341",
+        }
+        config = {}
+        offer = transform_fields(
+            offer,
+            [
+                {
+                    "source": "Ingredienser",
+                    "destination": "rawIngredients",
+                    "replace_type": "key",
+                },
+                {"source": "Protein", "destination": "proteins", "replace_type": "key"},
+                {
+                    "source": "hvorav sukkerarter",
+                    "destination": "sugars",
+                    "replace_type": "key",
+                },
+                {"source": "Energi", "destination": "energy", "replace_type": "key"},
+                {"source": "Salt", "destination": "salt", "replace_type": "key"},
+                {"source": "Kostfiber", "destination": "fibers", "replace_type": "key"},
+                {"source": "Fett", "destination": "fats", "replace_type": "key"},
+                {
+                    "source": "hvorav mettede fettsyrer",
+                    "destination": "satFats",
+                    "replace_type": "key",
+                },
+                {
+                    "source": "hvorav enumettede fettsyrer",
+                    "destination": "monoFats",
+                    "replace_type": "key",
+                },
+                {
+                    "source": "hvorav flerumettede fettsyrer",
+                    "destination": "polyFats",
+                    "replace_type": "key",
+                },
+                {
+                    "source": "Karbohydrater",
+                    "destination": "carbohydrates",
+                    "replace_type": "key",
+                },
+            ],
+        )
+        actual = extract_nutritional_data(offer, config)
+        self.assertEqual(actual["proteins"]["value"], 3.7)
 
     def test_with_europris_offer(self):
         offer = {

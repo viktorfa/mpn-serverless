@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from parsing.ingredients_extraction import extract_ingredients
 from parsing.nutrition_extraction import extract_nutritional_data
+from parsing.category_extraction import extract_categories
 from parsing.property_extraction import (
     extract_dimensions,
     extract_properties,
@@ -14,7 +15,7 @@ import pydash
 
 from transform.transform import transform_fields
 from transform.offer import get_field_from_scraper_offer
-from util.helpers import get_product_uri, is_integer_num
+from util.helpers import get_product_uri, is_integer_num, json_time_to_datetime
 from scraper_feed.filters import filter_product
 from parsing.quantity_extraction import (
     analyze_quantity,
@@ -116,8 +117,15 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 
         result["uri"] = get_product_uri(namespace, provenanceId)
         result["pricing"] = get_product_pricing({**offer, **result})
-        result["validThrough"] = time.ten_days_ahead
-        result["validFrom"] = time.time
+        try:
+            result["validThrough"] = json_time_to_datetime(offer["validThrough"])
+        except Exception:
+            result["validThrough"] = time.ten_days_ahead
+        try:
+            result["validFrom"] = json_time_to_datetime(offer["validFrom"])
+        except Exception:
+            result["validFrom"] = time.time
+
         result["dealer"] = offer.get("dealer", namespace)
         result["gtins"] = get_gtins({**offer, **result})
 
@@ -188,6 +196,7 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["mpnProperties"] = standardize_additional_properties(offer, config)
     result["mpnIngredients"] = extract_ingredients(offer, config)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
+    result["mpnCategories"] = extract_categories({**offer, **result}, config)
 
     result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)

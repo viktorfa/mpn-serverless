@@ -8,6 +8,7 @@ from scraper_feed.scraper_configs import (
     DEFAULT_EXTRACT_PROPERTIES_FIELDS,
     get_field_mapping,
     DEFAULT_EXTRACT_QUANTITY_FIELDS,
+    DEFAULT_EXTRACT_CATEGORIES_FIELD,
 )
 from storage.db import get_handle_configs
 from amp_types.amp_product import HandleConfig, ScraperConfig
@@ -44,6 +45,16 @@ def generate_handle_config(config: dict) -> HandleConfig:
         config,
         ["additionalConfig", "extractIngredientsFields"],
         DEFAULT_EXTRACT_INGREDIENTS_FIELDS,
+    )
+    categories_field = pydash.get(
+        config,
+        ["additionalConfig", "categoriesField"],
+        DEFAULT_EXTRACT_CATEGORIES_FIELD,
+    )
+    result["categoriesField"] = (
+        categories_field
+        if type(categories_field) is str
+        else DEFAULT_EXTRACT_CATEGORIES_FIELD
     )
     result["extractPropertiesFields"] = (
         extract_properties_fields
