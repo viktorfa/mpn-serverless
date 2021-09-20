@@ -49,6 +49,18 @@ def add_se_amazon_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": ahref}
 
 
+def add_de_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn02-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn02-21'
+        )
+
+    return {**product, "ahref": ahref}
+
+
 def add_elimport_affiliate_link(product: dict) -> dict:
     if "tradedoubler" in product["href"]:
         return product
@@ -154,6 +166,8 @@ def get_affiliate_handler(product: dict):
         return add_byggmax_affiliate_link
     elif "amazon.se" in product["href"]:
         return add_se_amazon_affiliate_link
+    elif "amazon.de" in product["href"]:
+        return add_de_amazon_affiliate_link
     elif "grontfokus.no" in product["href"]:
         return add_grontfokus_affiliate_link
     elif "staypro.no" in product["href"]:
