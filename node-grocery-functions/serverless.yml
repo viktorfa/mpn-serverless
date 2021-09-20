@@ -22,6 +22,7 @@ provider:
   profile: serverless-mpn-admin
   timeout: 900
   memorySize: 1024
+  versionFunctions: false
 
   environment:
     MONGO_URI: ${env:MONGO_URI}
@@ -84,6 +85,10 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "degroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "debyggoffers"
 
   deleteOffersFromElastic:
     handler: elastic/handler.handleTriggerDeleteEvent
@@ -120,6 +125,10 @@ functions:
           rate: rate(72 minutes)
           input:
             engineName: degroceryoffers
+      - schedule:
+          rate: rate(68 minutes)
+          input:
+            engineName: debyggoffers
 
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
