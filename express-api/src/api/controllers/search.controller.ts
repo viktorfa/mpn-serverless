@@ -12,6 +12,7 @@ import {
   getLimitFromQueryParam,
   productCollectionQueryParams,
 } from "./typera-types";
+import { findByKeys } from "../services/categories";
 
 export const getEngineName = (productCollectionName: string): string => {
   if (stage === "prod") {
@@ -28,6 +29,7 @@ const searchQueryParams = t.type({
   query: t.string,
   productCollection: t.string,
   limit: t.union([t.string, t.undefined]),
+  market: t.union([t.string, t.undefined]),
   page: t.union([t.string, t.undefined]),
   dealers: t.union([t.string, t.undefined]),
   categories: t.union([t.string, t.undefined]),
@@ -50,13 +52,13 @@ export const searchExtra: Route<
   .get("/searchextra")
   .use(Parser.query(searchQueryParams))
   .handler(async (request) => {
-    const { limit, query } = request.query;
+    const { limit, query, market } = request.query;
     if (query.length > 128) {
       return Response.badRequest("Query longer than 128 characters");
     }
     const _limit = getLimitFromQueryParam(limit, 8);
 
-    const productCollection = "extraoffers";
+    const productCollection = "no-mpn-offers";
     const searchResults = await searchElastic(query, productCollection, _limit);
     return Response.ok(
       filterDuplicateOffers(searchResults.filter((offer) => offer.score > 20)),
@@ -117,11 +119,26 @@ export const search: Route<
       limit: _limit,
       ...searchArgs,
     });
-    return Response.ok({
+
+    const result: {
+      facets: any;
+      meta: any;
+      items: MpnResultOffer[];
+      categories?: Record<string, MpnCategory>;
+    } = {
       facets: searchResults.facets,
       meta: searchResults.meta,
       items: filterDuplicateOffers(searchResults.items),
-    });
+    };
+
+    if (categories) {
+      const mpnCategories = await findByKeys({ keys: categories.split(",") });
+      result.categories = {};
+      Object.values(mpnCategories).forEach((x) => {
+        result.categories[x.key] = x;
+      });
+    }
+    return Response.ok(result);
   });
 
 export const searchPathParam: Route<

@@ -17,3 +17,5 @@ export const offerRelationsCollectionName = "offerrelations";
 export const categoryComparisonsCollectionName = "categorycomparisons";
 export const offerTagsCollectionName = "offertags";
 export const offerBiRelationTagsCollectionName = "offerbirelationtags";
+
+export const mpnCategoriesCollectionName = "mpncategories";

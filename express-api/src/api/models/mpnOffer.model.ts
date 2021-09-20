@@ -1,4 +1,4 @@
-import get from "lodash/get";
+import { last, get } from "lodash";
 
 const requriedElasticOfferFields = [
   "title",
@@ -61,7 +61,7 @@ export const elasticOfferToMpnOffer = (
 
     href: elasticOffer.href.raw,
     imageUrl: elasticOffer.image_url.raw,
-    uri: elasticOffer.id.raw,
+    uri: last(elasticOffer.id.raw.split("|")),
 
     validFrom: new Date(elasticOffer.valid_from.raw),
     validThrough: new Date(elasticOffer.valid_through.raw),

@@ -2,7 +2,13 @@ interface IElasticClient {
   post(path: string, params: object);
 }
 
+type AppSearchOfferBoosts = Record<
+  string,
+  { type: string; value: string; operation: string; factor: number }[]
+>;
+
 interface AppSearchParams {
+  precision?: number;
   page?: {
     size?: number;
     current?: number;
@@ -23,6 +29,10 @@ interface AppSearchParams {
       };
   sort?: Record<string, "asc" | "desc">;
   facets?: Record<string, { type: "value" }[]>;
+  boosts?: Record<
+    string,
+    { type: string; value: string; operation: string; factor: number }[]
+  >;
 }
 
 interface AppSearchEngine {

@@ -21,6 +21,14 @@ export const schemaConfig = {
 
   gtins: "text",
   categories: "text",
+
+  mpn_properties: "text",
+
+  nutrition_carbohydrates: "number",
+  nutrition_proteins: "number",
+  nutrition_fats: "number",
+  nutrition_energy: "number",
+  nutrition_fibers: "number",
 };
 
 export const getSchemaElasticClient =

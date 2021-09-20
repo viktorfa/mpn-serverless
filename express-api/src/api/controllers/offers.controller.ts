@@ -10,7 +10,10 @@ import {
   getTagsForOffer,
   removeTagFromOffers,
 } from "@/api/services/offers";
-import { search as searchElastic } from "@/api/services/search";
+import {
+  search as searchElastic,
+  searchWithFilter,
+} from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getNowDate } from "../utils/helpers";
 import { getEngineName } from "@/api/controllers/search.controller";
@@ -207,6 +210,7 @@ export const similarEnd: Route<
 const extraOffersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
+  market: t.string,
 });
 
 export const extra: Route<
@@ -217,8 +221,10 @@ export const extra: Route<
   .get("/extra/:id")
   .use(Parser.query(extraOffersQueryParams))
   .handler(async (request) => {
-    const { limit, productCollection = "extraoffers" } = request.query;
+    const { limit, productCollection, market } = request.query;
     let _limit = getLimitFromQueryParam(limit, 5);
+
+    const engineName = getEngineName(`${market}-mpn-offers`);
 
     let offer: FullMpnOffer;
     try {
@@ -234,9 +240,37 @@ export const extra: Route<
 
     const query = offer.title.substring(0, 127);
 
-    const searchResults = await searchElastic(query, productCollection, _limit);
-    return Response.ok(searchResults.filter((offer) => offer.score > 20));
+    const boosts: AppSearchOfferBoosts = {
+      is_partner: [
+        {
+          type: "value",
+          value: "true",
+          operation: "multiply",
+          factor: 1.6,
+        },
+      ],
+    };
+
+    if (productCollection) {
+      boosts.site_collection = [
+        {
+          type: "value",
+          value: productCollection,
+          operation: "multiply",
+          factor: 1.4,
+        },
+      ];
+    }
+
+    const searchResults = await searchWithFilter({
+      query,
+      engineName,
+      limit: _limit,
+      boosts,
+    });
+    return Response.ok(searchResults.items.filter((x) => x.score > 1));
   });
+
 export const similarExtra: Route<
   | Response.Ok<MpnResultOffer[]>
   | Response.BadRequest<string>

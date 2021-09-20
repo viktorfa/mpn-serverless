@@ -56,6 +56,7 @@ export const searchWithFilter = async ({
   categories,
   price,
   sort,
+  boosts,
 }: {
   query: string;
   engineName: string;
@@ -65,6 +66,7 @@ export const searchWithFilter = async ({
   categories?: string[];
   price?: { from?: number; to?: number };
   sort?: { [key: string]: "desc" | "asc" };
+  boosts?: AppSearchOfferBoosts;
 }): Promise<{ items: MpnResultOffer[]; facets: any; meta: any }> => {
   const elasticClient = await getElasticClient();
   if (query.length > 127) {
@@ -90,25 +92,38 @@ export const searchWithFilter = async ({
   if (price) {
     filters.all.push({ price });
   }
+
+  const facets: { dealer: any; brand: any; mpn_categories?: any } = {
+    dealer: [
+      {
+        type: "value",
+      },
+    ],
+    brand: [
+      {
+        type: "value",
+      },
+    ],
+  };
+  if (engineName.startsWith("groceryoffers")) {
+    facets.mpn_categories = [
+      {
+        type: "value",
+      },
+    ];
+  }
   const searchOptions: AppSearchParams = {
     page: { size: limit, current: page },
+    precision: 4,
     filters,
-    facets: {
-      dealer: [
-        {
-          type: "value",
-        },
-      ],
-      mpn_categories: [
-        {
-          type: "value",
-        },
-      ],
-    },
+    facets,
   };
 
   if (sort) {
     searchOptions.sort = sort;
+  }
+  if (boosts) {
+    searchOptions.boosts = boosts;
   }
 
   const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
