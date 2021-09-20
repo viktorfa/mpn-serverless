@@ -9,6 +9,10 @@ categories = {}
 
 with open(Path(Path(__file__).parent, "category-hierarchy.json")) as category_file:
     categories = json.load(category_file)
+with open(Path(Path(__file__).parent, "category-extra.json")) as extra_category_file:
+    extra_categories = json.load(extra_category_file)
+
+categories = {**extra_categories, **categories}
 
 category_mappings = {
     "kolonial": {
@@ -24,12 +28,12 @@ category_mappings = {
         "Mel og gryn": categories["mel-og-gryn_1"],
         "Iskrem, søtsaker og snacks": categories["dessert_0"],
         # FRUKT OG GRØNT
-        "Epler og pærer": categories["frukt_1"],  # TODO Need own subcat
+        "Epler og pærer": categories["epler-prer"],
         "Sitrusfrukter": categories["sitrusfrukt_2"],
         "Sitrusfrukter": categories["bananer_2"],
         "Meloner": categories["melon_2"],
-        "Eksotiske frukter": categories["frukt_1"],  # TODO Need own subcat
-        "Druer, kiwi og steinfrukt": categories["frukt_1"],  # TODO Need own subcat
+        "Eksotiske frukter": categories["eksotiske-frukter"],
+        "Druer, kiwi og steinfrukt": categories["druer-kiwi-steinfrukt"],
         "Fruktkurv": categories["fruktkurv_1"],
         "Bær": categories["br_1"],
         "Hel salat og kål": categories["salater_2"],
@@ -37,20 +41,18 @@ category_mappings = {
         "Tomater": categories["tomater_2"],
         "Avokado": categories["avocado_2"],
         "Agurk": categories["agurk_2"],
-        "Paprika og chili": categories["gronnsaker_1"],  # TODO Need own subcat
-        "Løk og hvitløk": categories["gronnsaker_1"],  # TODO Need own subcat
+        "Paprika og chili": categories["paprika-chili"],
+        "Løk og hvitløk": categories["lok_2"],
         "Sopp": categories["sopp_2"],
-        "Gulrøtter, selleri og rotfrukter": categories[
-            "rotgronnsaker_2"
-        ],  # TODO Need own subcat
+        "Gulrøtter, selleri og rotfrukter": categories["gulrotter-selleri-rotfrukter"],
         "Poteter": categories["poteter_2"],
-        "Squash og aubergine": categories["gronnsaker_1"],  # TODO Need own subcat
-        "Erter, asparges og bønner": categories["gronnsaker_1"],  # TODO Need own subcat
+        "Squash og aubergine": categories["squash-aubergine"],
+        "Erter, asparges og bønner": categories["erter-asparges-bonner"],
         "Mais": categories["mais_2"],
         "Urter og spirer": categories["krydderurter_1"],
         "Frø, nøtter og tørket frukt": categories[
             "torket-frukt-og-notter_1"
-        ],  # TODO Need own subcat
+        ],  # TODO Hmm
         "Hermetisert frukt og grønt": categories["hermetisk-gront_1"],
         "Fryst frukt": categories["frukt-og-br-frosne_2"],
         "Fryste grønnsaker": categories["gronnsaker-frosne_2"],
@@ -63,11 +65,11 @@ category_mappings = {
             "boller-og-smakaker_1"
         ],  # TODO Create category for frozen bakery??
         "Pitabrød": categories["pitabrod_1"],
-        "Pita og naan": categories["pitabrod_1"],  # TODO Need own subcat
+        "Pita og naan": categories["pita-naan"],
         "Flatbrød": categories["flatbrod_2"],
         "Kjeks til ost": categories["smorbrodkjeks_2"],
         "Knekkebrød": categories["knekkebrod_1"],
-        "Pølse- og hamburgerbrød": categories["bakeri_0"],  # TODO Need own subcat
+        "Pølse- og hamburgerbrød": categories["polse-hamburgerbrod"],
         "Deiger og bunner": categories["deiger-og-rorer_1"],
         "Ferdig påsmurt": categories["ferdigmaltid_2"],
         # FROKOSTBLANDINGER OG MÜSLI
@@ -78,11 +80,11 @@ category_mappings = {
         "Melk": categories["helmelk_2"],
         "Lettmelk": categories["lettmelk_2"],
         "Skummet melk": categories["skummet-melk_2"],
-        "Melk med smak": categories["melk_1"],  # TODO Need own subcat
+        "Melk med smak": categories["melk-med-smak"],
         "Plantebasert drikke": categories["plantebasert-drikke_1"],
         "Smør og margarin": categories["smor-og-margarin_1"],
         "Egg": categories["egg_1"],
-        "Fløte og rømmeprodukter": categories["meieri-egg_0"],  # TODO Need own subcat
+        "Fløte og rømmeprodukter": categories["flote-rommeprodukter"],
         "Små beger": categories["yoghurt_2"],
         "Store beger": categories["yoghurt_1"],  # TODO Need own subcat??
         "Barneyoghurt": categories["yoghurt_2"],
@@ -100,30 +102,26 @@ category_mappings = {
         # KJØTT OG KYLLING
         "Storfe og kalv": categories["storfekjott_1"],
         "Svin": categories["svinekjott_1"],
-        "Kylling, kalkun og and": categories[
-            "kylling-og-fjrkre_0"
-        ],  # TODO Maybe own subcat
-        "Lam og vilt": categories["kjott_0"],  # TODO Need own subcat
-        "Bacon og smårettskinke": categories["svinekjott_1"],  # TODO Need own subcat
+        "Kylling, kalkun og and": categories["kylling-og-fjrkre_0"],
+        "Lam og vilt": categories["lam-vilt"],
+        "Bacon og smårettskinke": categories["bacon-smarettskinke"],
         "Kjøttdeig og karbonadedeig": categories["kjottdeig-og-farse_1"],
         "Hamburgere": categories["hamburger_1"],
-        "Kjøttboller og karbonader": categories["kjott_0"],  # TODO Need own subcat
+        "Kjøttboller og karbonader": categories["kjottboller-karbonader"],
         "Pølser": categories["polser_1"],
         # FISK OG SJØMAT
         "Fersk fisk": categories["fisk_1"],
         "Skalldyr": categories["skalldyr_1"],
-        "Røkt og gravet fisk": categories["fisk_1"],  # TODO Need own subcat
-        "Fiskekaker og fiskepudding": categories[
-            "fiskeretter_1"
-        ],  # TODO Need own subcat
+        "Røkt og gravet fisk": categories["rokt-gravet-fisk"],
+        "Fiskekaker og fiskepudding": categories["fiskekaker-fiskepudding"],
         "Hermetisert sjømat": categories["hermetisk-fisk-og-sjomat_2"],
         "Fiskefilet": categories["fisk_1"],  # TODO Frozen, need subcat?
         "Fiskegrateng": categories["fiskegrateng_2"],
-        "Innbakt og panert fisk": categories["fiskeretter_1"],  # TODO Need own subcat
+        "Innbakt og panert fisk": categories["innbakt-panert-fisk"],
         # FROKOST
         "Fiskepålegg og reker i lake": categories[
             "fiskepalegg_1"
-        ],  # TODO Need own subcat
+        ],  # TODO Need own subcat ??
         "Kjøttpålegg": categories["kjottpalegg_1"],
         "Kyllingpålegg": categories["kyllingpalegg_3"],
         "Spekemat": categories["spekemat_1"],
@@ -131,38 +129,38 @@ category_mappings = {
         "Leverpostei": categories["leverpostei_2"],
         "Salatpålegg": categories["paleggsalat_1"],
         "Syltetøy": categories["syltetoy_1"],
-        "Gele": categories["syltetoy_1"],  # TODO Need own subcat
-        "Marmelade": categories["syltetoy_1"],  # TODO Need own subcat
+        "Gele": categories["gele"],
+        "Marmelade": categories["marmelade"],
         "Majones": categories["majones_1"],
         "Tubepålegg": categories[
-            "palegg-frokost_0"
-        ],  # TODO Smøreost, kaviar, makrell i tomat på tube
-        "Ost i skiver": categories["ost_0"],  # TODO Need own subcat
+            "tubepalegg"
+        ],  # TODO Smøreost, kaviar, makrell i tomat på tube ??
+        "Ost i skiver": categories["ost_0"],
         "['Pålegg', 'Gulost']": categories["gulost_2"],
         "['Pålegg', 'Brunost']": categories["brunost_1"],
         "['Pålegg', 'Smøreost og prim']": categories["smoreoster_1"],
-        "Honning og sirup": categories["sotpalegg_1"],  # TODO Need own subcat
+        "Honning og sirup": categories["honning-sirup"],
         "Søtpålegg": categories["sotpalegg_1"],
         # MIDDAGER OG TILBEHØR
         "Ferdige middagsretter": categories["ferdigmaltid_2"],
         "Grøt": categories["grot_1"],
         "Ferdigsupper": categories["supper_1"],
         "Middags-kit og gryteretter": categories["middag-kit_1"],
-        "Posesupper": categories["supper_1"],  # TODO Need own subcat
+        "Posesupper": categories["posesupper"],
         "Middagshermetikk": categories["middagshermetikk_1"],
         "Middagstilbehør": categories["middagstilbehor_0"],
-        "Posesauser": categories["sauser_1"],  # TODO Need own subcat
-        "Ferdigsauser": categories["sauser_1"],  # TODO Need own subcat
+        "Posesauser": categories["posesauser"],
+        "Ferdigsauser": categories["ferdigsauser"],
         "Fond": categories["kraft-og-buljong_1"],
         "Ris": categories["ris_2"],
-        "Bulgur og quinoa": categories["ris_1"],  # TODO Need own subcat
+        "Bulgur og quinoa": categories["bulgur-quinoa"],
         "Couscous": categories["couscous_2"],
         "Linser": categories["linser_2"],
-        "Fersk pasta": categories["pasta_1"],  # TODO Need own subcat
+        "Fersk pasta": categories["fersk-pasta"],
         "Pasta": categories["pasta_1"],
         "Nudler": categories["nudler_1"],
-        "Fersk pizza": categories["pizza_2"],  # TODO Need own subcat
-        "Fryst pizza": categories["pizza_2"],  # TODO Need own subcat
+        "Fersk pizza": categories["pizza_2"],  # TODO Need own subcat ??
+        "Fryst pizza": categories["pizza_2"],  # TODO Need own subcat ??
         "Pizzasaus": categories["pizzasaus_2"],
         "Pizzamelblanding": categories["pizzabunnmix_2"],
         "Pizzabunn": categories["pizzabunn_2"],
@@ -173,97 +171,94 @@ category_mappings = {
         "Tacokit": categories["tacokit_2"],
         "Tacosaus": categories["tacosaus_2"],
         "Tacokrydder og topping": categories["tacokryddermix_2"],
-        "Dim sum": categories["ferdigmaltider_1"],  # TODO Need own subcat??
-        "Vårruller": categories["ferdigmaltider_1"],  # TODO Need own subcat??
-        "Indisk": categories["asiatiske-sauser_2"],  # TODO Need own subcat??
-        "Wok": categories["woksaus_3"],  # TODO Need own subcat??
+        "Dim sum": categories["ferdigmaltider_1"],  # TODO Need own subcat ??
+        "Vårruller": categories["varruller"],
+        "Indisk": categories["asiatiske-sauser_2"],  # TODO Need own subcat ??
+        "Wok": categories["woksaus_3"],  # TODO Need own subcat ??
         "Sushi": categories["sushi_1"],
-        "Soyasaus, chilisaus og paste": categories[
-            "asiatiske-sauser_2"
-        ],  # TODO Need own subcat??
+        "Soyasaus, chilisaus og paste": categories["sojasaus-chilisaus-paste"],
         "Kokosmelk": categories["kokosmelk_1"],
         "Ketchup og sennep": categories["ketchup-og-sennep_1"],
-        "Majonesbaserte sauser": categories["dressinger_1"],  # TODO Need own subcat
+        "Majonesbaserte sauser": categories["majonesbaserte-sauser"],
         "Dressinger": categories["dressinger_1"],
-        "Tsatziki og hummus": categories["dressinger_1"],  # TODO Need own subcat
+        "Tsatziki og hummus": categories["tsatziki-hummus"],
         "Oljer": categories["matoljer_1"],
         "Eddik": categories["eddiker_1"],
-        "Salt og pepper": categories["salt-og-pepper_1"],  # TODO Need own subcat
+        "Salt og pepper": categories["salt-og-pepper_1"],
         "Krydder": categories["krydder_1"],
         "Spicemix": categories["kryddermix_2"],
-        "Buljong og fond": categories["kraft-og-buljong_1"],  # TODO Need own subcat
+        "Buljong og fond": categories["kraft-og-buljong_1"],
         "Marinader": categories["marinade_2"],
         # DRIKKE
         "Stillvann": categories["vann_2"],
         "Vann med kullsyre": categories["vann-med-kullsyre_2"],
-        "Brus med sukker": categories["brus_1"],  # TODO Need own subcat
-        "Sukkerfri brus": categories["brus_1"],  # TODO Need own subcat
+        "Brus med sukker": categories["brus-med-sukker"],
+        "Sukkerfri brus": categories["brus-uten-sukker"],
         "Energidrikker": categories["energidrikk_1"],
-        "Sport- og vitamindrikker": categories["energidrikk_1"],  # TODO Need own subcat
-        "Appelsinjuice": categories["juice_1"],  # TODO Need own subcat
-        "Eplejuice": categories["juice_1"],  # TODO Need own subcat
-        "Grønnsaksjuice": categories["juice_1"],  # TODO Need own subcat
-        "Juice shot": categories["juice_1"],  # TODO Need own subcat
-        "Frukt- og bærjuice": categories["juice_1"],  # TODO Need own subcat
+        "Sport- og vitamindrikker": categories["sports-vitamindrikker"],
+        "Appelsinjuice": categories["appelsinjuice"],
+        "Eplejuice": categories["eplejuice"],
+        "Grønnsaksjuice": categories["gronnsaksjuice"],
+        "Juice shot": categories["juice-shot"],
+        "Frukt- og bærjuice": categories["frukt-brjuice"],
         "Kombucha og vannkefir": categories["kombucha_1"],  # TODO Need own subcat ??
         "Smoothie": categories["smoothie_1"],
-        "Saft med sukker": categories["saft_1"],  # TODO Need own subcat
-        "Sukkerfri saft": categories["saft_1"],  # TODO Need own subcat
+        "Saft med sukker": categories["saft-med-sukker"],
+        "Sukkerfri saft": categories["saft-uten-sukker"],
         "Filterkaffe": categories["filtermalt-kaffe_2"],
         "Hele kaffebønner": categories["hele-kaffebonner_2"],
         "Presskanne": categories["presskannemalt-kaffe_2"],
         "Kokmalt": categories["kokmalt-kaffe_2"],
         "Kaffekapsler": categories["kaffekapsler_1"],
         "Pulverkaffe": categories["instant-kaffe_2"],
-        "Smakskaffe": categories["instant-kaffe_2"],  # TODO Need own subcat
-        "Kaffefilter og tilbehør": categories["kaffefilter_2"],  # TODO Need own subcat
-        "Kaffefilter og tilbehør": categories["kaffefilter_2"],  # TODO Need own subcat
+        "Smakskaffe": categories["smakskaffe"],
+        "Kaffefilter og tilbehør": categories["kaffefilter-tilbehor"],
         "Iskaffe": categories["iskaffe_1"],
         "Iste": categories["iste_1"],
-        "Sort te": categories["te_1"],  # TODO Need own subcat
-        "Grønn te": categories["te_1"],  # TODO Need own subcat
-        "Urte-te og frukt-te": categories["te_1"],  # TODO Need own subcat
-        "Kakao": categories["sjokoladedrikk_1"],  # TODO Need own subcat
-        "Sjokoladepulver": categories["sjokoladedrikk_1"],  # TODO Need own subcat
+        "Sort te": categories["sort-te"],
+        "Grønn te": categories["gronn-te"],
+        "Urte-te og frukt-te": categories["urtete-fruktte"],
+        "Kakao": categories["sjokoladedrikk_1"],  # TODO Need own subcat ??
+        "Sjokoladepulver": categories["sjokoladedrikk_1"],  # TODO Need own subcat ??
         "Øl": categories["ol_2"],
         "Lettøl": categories["lettol_2"],
-        "Spesialøl og import": categories["ol_2"],  # TODO Need own subcat
+        "Spesialøl og import": categories["spesialol"],
         "Alkoholfritt øl": categories["alkoholfritt-ol_2"],
         "Cider": categories["cider_2"],
         "Ferdigdrink": categories["ferdigdrink_1"],
         "Alkoholfri cider og ferdigdrink": categories["alkoholfri-cider_2"],
-        "Blandevann": categories["brus_1"],  # TODO Need own subcat
-        "Drinkmiks": categories["ferdigdrink_1"],  # TODO Need own subcat
+        "Blandevann": categories["blandevann"],
+        "Drinkmiks": categories["drinkmiks"],
         # BAKEINGREDIENSER
-        "Fint mel": categories["mel_2"],  # TODO Need own subcat
-        "Grovt mel": categories["mel_2"],  # TODO Need own subcat
-        "Pizzamel": categories["mel_2"],  # TODO Need own subcat
-        "Matlagningsmel": categories["mel_2"],  # TODO Need own subcat
+        "Fint mel": categories["fint-mel"],
+        "Grovt mel": categories["grovt-mel"],
+        "Pizzamel": categories["pizzamel"],
+        "Matlagningsmel": categories["matlagningsmel"],
         "Sukker": categories["sukker_1"],
         "Sirup": categories["sirup_2"],
         "Søtningsmidler": categories["sotningsstoff_2"],
         "Gjær": categories["gjr_1"],
-        "Hevemidler": categories["baking_1"],  # TODO Need own subcat
-        "Kaker": categories["bakemixer_1"],  # TODO Need own subcat
-        "Brød og rundstykker": categories["brodmix_2"],  # TODO Need own subcat
+        "Hevemidler": categories["hevemidler"],
+        "Kaker": categories["kakemiks"],
+        "Brød og rundstykker": categories["brod-rundstykke-miks"],
         "Boller": categories["bollemix_2"],
-        "Pannekaker og vaffler": categories["bakemixer_1"],  # TODO Need own subcat
-        "Dessert": categories["bakemixer_1"],  # TODO Need own subcat
+        "Pannekaker og vaffler": categories["pannekake-vafler-miks"],
+        "Dessert": categories["dessertmiks"],
         "Pizza": categories["pizzabunnmix_2"],
         "Kakepynt": categories["kakepynt_2"],
         "Kakefyll": categories["kakekrem_2"],
         "Kokesjokolade": categories["kokesjokolade_2"],
-        "Baketilbehør": categories["baking_1"],  # TODO Need own subcat??
+        "Baketilbehør": categories["baking_1"],  # TODO Need own subcat ??
         # ISKREM DESSERTER OG KAKER
         "Fløteis": categories["dessertis_2"],
-        "Sorbet": categories["dessertis_2"],  # TODO Need own subcat??
+        "Sorbet": categories["sorbet"],
         "['Porsjonsis', 'Fløteis']": categories["smais-multipack_2"],
-        "Saftis": categories["smais-multipack_2"],  # TODO Need own subcat??
+        "Saftis": categories["smais-multipack_2"],  # TODO Need own subcat ??
         "Gelé": categories["gele_1"],
         "Puddinger": categories["dessertpuddinger_1"],
         "Sauser og toppinger": categories["dessertsauser_1"],
         "Riskrem": categories["riskrem_1"],
-        "Hermetisert frukt og kompott": categories["dessert_0"],  # TODO Need own subcat
+        "Hermetisert frukt og kompott": categories["hermetisert-frukt-kompott"],
         "Kaker": categories["kaker_1"],
         "Lefser": categories["lefser_1"],
         # SNACKS OG GODTERI
@@ -271,10 +266,10 @@ category_mappings = {
         "Snacks": categories["snacks_1"],
         "Popcorn": categories["popcorn_1"],
         "Dip": categories["dip_1"],
-        "Sjokoladeplater": categories["sjokolade_1"],  # TODO Need own subcat
-        "Sjokoladebarer": categories["sjokolade_1"],  # TODO Need own subcat
-        "Sjokoladeblandinger": categories["sjokolade_1"],  # TODO Need own subcat
-        "Premium sjokolade": categories["sjokolade_1"],  # TODO Need own subcat
+        "Sjokoladeplater": categories["sjokoladeplater"],
+        "Sjokoladebarer": categories["sjokoladebarer"],
+        "Sjokoladeblandinger": categories["sjokoladeblandinger"],
+        "Premium sjokolade": categories["premium-sjokolade"],
         "Godteri": categories["godteri_1"],
         "Peanøtter": categories["peanotter_2"],
         "Cashewnøtter": categories["cashewnotter_2"],
@@ -285,53 +280,53 @@ category_mappings = {
         "Søtkjeks": categories["sotkjeks_2"],
         "Kjeks til ost": categories["smorbrodkjeks_2"],
         # BABY OG BARN
-        "Buksebleier": categories["bleier_1"],  # TODO Need own subcat
+        "Buksebleier": categories["buksebleier"],
         "Svømmebleier": categories["badebleier_1"],
-        "Åpne bleier": categories["bleier_1"],  # TODO Need own subcat
-        "Nattbleier": categories["bleier_1"],  # TODO Need own subcat
-        "Middagsglass": categories["barnemat_1"],  # TODO Need own subcat
-        "Pulvergrøt": categories["barnegrot_1"],  # TODO Need own subcat
-        "Ferdiggrøt": categories["barnegrot_1"],  # TODO Need own subcat
-        "Smoothie": categories["barnedessert_1"],  # TODO Need own subcat
-        "Yoghurt": categories["barnedessert_1"],  # TODO Need own subcat
-        "Snacks": categories["barnedessert_1"],  # TODO Need own subcat
-        "Drikke": categories["barnemat_1"],  # TODO Need own subcat
-        "Drikkeklar": categories["morsmelkerstatning_1"],  # TODO Need own subcat
-        "Pulver": categories["morsmelkerstatning_1"],  # TODO Need own subcat
+        "Åpne bleier": categories["apne-bleier"],
+        "Nattbleier": categories["nattbleier"],
+        "Middagsglass": categories["middagsglass"],
+        "Pulvergrøt": categories["pulvergrot"],
+        "Ferdiggrøt": categories["ferdiggrot"],
+        "Smoothie": categories["barnesmoothie"],
+        "Yoghurt": categories["barneyoghurt"],
+        "Snacks": categories["barnesnacks"],
+        "Drikke": categories["barnedrikke"],
+        "Drikkeklar": categories["morsmelk-drikkeklar"],
+        "Pulver": categories["morsmelk-pulver"],
         "Våtservietter og ammeinnlegg": categories["vatservietter_2"],
-        "Såpe og babyolje": categories["babypleie_1"],  # TODO Need own subcat
+        "Såpe og babyolje": categories["sape-babyolje"],
         "Babypleie": categories["babypleie_1"],
-        "Babytannpleie": categories["babypleie_1"],  # TODO Need own subcat
-        "Helseprodukter for barn": categories["babypleie_1"],  # TODO Need own subcat
+        "Babytannpleie": categories["babytannpleie"],
+        "Helseprodukter for barn": categories["barnehelse"],
         "Bursdag": categories["sesong-og-fest_1"],
         "Smokker": categories["smokker_2"],
-        "Flasker og kopper": categories["tateflaske_2"],  # TODO Need own subcat
-        "Matbokser og smekker": categories["barneprodukter_0"],  # TODO Need own subcat
-        "Nyttig til barn": categories["barneprodukter_0"],  # Weird category
-        "Spill og leker": categories["barneprodukter_0"],  # TODO Need own subcat
-        "Barneklær": categories["barneprodukter_0"],  # TODO Need own subcat
-        "Tilbehør vogn": categories["barneprodukter_0"],  # TODO Need own subcat
+        "Flasker og kopper": categories["tateflaske_2"],  # TODO Need own subcat ??
+        "Matbokser og smekker": categories[
+            "barneprodukter_0"
+        ],  # TODO Need own subcat ??
+        "Nyttig til barn": categories["barneprodukter_0"],  # Weird category ??
+        "Spill og leker": categories["barneprodukter_0"],  # TODO Need own subcat ??
+        "Barneklær": categories["barneprodukter_0"],  # TODO Need own subcat ??
+        "Tilbehør vogn": categories["barneprodukter_0"],  # TODO Need own subcat  ??
         # LEGEMIDLER HELSEKOST OG TRENING
-        "Legemidler": categories["apotekvarer_1"],  # TODO Need own subcat
+        "Legemidler": categories["legemidler"],
         "Plaster": categories["plaster_2"],
-        "Vitaminer og kosttilskudd": categories["helsekost_1"],  # TODO Need own subcat
-        "Vektkontroll": categories["helsekost_1"],  # TODO Need own subcat
+        "Vitaminer og kosttilskudd": categories["vitaminer-kosttilskudd"],
+        "Vektkontroll": categories["vektkontroll"],
         "Nikotinprodukter": categories["roykeslutt_2"],
-        "Sportsdrikke": categories["helsekost_1"],  # TODO Need own subcat
-        "Måltidserstatter og mellommåltid": categories[
-            "helsekost_1"
-        ],  # TODO Need own subcat
-        "Proteinpulver": categories["helsekost_1"],  # TODO Need own subcat
-        "Protein- og müslibarer": categories["energibar_1"],  # TODO Need own subcat
+        "Sportsdrikke": categories["sportsdrikke"],
+        "Måltidserstatter og mellommåltid": categories["maltidserstatter-mellommaltid"],
+        "Proteinpulver": categories["proteinpulver"],
+        "Protein- og müslibarer": categories["protein-muslibarer"],
         # HYGIENE OG SKJØNNHET
         "Håndsåpe": categories["handsape_3"],
         "Dusjsåpe": categories["dusjsape_3"],
         "Intimsåpe": categories["intimvask_2"],
-        "Barnesåpe og babyolje": categories["babypleie_1"],  # TODO Need own subcat
+        "Barnesåpe og babyolje": categories["sape-babyolje"],
         "Intimsåpe": categories["intimvask_2"],
-        "Shampo og hårprodukter": categories["harpleie_1"],  # TODO Need own subcat
+        "Shampo og hårprodukter": categories["shampo-harprodukter"],
         "Hårfarge": categories["harfarge_2"],
-        "Hårstyling": categories["harpleie_1"],  # TODO Need own subcat
+        "Hårstyling": categories["harstyling"],
         "Hårfarge": categories["harfarge_2"],
         "Ansiktspleie": categories["ansiktspleie_2"],
         "Bodylotion": categories["bodylotion_2"],
@@ -340,36 +335,26 @@ category_mappings = {
         "Ansiktsrens": categories["sminkefjerner_2"],
         "Tannkrem": categories["tannkrem_2"],
         "Tannbørster": categories["tannborste_2"],
-        "Tanntråd og tannpirkere": categories["tannpleie_1"],  # TODO Need own subcat
-        "Munnskyll og fluortabletter": categories[
-            "tannpleie_1"
-        ],  # TODO Need own subcat
+        "Tanntråd og tannpirkere": categories["tanntrad-tannpirkere"],
+        "Munnskyll og fluortabletter": categories["munnskyll-fluortabletter"],
         "Deodoranter": categories["deodorant_2"],
-        "Bomull": categories["personlig-hygiene_1"],  # TODO Need own subcat
+        "Bomull": categories["bomull"],
         "Barbering": categories["barbering_1"],
-        "Prevensjon": categories["apotekvarer_1"],  # TODO Need own subcat
+        "Prevensjon": categories["prevensjon"],
         "Bind": categories["bind_2"],
         "Truseinnlegg": categories["truseinnlegg_2"],
         "Tamponger": categories["tamponger_2"],
         "Menskopper": categories["bind-og-tamponger_1"],
-        "Mascara": categories["personlige-artikler_0"],  # TODO Need own subcat
-        "Øyenskygge, liners og bryn": categories[
-            "personlige-artikler_0"
-        ],  # TODO Need own subcat
-        "Leppestift, liner og gloss": categories[
-            "personlige-artikler_0"
-        ],  # TODO Need own subcat
-        "Foundation og pudder": categories[
-            "personlige-artikler_0"
-        ],  # TODO Need own subcat
-        "Neglelakk og neglelakkfjerner": categories[
-            "personlige-artikler_0"
-        ],  # TODO Need own subcat
+        "Mascara": categories["sminke"],  # TODO Need own subcat
+        "Øyenskygge, liners og bryn": categories["sminke"],  # TODO Need own subcat
+        "Leppestift, liner og gloss": categories["sminke"],  # TODO Need own subcat
+        "Foundation og pudder": categories["sminke"],  # TODO Need own subcat
+        "Neglelakk og neglelakkfjerner": categories["sminke"],  # TODO Need own subcat
         # HUS OG HJEM
         "Rengjøringsmidler": categories["rengjoringsmiddel_2"],
         "Oppvaskmidler": categories["oppvaskmiddel_2"],
         "Klesvask": categories["klesvask_1"],
-        "Kluter, svamper og hansker": categories["renhold_1"],  # TODO Need own subcat
+        "Kluter, svamper og hansker": categories["kluter-svamper-hansker"],
         "Toalettpapir": categories["toalettpapir_2"],
         "Tørkerull": categories["torkerull_2"],
         # Skipped some categories here
@@ -389,7 +374,7 @@ category_mappings = {
         "['Kattemat', 'Snacks']": categories["kattemat_1"],
         "['Kattemat', 'Faghandel']": categories["kattemat_1"],
         "Fuglemat": categories["fuglemat_1"],
-        "Gnagermat": categories["dyr_0"],  # TODO Need own subcat
+        "Gnagermat": categories["gnagermat"],
         "Dyreutstyr": categories["dyreartikler_1"],
         # SNUS OG TOBAKK
         "Snus": categories["snus_1"],
@@ -415,7 +400,7 @@ category_mappings = {
         "Postei og pate": categories["postei-og-pate_1"],
         "Syltetøy": categories["syltetoy_1"],
         "Fiskepålegg": categories["fiskepalegg_1"],
-        "Majones og remulade": categories["majones_1"],  # TODO Need own subcat
+        "Majones og remulade": categories["majones-remulade"],
         "Søtpålegg": categories["sotpalegg_1"],
         "Påleggsalat": categories["paleggsalat_1"],
         "Frokostblanding": categories["frokostblandinger-og-musli_1"],
@@ -425,28 +410,28 @@ category_mappings = {
         "Hvitost": categories["gulost_2"],
         "Smøreost": categories["smoreost_2"],
         "Revet ost": categories["revet-ost_1"],
-        "Fersk ost": categories["ost_0"],  # TODO Need own subcat
+        "Fersk ost": categories["fersk-ost"],
         "Brunost": categories["brunost_1"],
-        "Myk ost": categories["ost_0"],  # TODO Need own subcat
+        "Myk ost": categories["myk-ost"],
         "Blåmuggost": categories["blamuggost_1"],
         "Fast ost": categories["parmesan-og-smaksrike-fastoster_1"],
-        "Søst": categories["smoreoster_1"],  # TODO Need own subcat
+        "Søst": categories["sost"],
         "Ost diverse": categories["ost_0"],
         "Pultost": categories["pultost_1"],
         "Gammelost": categories["gamalost_1"],
         "Yoghurt": categories["yoghurt_2"],
         "Smør og margarin": categories["smor-og-margarin_1"],
         "Melk": categories["melk_1"],
-        "Fløte og rømmeprodukter": categories["meieri-egg_0"],  # TODO Need own subcat
-        "Syrnet melk": categories["melk_1"],  # TODO Need own subcat
-        "Drikker": categories["melk_1"],  # TODO Need own subcat
+        "Fløte og rømmeprodukter": categories["flote-rommeprodukter"],
+        "Syrnet melk": categories["syrnet-melk"],
+        "Drikker": categories["melk-med-smak"],
         # KYLLING OG KJØTT
         "Kylling og kalkun": categories["kylling-og-fjrkre_0"],
         "Kjøttdeig og farse": categories["kjottdeig-og-farse_1"],
         "Pølser": categories["polser_1"],
         "Bacon": categories["bacon_1"],
         "Svin": categories["svinekjott_1"],
-        "Kjøttkaker og karbonader": categories["kjott_0"],  # TODO Need own subcat
+        "Kjøttkaker og karbonader": categories["kjottboller-karbonader"],
         "Storfe": categories["storfekjott_1"],
         "Hamburger": categories["hamburger_1"],
         "Sau og lam": categories["lammekjott_1"],
@@ -460,7 +445,7 @@ category_mappings = {
         "Supper, sauser og gryter": categories[
             "middagstilbehor_0"
         ],  # TODO Need own subcat
-        "Pasta og nudler": categories["middag_0"],  # TODO Need own subcat
+        "Pasta og nudler": categories["pasta-nudler"],
         "Pastasaus": categories["pastasaus_2"],
         "Taco": categories["taco_1"],
         "Pizza": categories["pizza_1"],
@@ -470,7 +455,7 @@ category_mappings = {
         "Ketchup, sennep og dressing": categories[
             "middagstilbehor_0"
         ],  # TODO Need own subcat
-        "Wok": categories["asiatiske-sauser_2"],  # TODO Need own subcat
+        "Wok": categories["asiatiske-sauser_2"],  # TODO Need own subcat ??
         "Indisk": categories["currysaus_3"],  # TODO Need own subcat
         "Thai": categories["asiatiske-sauser_2"],  # TODO Need own subcat
         "Sushi": categories["sushi_1"],
@@ -478,7 +463,7 @@ category_mappings = {
         "Ris og gryn": categories["ris_1"],  # TODO Need own subcat
         "Rissaus": categories["asiatiske-sauser_2"],
         "Middagstilbehør": categories["middag_0"],  # TODO Need own subcat
-        "Hurtigmat": categories["middag_0"],  # TODO Need own subcat
+        "Hurtigmat": categories["ferdigmaltid_2"],
         "Middags-kits": categories["middag-kit_1"],
         # VEGETAR
         "Vegetar": categories["vegetarretter_1"],
@@ -500,11 +485,11 @@ category_mappings = {
         "Kakao og marsipan": categories["baking_1"],  # TODO Need own subcat
         # BABY OG BARN
         "Babyartikler": categories["babyartikler_1"],
-        "Matglass": categories["barnemat_1"],  # TODO Need own subcat
-        "Barnegrøt": categories["barnemat_1"],  # TODO Need own subcat
+        "Matglass": categories["middagsglass"],
+        "Barnegrøt": categories["barnegrot_1"],
         "Barnedessert": categories["barnedessert_1"],
         "Klemmeposer": categories["barnemat_1"],  # TODO Need own subcat
-        "Babysnacks": categories["barnedessert_1"],  # TODO Need own subcat
+        "Babysnacks": categories["barnesnacks"],
         "Bleier": categories["bleier_1"],
         "Morsmelkerstatning": categories["morsmelkerstatning_1"],
         # DRIKKEVARER
@@ -548,7 +533,7 @@ category_mappings = {
             "personlig-hygiene_1"
         ],  # TODO Need own subcat
         "Hårfjerning": categories["harfjerningsprodukter_2"],
-        "Kosmetikk": categories["neglelakkfjerner_2"],  # TODO Need own subcat??
+        "Kosmetikk": categories["sminke"],
         "Hårfarge": categories["harfarge_2"],
         "Intimservietter og vask": categories[
             "personlig-hygiene_1"
@@ -556,7 +541,7 @@ category_mappings = {
         # APOTEKVARER OG HELSEKOST
         "Kosttilskudd": categories["kosttilskudd_2"],
         "Sårpleie": categories["apotekvarer_1"],  # TODO Need own subcat
-        "Prevensjon og graviditet": categories["apotekvarer_1"],  # TODO Need own subcat
+        "Prevensjon og graviditet": categories["prevensjon"],
         # HUS OG HJEM
         "Oppvask og renhold": categories["renhold_1"],  # TODO Need own subcat
         "Klesvask": categories["klesvask_1"],

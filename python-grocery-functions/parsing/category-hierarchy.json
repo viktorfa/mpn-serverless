@@ -155,7 +155,7 @@
   "flote_1": {
     "name": "Fløte",
     "key": "flote_1",
-    "parent": "meieri-egg_0",
+    "parent": "flote-rommeprodukter",
     "level": 1
   },
   "brus_1": {
@@ -191,7 +191,7 @@
   "romme_1": {
     "name": "Rømme",
     "key": "romme_1",
-    "parent": "meieri-egg_0",
+    "parent": "flote-rommeprodukter",
     "level": 1
   },
   "poteter_1": {
@@ -263,13 +263,13 @@
   "bacon_1": {
     "name": "Bacon",
     "key": "bacon_1",
-    "parent": "palegg-frokost_0",
+    "parent": "bacon-smarettskinke",
     "level": 1
   },
   "cottage-cheese_1": {
     "name": "Cottage Cheese",
     "key": "cottage-cheese_1",
-    "parent": "meieri-egg_0",
+    "parent": "flote-rommeprodukter",
     "level": 1
   },
   "sigaretter_1": {
@@ -317,7 +317,7 @@
   "creme-fraiche_1": {
     "name": "Creme Fraiche",
     "key": "creme-fraiche_1",
-    "parent": "meieri-egg_0",
+    "parent": "flote-rommeprodukter",
     "level": 1
   },
   "ol_1": { "name": "Øl", "key": "ol_1", "parent": "drikke_0", "level": 1 },
@@ -342,7 +342,7 @@
   "mozzarella_1": {
     "name": "Mozzarella",
     "key": "mozzarella_1",
-    "parent": "ost_0",
+    "parent": "fersk-ost",
     "level": 1
   },
   "torket-frukt-og-notter_1": {
@@ -402,13 +402,13 @@
   "majones_1": {
     "name": "Majones",
     "key": "majones_1",
-    "parent": "palegg-frokost_0",
+    "parent": "majones-remulade",
     "level": 1
   },
   "hamburgerbrod_1": {
     "name": "Hamburgerbrød",
     "key": "hamburgerbrod_1",
-    "parent": "bakeri_0",
+    "parent": "polse-hamburgerbrod",
     "level": 1
   },
   "grot_1": {
@@ -474,7 +474,7 @@
   "karbonader_1": {
     "name": "Karbonader",
     "key": "karbonader_1",
-    "parent": "kjott_0",
+    "parent": "kjottboller-karbonader",
     "level": 1
   },
   "kjokken_1": {
@@ -606,7 +606,7 @@
   "nanbrod_1": {
     "name": "Nanbrød",
     "key": "nanbrod_1",
-    "parent": "bakeri_0",
+    "parent": "pita-naan",
     "level": 1
   },
   "dressinger_1": {
@@ -618,13 +618,13 @@
   "pasta_1": {
     "name": "Pasta",
     "key": "pasta_1",
-    "parent": "middag_0",
+    "parent": "pasta-nudler",
     "level": 1
   },
   "remulade_1": {
     "name": "Remulade",
     "key": "remulade_1",
-    "parent": "palegg-frokost_0",
+    "parent": "majones-remulade",
     "level": 1
   },
   "svinekjott_1": {
@@ -666,13 +666,13 @@
   "nudler_1": {
     "name": "Nudler",
     "key": "nudler_1",
-    "parent": "middag_0",
+    "parent": "pasta-nudler",
     "level": 1
   },
   "pitabrod_1": {
     "name": "Pitabrød",
     "key": "pitabrod_1",
-    "parent": "bakeri_0",
+    "parent": "pita-naan",
     "level": 1
   },
   "lefser_1": {
@@ -708,7 +708,7 @@
   "cheddar_1": {
     "name": "Cheddar",
     "key": "cheddar_1",
-    "parent": "ost_0",
+    "parent": "myk-ost",
     "level": 1
   },
   "bleier_1": {
@@ -732,7 +732,7 @@
   "polsebrod_1": {
     "name": "Pølsebrød",
     "key": "polsebrod_1",
-    "parent": "bakeri_0",
+    "parent": "polse-hamburgerbrod",
     "level": 1
   },
   "kokosmelk_1": {
@@ -756,7 +756,7 @@
   "fetaost_1": {
     "name": "Fetaost",
     "key": "fetaost_1",
-    "parent": "ost_0",
+    "parent": "fersk-ost",
     "level": 1
   },
   "tobakk_1": {
@@ -793,7 +793,7 @@
   "kjottboller_1": {
     "name": "Kjøttboller",
     "key": "kjottboller_1",
-    "parent": "kjott_0",
+    "parent": "kjottboller-karbonader",
     "level": 1
   },
   "kaffekapsler_1": {
@@ -895,7 +895,7 @@
   "kesam_1": {
     "name": "Kesam",
     "key": "kesam_1",
-    "parent": "meieri-egg_0",
+    "parent": "flote-rommeprodukter",
     "level": 1
   },
   "kaffe_1": {
@@ -918,7 +918,7 @@
     "level": 1
   },
   "ris_1": {
-    "name": "Ris",
+    "name": "Ris og korn",
     "key": "ris_1",
     "parent": "middag_0",
     "level": 1
@@ -1022,7 +1022,7 @@
   "halloumi_1": {
     "name": "Halloumi",
     "key": "halloumi_1",
-    "parent": "ost_0",
+    "parent": "fersk-ost",
     "level": 1
   },
   "middagshermetikk_1": {
@@ -1034,7 +1034,7 @@
   "lunsjkaker_1": {
     "name": "Lunsjkaker",
     "key": "lunsjkaker_1",
-    "parent": "kjott_0",
+    "parent": "kjottboller-karbonader",
     "level": 1
   },
   "pultost_1": {
@@ -1058,7 +1058,7 @@
   "ricotta_1": {
     "name": "Ricotta",
     "key": "ricotta_1",
-    "parent": "ost_0",
+    "parent": "fersk-ost",
     "level": 1
   },
   "barnegrot_1": {
@@ -1076,7 +1076,7 @@
   "chevre_1": {
     "name": "Chevre",
     "key": "chevre_1",
-    "parent": "ost_0",
+    "parent": "myk-ost",
     "level": 1
   },
   "babyartikler_1": {
@@ -1094,7 +1094,7 @@
   "viltkjott_1": {
     "name": "Viltkjøtt",
     "key": "viltkjott_1",
-    "parent": "kjott_0",
+    "parent": "lam-vilt",
     "level": 1
   },
   "plantebasert-erstatning-for-ost_1": {
@@ -1130,7 +1130,7 @@
   "lammekjott_1": {
     "name": "Lammekjøtt",
     "key": "lammekjott_1",
-    "parent": "kjott_0",
+    "parent": "lam-vilt",
     "level": 1
   },
   "ferdigdrink_1": {
@@ -1148,7 +1148,7 @@
   "hermetisk-frukt-og-br_1": {
     "name": "Hermetisk frukt og bær",
     "key": "hermetisk-frukt-og-br_1",
-    "parent": "dessert_0",
+    "parent": "hermetisert-frukt-kompott",
     "level": 1
   },
   "sesong-og-fest_1": {
@@ -1184,7 +1184,7 @@
   "fruktkompott_1": {
     "name": "Fruktkompott",
     "key": "fruktkompott_1",
-    "parent": "dessert_0",
+    "parent": "hermetisert-frukt-kompott",
     "level": 1
   },
   "popcornkrydder_1": {
@@ -1388,7 +1388,7 @@
   "druer_2": {
     "name": "Druer",
     "key": "druer_2",
-    "parent": "frukt_1",
+    "parent": "druer-kiwi-steinfrukt",
     "level": 2
   },
   "kjottdeig_2": {
@@ -1412,7 +1412,7 @@
   "paprika_2": {
     "name": "Paprika",
     "key": "paprika_2",
-    "parent": "gronnsaker_1",
+    "parent": "paprika-chili",
     "level": 2
   },
   "kal_2": {
@@ -1448,7 +1448,7 @@
   "mango_2": {
     "name": "Mango",
     "key": "mango_2",
-    "parent": "frukt_1",
+    "parent": "druer-kiwi-steinfrukt",
     "level": 2
   },
   "kremflote_2": {
@@ -1460,13 +1460,13 @@
   "pre_2": {
     "name": "Pære",
     "key": "pre_2",
-    "parent": "frukt_1",
+    "parent": "epler-prer",
     "level": 2
   },
   "epler_2": {
     "name": "Epler",
     "key": "epler_2",
-    "parent": "frukt_1",
+    "parent": "epler-prer",
     "level": 2
   },
   "wienerbakst_2": {
@@ -1628,7 +1628,7 @@
   "fiskekaker_2": {
     "name": "Fiskekaker",
     "key": "fiskekaker_2",
-    "parent": "fiskeretter_1",
+    "parent": "fiskekaker-fiskepudding",
     "level": 2
   },
   "surkal_2": {
@@ -1652,7 +1652,7 @@
   "kiwi_2": {
     "name": "Kiwi",
     "key": "kiwi_2",
-    "parent": "frukt_1",
+    "parent": "druer-kiwi-steinfrukt",
     "level": 2
   },
   "ol_2": { "name": "Øl", "key": "ol_2", "parent": "ol_1", "level": 2 },
@@ -1671,7 +1671,7 @@
   "squash_2": {
     "name": "Squash",
     "key": "squash_2",
-    "parent": "gronnsaker_1",
+    "parent": "squash-aubergine",
     "level": 2
   },
   "vaskeredskaper_2": {
@@ -1779,7 +1779,7 @@
   "sjokolademelk_2": {
     "name": "Sjokolademelk",
     "key": "sjokolademelk_2",
-    "parent": "melk_1",
+    "parent": "melk-med-smak",
     "level": 2
   },
   "karbonadedeig_2": {
@@ -2073,7 +2073,7 @@
   "chili_2": {
     "name": "Chili",
     "key": "chili_2",
-    "parent": "gronnsaker_1",
+    "parent": "paprika-chili",
     "level": 2
   },
   "hermetiske-rodbeter_2": {
@@ -2265,7 +2265,7 @@
   "asparges_2": {
     "name": "Asparges",
     "key": "asparges_2",
-    "parent": "gronnsaker_1",
+    "parent": "erter-asparges-bonner",
     "level": 2
   },
   "hollandaisesaus_2": {
@@ -2313,7 +2313,7 @@
   "bomullpads_2": {
     "name": "Bomullpads",
     "key": "bomullpads_2",
-    "parent": "personlig-hygiene_1",
+    "parent": "bomull",
     "level": 2
   },
   "indrefilet-av-storfe_2": {
@@ -2331,7 +2331,7 @@
   "aioli_2": {
     "name": "Aioli",
     "key": "aioli_2",
-    "parent": "dressinger_1",
+    "parent": "majonesbaserte-sauser",
     "level": 2
   },
   "hermetisk-fisk-og-sjomat_2": {
@@ -2355,7 +2355,7 @@
   "kluter_2": {
     "name": "Kluter",
     "key": "kluter_2",
-    "parent": "renhold_1",
+    "parent": "kluter-svamper-hansker",
     "level": 2
   },
   "sirup_2": {
@@ -2367,7 +2367,7 @@
   "jordbrmelk_2": {
     "name": "Jordbærmelk",
     "key": "jordbrmelk_2",
-    "parent": "melk_1",
+    "parent": "melk-med-smak",
     "level": 2
   },
   "fiskegrateng_2": {
@@ -2482,7 +2482,7 @@
   "chilisaus_2": {
     "name": "Chilisaus",
     "key": "chilisaus_2",
-    "parent": "sauser_1",
+    "parent": "sojasaus-chilisaus-paste",
     "level": 2
   },
   "smais-multipack_2": {
@@ -2530,7 +2530,7 @@
   "fiskepinner_2": {
     "name": "Fiskepinner",
     "key": "fiskepinner_2",
-    "parent": "fiskeretter_1",
+    "parent": "innbakt-panert-fisk",
     "level": 2
   },
   "bananchips_2": {
@@ -2554,7 +2554,7 @@
   "fiskepudding_2": {
     "name": "Fiskepudding",
     "key": "fiskepudding_2",
-    "parent": "fiskeretter_1",
+    "parent": "fiskekaker-fiskepudding",
     "level": 2
   },
   "sjokoladepudding_2": {
@@ -2602,7 +2602,7 @@
   "panert-fisk_2": {
     "name": "Panert fisk",
     "key": "panert-fisk_2",
-    "parent": "fiskeretter_1",
+    "parent": "innbakt-panert-fisk",
     "level": 2
   },
   "hermetiske-erter_2": {
@@ -2638,7 +2638,7 @@
   "smarettskinke_2": {
     "name": "Smårettskinke",
     "key": "smarettskinke_2",
-    "parent": "svinekjott_1",
+    "parent": "bacon-smarettskinke",
     "level": 2
   },
   "ingefr-torket_2": {
@@ -2686,7 +2686,7 @@
   "granatepler_2": {
     "name": "Granatepler",
     "key": "granatepler_2",
-    "parent": "frukt_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "hvit-saus_2": {
@@ -2782,7 +2782,7 @@
   "ananas_2": {
     "name": "Ananas",
     "key": "ananas_2",
-    "parent": "frukt_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "soppsuppe_2": {
@@ -2824,7 +2824,7 @@
   "kaffefilter_2": {
     "name": "Kaffefilter",
     "key": "kaffefilter_2",
-    "parent": "kaffe_1",
+    "parent": "kaffefilter-tilbehor",
     "level": 2
   },
   "fiskemaltid-ferdig_2": {
@@ -2836,7 +2836,7 @@
   "vaniljemelk_2": {
     "name": "Vaniljemelk",
     "key": "vaniljemelk_2",
-    "parent": "melk_1",
+    "parent": "melk-med-smak",
     "level": 2
   },
   "saltstenger_2": {
@@ -2890,7 +2890,7 @@
   "sukkererter_2": {
     "name": "Sukkererter",
     "key": "sukkererter_2",
-    "parent": "gronnsaker_1",
+    "parent": "erter-asparges-bonner",
     "level": 2
   },
   "hamburgerdressing_2": {
@@ -2951,7 +2951,7 @@
   "aubergin_2": {
     "name": "Aubergin",
     "key": "aubergin_2",
-    "parent": "gronnsaker_1",
+    "parent": "squash-aubergine",
     "level": 2
   },
   "pastaskruer_2": {
@@ -3101,7 +3101,7 @@
   "physalis_2": {
     "name": "Physalis",
     "key": "physalis_2",
-    "parent": "br_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "lammedeig_2": {
@@ -3149,7 +3149,7 @@
   "bakepulver_2": {
     "name": "Bakepulver",
     "key": "bakepulver_2",
-    "parent": "baking_1",
+    "parent": "hevemidler",
     "level": 2
   },
   "soyadrikk_2": {
@@ -3185,7 +3185,7 @@
   "natron_2": {
     "name": "Natron",
     "key": "natron_2",
-    "parent": "baking_1",
+    "parent": "hevemidler",
     "level": 2
   },
   "thaisuppe_2": {
@@ -3203,7 +3203,7 @@
   "bomullspinner_2": {
     "name": "Bomullspinner",
     "key": "bomullspinner_2",
-    "parent": "personlig-hygiene_1",
+    "parent": "bomull",
     "level": 2
   },
   "spirer_2": {
@@ -3221,7 +3221,7 @@
   "honning_2": {
     "name": "Honning",
     "key": "honning_2",
-    "parent": "sotpalegg_1",
+    "parent": "honning-sirup",
     "level": 2
   },
   "biffstrimler_2": {
@@ -3372,7 +3372,7 @@
   "vaffelroremix_2": {
     "name": "Vaffelrøremix",
     "key": "vaffelroremix_2",
-    "parent": "bakemixer_1",
+    "parent": "pannekake-vafler-miks",
     "level": 2
   },
   "lasagneplater_2": {
@@ -3456,7 +3456,7 @@
   "pannekakemix_2": {
     "name": "Pannekakemix",
     "key": "pannekakemix_2",
-    "parent": "bakemixer_1",
+    "parent": "pannekake-vafler-miks",
     "level": 2
   },
   "vannkastanjer_2": {
@@ -3468,7 +3468,7 @@
   "tzatziki_2": {
     "name": "Tzatziki",
     "key": "tzatziki_2",
-    "parent": "dressinger_1",
+    "parent": "tsatziki-hummus",
     "level": 2
   },
   "fleskepolse_2": {
@@ -3546,7 +3546,7 @@
   "hummus_2": {
     "name": "Hummus",
     "key": "hummus_2",
-    "parent": "sauser_1",
+    "parent": "tsatziki-hummus",
     "level": 2
   },
   "deodorant_2": {
@@ -3594,7 +3594,7 @@
   "smarettbacon_2": {
     "name": "Smårettbacon",
     "key": "smarettbacon_2",
-    "parent": "svinekjott_1",
+    "parent": "bacon-smarettskinke",
     "level": 2
   },
   "matpapir_2": {
@@ -3714,7 +3714,7 @@
   "munnskyll_2": {
     "name": "Munnskyll",
     "key": "munnskyll_2",
-    "parent": "tannpleie_1",
+    "parent": "munnskyll-fluortabletter",
     "level": 2
   },
   "lokringer_2": {
@@ -3750,7 +3750,7 @@
   "sjokoladekakemix_2": {
     "name": "Sjokoladekakemix",
     "key": "sjokoladekakemix_2",
-    "parent": "bakemixer_1",
+    "parent": "kakemiks",
     "level": 2
   },
   "bollemix_2": {
@@ -3762,7 +3762,7 @@
   "tanntrad_2": {
     "name": "Tanntråd",
     "key": "tanntrad_2",
-    "parent": "tannpleie_1",
+    "parent": "tanntrad-tannpirkere",
     "level": 2
   },
   "reinsdyr_2": {
@@ -3798,7 +3798,7 @@
   "shampo_2": {
     "name": "Shampo",
     "key": "shampo_2",
-    "parent": "harpleie_1",
+    "parent": "shampo-harprodukter",
     "level": 2
   },
   "konservering_2": {
@@ -3990,7 +3990,7 @@
   "quinoa_2": {
     "name": "Quinoa",
     "key": "quinoa_2",
-    "parent": "ris_1",
+    "parent": "bulgur-quinoa",
     "level": 2
   },
   "sodd_2": {
@@ -4038,7 +4038,7 @@
   "brodmix_2": {
     "name": "Brødmix",
     "key": "brodmix_2",
-    "parent": "bakemixer_1",
+    "parent": "brod-rundstykke-miks",
     "level": 2
   },
   "hermetisk-ananas_2": {
@@ -4098,7 +4098,7 @@
   "tannstikker_2": {
     "name": "Tannstikker",
     "key": "tannstikker_2",
-    "parent": "tannpleie_1",
+    "parent": "tanntrad-tannpirkere",
     "level": 2
   },
   "bodylotion_2": {
@@ -4302,7 +4302,7 @@
   "balsam_2": {
     "name": "Balsam",
     "key": "balsam_2",
-    "parent": "harpleie_1",
+    "parent": "shampo-harprodukter",
     "level": 2
   },
   "riseddik_2": {
@@ -4482,7 +4482,7 @@
   "papaya_2": {
     "name": "Papaya",
     "key": "papaya_2",
-    "parent": "frukt_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "tacokit_2": {
@@ -4518,7 +4518,7 @@
   "torrshampo_2": {
     "name": "Tørrshampo",
     "key": "torrshampo_2",
-    "parent": "harpleie_1",
+    "parent": "shampo-harprodukter",
     "level": 2
   },
   "paneringsmel_2": {
@@ -4536,7 +4536,7 @@
   "maltidsbar_2": {
     "name": "Måltidsbar",
     "key": "maltidsbar_2",
-    "parent": "helsekost_1",
+    "parent": "maltidserstatter-mellommaltid",
     "level": 2
   },
   "einerbr_2": {
@@ -4596,7 +4596,7 @@
   "hargele_2": {
     "name": "Hårgele",
     "key": "hargele_2",
-    "parent": "harpleie_1",
+    "parent": "harstyling",
     "level": 2
   },
   "ingefr-syltet_2": {
@@ -4614,7 +4614,7 @@
   "graviditetstest_2": {
     "name": "Graviditetstest",
     "key": "graviditetstest_2",
-    "parent": "apotekvarer_1",
+    "parent": "prevensjon",
     "level": 2
   },
   "tofu_2": {
@@ -4746,7 +4746,7 @@
   "harspray_2": {
     "name": "Hårspray",
     "key": "harspray_2",
-    "parent": "harpleie_1",
+    "parent": "harstyling",
     "level": 2
   },
   "karamellsaus_2": {
@@ -4836,7 +4836,7 @@
   "muffinmix_2": {
     "name": "Muffinmix",
     "key": "muffinmix_2",
-    "parent": "bakemixer_1",
+    "parent": "kakemiks",
     "level": 2
   },
   "klippfisk_2": {
@@ -4920,7 +4920,7 @@
   "fluortabletter_2": {
     "name": "Fluortabletter",
     "key": "fluortabletter_2",
-    "parent": "tannpleie_1",
+    "parent": "munnskyll-fluortabletter",
     "level": 2
   },
   "lammekjott-strimlet_2": {
@@ -5022,7 +5022,7 @@
   "bulgur_2": {
     "name": "Bulgur",
     "key": "bulgur_2",
-    "parent": "ris_1",
+    "parent": "bulgur-quinoa",
     "level": 2
   },
   "karamellkake_2": {
@@ -5034,7 +5034,7 @@
   "babysape_2": {
     "name": "Babysåpe",
     "key": "babysape_2",
-    "parent": "babypleie_1",
+    "parent": "sape-babyolje",
     "level": 2
   },
   "troffelolje_2": {
@@ -5106,7 +5106,7 @@
   "babyolje_2": {
     "name": "Babyolje",
     "key": "babyolje_2",
-    "parent": "babypleie_1",
+    "parent": "sape-babyolje",
     "level": 2
   },
   "tapenade_2": {
@@ -5136,7 +5136,7 @@
   "kondomer_2": {
     "name": "Kondomer",
     "key": "kondomer_2",
-    "parent": "apotekvarer_1",
+    "parent": "prevensjon",
     "level": 2
   },
   "matblod_2": {
@@ -5160,7 +5160,7 @@
   "harskum_2": {
     "name": "Hårskum",
     "key": "harskum_2",
-    "parent": "harpleie_1",
+    "parent": "harstyling",
     "level": 2
   },
   "andefett_2": {
@@ -5196,7 +5196,7 @@
   "gulrotkakemix_2": {
     "name": "Gulrotkakemix",
     "key": "gulrotkakemix_2",
-    "parent": "bakemixer_1",
+    "parent": "kakemiks",
     "level": 2
   },
   "roykeslutt_2": {
@@ -5214,7 +5214,7 @@
   "sconesmix_2": {
     "name": "Sconesmix",
     "key": "sconesmix_2",
-    "parent": "bakemixer_1",
+    "parent": "brod-rundstykke-miks",
     "level": 2
   },
   "allroundkrydder_2": {
@@ -5232,7 +5232,7 @@
   "focacciamix_2": {
     "name": "Focacciamix",
     "key": "focacciamix_2",
-    "parent": "bakemixer_1",
+    "parent": "brod-rundstykke-miks",
     "level": 2
   },
   "marinade_2": {
@@ -5256,7 +5256,7 @@
   "maltidserstatter_2": {
     "name": "Måltidserstatter",
     "key": "maltidserstatter_2",
-    "parent": "helsekost_1",
+    "parent": "maltidserstatter-mellommaltid",
     "level": 2
   },
   "hvitlokspepper_2": {
@@ -5274,7 +5274,7 @@
   "pavlovamix_2": {
     "name": "Pavlovamix",
     "key": "pavlovamix_2",
-    "parent": "bakemixer_1",
+    "parent": "kakemiks",
     "level": 2
   },
   "sarbehandling_2": {
@@ -5382,7 +5382,7 @@
   "eplekakemix_2": {
     "name": "Eplekakemix",
     "key": "eplekakemix_2",
-    "parent": "bakemixer_1",
+    "parent": "kakemiks",
     "level": 2
   },
   "loksuppe_2": {
@@ -5538,7 +5538,7 @@
   "harkur_2": {
     "name": "Hårkur",
     "key": "harkur_2",
-    "parent": "harpleie_1",
+    "parent": "shampo-harprodukter",
     "level": 2
   },
   "klesrulle_2": {
@@ -5573,7 +5573,7 @@
   "rundstykkemix_2": {
     "name": "Rundstykkemix",
     "key": "rundstykkemix_2",
-    "parent": "bakemixer_1",
+    "parent": "brod-rundstykke-miks",
     "level": 2
   },
   "gulpeklut_2": {
@@ -5735,7 +5735,7 @@
   "chipotlemajones_2": {
     "name": "Chipotlemajones",
     "key": "chipotlemajones_2",
-    "parent": "dressinger_1",
+    "parent": "majonesbaserte-sauser",
     "level": 2
   },
   "kyllingburger_2": {
@@ -5765,13 +5765,13 @@
   "fiken_2": {
     "name": "Fiken",
     "key": "fiken_2",
-    "parent": "frukt_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "plommer_2": {
     "name": "Plommer",
     "key": "plommer_2",
-    "parent": "frukt_1",
+    "parent": "druer-kiwi-steinfrukt",
     "level": 2
   },
   "solkrem_2": {
@@ -5795,7 +5795,7 @@
   "pasjonsfrukt_2": {
     "name": "Pasjonsfrukt",
     "key": "pasjonsfrukt_2",
-    "parent": "frukt_1",
+    "parent": "eksotiske-frukter",
     "level": 2
   },
   "engangsgrill_2": {
@@ -5831,7 +5831,7 @@
   "bonner-ferske_2": {
     "name": "Bønner ferske",
     "key": "bonner-ferske_2",
-    "parent": "gronnsaker_1",
+    "parent": "erter-asparges-bonner",
     "level": 2
   },
   "tyttebr_2": {
@@ -5993,7 +5993,7 @@
   "gulrotter_3": {
     "name": "Gulrøtter",
     "key": "gulrotter_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "brokkoli_3": {
@@ -6096,7 +6096,7 @@
   "kalrot_3": {
     "name": "Kålrot",
     "key": "kalrot_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "spinat_3": {
@@ -6108,7 +6108,7 @@
   "sellerirot_3": {
     "name": "Sellerirot",
     "key": "sellerirot_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "salatblanding_3": {
@@ -6240,7 +6240,7 @@
   "laks-rokt_3": {
     "name": "Laks røkt",
     "key": "laks-rokt_3",
-    "parent": "laks_2",
+    "parent": "rokt-gravet-fisk",
     "level": 3
   },
   "grapefrukt_3": {
@@ -6294,7 +6294,7 @@
   "reddiker_3": {
     "name": "Reddiker",
     "key": "reddiker_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "okserull_3": {
@@ -6306,13 +6306,13 @@
   "soyasaus_3": {
     "name": "Soyasaus",
     "key": "soyasaus_3",
-    "parent": "asiatiske-sauser_2",
+    "parent": "sojasaus-chilisaus-paste",
     "level": 3
   },
   "laks-gravet_3": {
     "name": "Laks gravet",
     "key": "laks-gravet_3",
-    "parent": "laks_2",
+    "parent": "rokt-gravet-fisk",
     "level": 3
   },
   "mango-frosne_3": {
@@ -6480,7 +6480,7 @@
   "rodbeter_3": {
     "name": "Rødbeter",
     "key": "rodbeter_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "kinakal_3": {
@@ -6552,7 +6552,7 @@
   "jordskokk_3": {
     "name": "Jordskokk",
     "key": "jordskokk_3",
-    "parent": "rotgronnsaker_2",
+    "parent": "gulrotter-selleri-rotfrukter",
     "level": 3
   },
   "bonner-frosne_3": {
