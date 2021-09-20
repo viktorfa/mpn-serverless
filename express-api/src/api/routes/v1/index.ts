@@ -5,6 +5,7 @@ import offerRelationsRoutes from "@/api/routes/v1/offers-relations.route";
 import reviewsRoutes from "@/api/routes/v1/reviews.route";
 import comparisonRoutes from "@/api/routes/v1/comparisons.route";
 import offerGroupsRoute from "@/api/routes/v1/offer-groups.route";
+import categoriesRoute from "@/api/routes/v1/categories.route";
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.get("/echo/:message", (req, res) =>
 );
 
 router.use("/offers", offerRoutes);
+router.use("/categories", categoriesRoute);
 router.use("/offer-relations", offerRelationsRoutes);
 router.use("/reviews", reviewsRoutes);
 router.use("/comparisons", comparisonRoutes);

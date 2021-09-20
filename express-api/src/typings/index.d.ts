@@ -199,6 +199,13 @@ interface SingleSimilarOffersObject extends SimilarOffersObject {
   shortDescription: string;
 }
 
+interface MpnCategory {
+  text: string;
+  key: string;
+  level: number;
+  parent: string;
+}
+
 type ListResponse<T> = {
   items: T[];
 };
