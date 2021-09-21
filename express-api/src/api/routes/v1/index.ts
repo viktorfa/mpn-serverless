@@ -6,6 +6,8 @@ import reviewsRoutes from "@/api/routes/v1/reviews.route";
 import comparisonRoutes from "@/api/routes/v1/comparisons.route";
 import offerGroupsRoute from "@/api/routes/v1/offer-groups.route";
 import categoriesRoute from "@/api/routes/v1/categories.route";
+import spiderrunsRoute from "@/api/routes/v1/spiderruns.route";
+import handlerunsRoute from "@/api/routes/v1/handleruns.route";
 
 const router = express.Router();
 
@@ -22,5 +24,7 @@ router.use("/offer-relations", offerRelationsRoutes);
 router.use("/reviews", reviewsRoutes);
 router.use("/comparisons", comparisonRoutes);
 router.use("/offer-groups", offerGroupsRoute);
+router.use("/spiderruns", spiderrunsRoute);
+router.use("/handleruns", handlerunsRoute);
 
 export default router;
