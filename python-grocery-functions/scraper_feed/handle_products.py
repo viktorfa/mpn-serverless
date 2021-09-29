@@ -9,7 +9,7 @@ from parsing.property_extraction import (
     extract_properties,
     standardize_additional_properties,
 )
-from typing import List
+from typing import Iterable, List
 
 import pydash
 
@@ -66,7 +66,7 @@ time = MyTime()
 
 def handle_products(
     products: List[ScraperOffer], config: HandleConfig
-) -> List[MpnOffer]:
+) -> Iterable[MpnOffer]:
     """
     Transforms products straight from the scraper feed into MpnOffers.
     """

@@ -30,31 +30,14 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
     sns_client = boto3.client("sns")  # type: botostubs.SNS
 
     products = handle_products(feed, config)
-    products = list(
+    products = (
         {**product, "siteCollection": config["collection_name"]} for product in products
     )
 
     products = add_affiliate_links(products)
+    products = list(products)
 
-    end_time = datetime.now()
-
-    handle_run = {
-        **config,
-        "example_items": products[:100],
-        "time_elapsed_seconds": (end_time - start_time).total_seconds(),
-        "items_handled": len(products),
-        "createdAt": end_time,
-        "updatedAt": end_time,
-        "logs": aws_config.get_log_group_url(),
-    }
-
-    if os.getenv("IS_LOCAL"):
-        logging.info({**handle_run, "example_items": products[:1]})
-    else:
-        store_handle_run(handle_run)
-
-    if len(products) == 0:
-        return {"message": "No offers to save"}
+    result = {}
 
     if config["collection_name"] == "bookoffers":
         try:
@@ -83,7 +66,6 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
                 MessageStructure="json",
                 TargetArn=BOOK_FEED_HANDLED_TOPIC_ARN,
             )
-            return result
         except Exception as e:
             log_traceback(e)
             raise e
@@ -112,4 +94,23 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
             TargetArn=SCRAPER_FEED_HANDLED_TOPIC_ARN,
         )
 
-        return result.bulk_api_result
+    end_time = datetime.now()
+
+    handle_run = {
+        **config,
+        "example_items": products[:20],
+        "time_elapsed_seconds": (end_time - start_time).total_seconds(),
+        "items_handled": len(products),
+        "createdAt": end_time,
+        "updatedAt": end_time,
+        "logs": aws_config.get_log_group_url(),
+    }
+    if os.getenv("IS_LOCAL"):
+        logging.info({**handle_run, "example_items": products[:1]})
+    else:
+        store_handle_run(handle_run)
+
+    if len(products) == 0:
+        return {"message": "No offers to save"}
+
+    return result

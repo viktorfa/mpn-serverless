@@ -1,9 +1,10 @@
+from amp_types.amp_product import MpnOffer
 from typing import Iterable, List
 from datetime import datetime
-from datetime import timedelta
 from bson.objectid import ObjectId
 from pymongo import UpdateOne, InsertOne
 from copy import deepcopy
+import itertools
 
 from config.mongo import get_collection
 from util.helpers import get_product_uri
@@ -14,6 +15,15 @@ from storage.helpers import (
 from util.errors import NoHandleConfigError
 
 OVERWRITE_EDIT_LIMIT_DAYS = 365
+
+
+def chunked_iterable(iterable: Iterable, size):
+    it = iter(iterable)
+    while True:
+        chunk = tuple(itertools.islice(it, size))
+        if not chunk:
+            break
+        yield chunk
 
 
 def get_update_one(offer, id_field: str = "uri"):
@@ -32,7 +42,7 @@ def get_update_one(offer, id_field: str = "uri"):
 
 
 def bulk_upsert(iterable: Iterable, collection_name: str, id_field: str = "uri"):
-    print("Start saving to Mongo collection: {}".format(collection_name))
+    print(f"Start saving to Mongo collection: {collection_name}")
     collection = get_collection(collection_name)
     requests = list(map(get_update_one, iterable))
     print("{} items to write".format(len(requests)))
@@ -54,9 +64,12 @@ def save_promoted_offers(df, collection_name: str):
     return collection.bulk_write(requests)
 
 
-def save_scraped_products(offers: Iterable):
+def save_scraped_products(offers: List[MpnOffer]):
     offer_updates = (add_meta_fields_to_scraper_offers(x) for x in offers)
-    return bulk_upsert(offer_updates, "mpnoffers")
+    result = []
+    for chunk in chunked_iterable(offer_updates, 10000):
+        result.append(bulk_upsert(chunk, "mpnoffers"))
+    return result
 
 
 def get_handle_configs(provenance: str):

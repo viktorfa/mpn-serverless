@@ -1,6 +1,7 @@
 from typing import Iterable
 from operator import itemgetter
 from datetime import datetime
+from amp_types.amp_product import MpnOffer
 
 
 def meta_fields_result_to_dict(meta_fields: Iterable) -> dict:
@@ -28,7 +29,7 @@ def remove_protected_fields_from_product(product: dict, uri_field_dict: dict) ->
     return product
 
 
-def add_meta_fields_to_scraper_offers(offer: dict) -> dict:
+def add_meta_fields_to_scraper_offers(offer: MpnOffer) -> dict:
     now = datetime.utcnow()
     return {
         **offer,

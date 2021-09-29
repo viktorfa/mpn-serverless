@@ -70,7 +70,6 @@ def analyze_quantity(offer: MpnOffer) -> MpnOffer:
     # Use price unit as size when the product price is denominated as a unit.
     price_unit_string: str = offer["pricing"].get("priceUnit")
     if price_unit_string:
-        logging.debug("price_unit_string")
         price_unit = extract_unit(price_unit_string)
         if price_unit and price_unit["type"] in (
             unit_types.QUANTITY,
