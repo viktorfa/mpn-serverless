@@ -41,6 +41,7 @@ const includeFields = [
   "mpnProperties",
   "mpnCategories",
   "mpnIngredients",
+  "mpnNutrition",
 
   "market",
   "isPartner",
@@ -69,12 +70,40 @@ const getEngineName = (engineName) => {
     result = "segroceryoffers";
   } else if (engineName.startsWith("sebeauty")) {
     result = "sebeautyoffers";
+  } else if (engineName.startsWith("seextra")) {
+    result = "seextraoffers";
   } else if (engineName.startsWith("degrocery")) {
     result = "degroceryoffers";
   } else if (engineName.startsWith("debygg")) {
     result = "debyggoffers";
   } else if (engineName.startsWith("debeauty")) {
     result = "debeautyoffers";
+  } else if (engineName.startsWith("deextra")) {
+    result = "deextraoffers";
+  } else if (engineName.startsWith("ukgrocery")) {
+    result = "ukgroceryoffers";
+  } else if (engineName.startsWith("ukbygg")) {
+    result = "ukbyggoffers";
+  } else if (engineName.startsWith("ukbeauty")) {
+    result = "ukbeautyoffers";
+  } else if (engineName.startsWith("ukextra")) {
+    result = "ukextraoffers";
+  } else if (engineName.startsWith("dkgrocery")) {
+    result = "dkgroceryoffers";
+  } else if (engineName.startsWith("dkbygg")) {
+    result = "dkbyggoffers";
+  } else if (engineName.startsWith("dkbeauty")) {
+    result = "dkbeautyoffers";
+  } else if (engineName.startsWith("dkextra")) {
+    result = "dkextraoffers";
+  } else if (engineName.startsWith("usgrocery")) {
+    result = "usgroceryoffers";
+  } else if (engineName.startsWith("usbygg")) {
+    result = "usbyggoffers";
+  } else if (engineName.startsWith("usbeauty")) {
+    result = "usbeautyoffers";
+  } else if (engineName.startsWith("usextra")) {
+    result = "usextraoffers";
   } else {
     return "";
   }
@@ -191,10 +220,23 @@ const migrateOffersToElastic = async (
 
   const elasticClient = await getElasticClient();
 
-  const { results: elasticEngines } = await elasticClient.listEngines();
+  const engines = [];
+  let page = 1;
+  let response;
+  while (true) {
+    response = await elasticClient.listEngines({ page: { current: page } });
+    console.log("Elastic engines response:");
+    console.log(response);
+    engines.push(...response.results);
+    page++;
+    if (engines.length >= response.meta.page.total_results || page === 10) {
+      break;
+    }
+  }
+
   console.log("Existing elastic engines:");
-  console.log(elasticEngines);
-  if (!elasticEngines.find(({ name }) => name === engineName)) {
+  console.log(engines);
+  if (!response.results.find(({ name }) => name === engineName)) {
     console.info(`Did not find existing engine ${engineName}. Creating it.`);
     const createEngineResponse = await elasticClient.createEngine(engineName, {
       language: null,

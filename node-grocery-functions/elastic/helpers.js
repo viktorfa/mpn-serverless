@@ -47,6 +47,16 @@ const mpnOfferToElasticOffer = (offer) => {
     ),
     mpn_categories: (offer.mpnCategories || []).map((x) => x.key),
 
+    nutrition_carbohydrates: get(offer, [
+      "mpnNutrition",
+      "carbohydrates",
+      "value",
+    ]),
+    nutrition_proteins: get(offer, ["mpnNutrition", "proteins", "value"]),
+    nutrition_fats: get(offer, ["mpnNutrition", "fats", "value"]),
+    nutrition_energy: get(offer, ["mpnNutrition", "energy", "value"]),
+    nutrition_fibers: get(offer, ["mpnNutrition", "fibers", "value"]),
+
     pricing: offer.pricing,
     value: offer.value,
     quantity: offer.quantity,
