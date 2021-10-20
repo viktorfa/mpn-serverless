@@ -88,6 +88,21 @@ def get_handle_configs(provenance: str):
         )
 
 
+def get_single_handle_config(provenance: str):
+    collection = get_collection("handleconfigs")
+    result = collection.find_one(
+        {
+            "provenance": provenance,
+        }
+    )
+    if result:
+        return result
+    else:
+        raise NoHandleConfigError(
+            f"No handleconfig found for provenance: {provenance}."
+        )
+
+
 def get_offers_with_product(
     provenance: str,
     collection_name: str,

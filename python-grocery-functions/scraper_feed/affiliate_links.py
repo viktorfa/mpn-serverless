@@ -1,3 +1,4 @@
+from typing import Iterable
 from urllib.parse import quote
 
 
@@ -10,14 +11,6 @@ def add_byggmax_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://track.adtraction.com/t/t?a=708216731&as=1532500727&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
-
-
-def add_staypro_affiliate_link(product: dict) -> dict:
-    if "track.adtraction.com" in product["href"]:
-        return product
-    escaped_original_href = product["href"]
-    new_href = f"https://track.adtraction.com/t/t?a=1263494185&as=1532500727&t=2&tk=1&url={escaped_original_href}"
     return {**product, "href": new_href, "ahref": new_href}
 
 
@@ -56,6 +49,30 @@ def add_de_amazon_affiliate_link(product: dict) -> dict:
             f'{product["href"]}&tag=mpn02-21'
             if "?" in product["href"]
             else f'{product["href"]}?tag=mpn02-21'
+        )
+
+    return {**product, "ahref": ahref}
+
+
+def add_com_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=epstein0b-20'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=epstein0b-20'
+        )
+
+    return {**product, "ahref": ahref}
+
+
+def add_uk_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn0cb-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn0cb-21'
         )
 
     return {**product, "ahref": ahref}
@@ -118,14 +135,6 @@ def add_se_mat_se_affiliate_link(product: dict) -> dict:
     return {**product, "href": new_href, "ahref": new_href}
 
 
-def add_se_proffsmagasinet_affiliate_link(product: dict) -> dict:
-    if "go.proffsmagasinet.se" in product["href"]:
-        return product
-    escaped_original_href = product["href"]
-    new_href = f"https://go.proffsmagasinet.se/t/t?a=1263488714&as=1573089698&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
-
-
 def add_se_beijerbygg_affiliate_link(product: dict) -> dict:
     if "dot.beijerbygg.se" in product["href"]:
         return product
@@ -168,10 +177,12 @@ def get_affiliate_handler(product: dict):
         return add_se_amazon_affiliate_link
     elif "amazon.de" in product["href"]:
         return add_de_amazon_affiliate_link
+    elif "amazon.com" in product["href"]:
+        return add_com_amazon_affiliate_link
+    elif "amazon.co.uk" in product["href"]:
+        return add_uk_amazon_affiliate_link
     elif "grontfokus.no" in product["href"]:
         return add_grontfokus_affiliate_link
-    elif "staypro.no" in product["href"]:
-        return add_staypro_affiliate_link
     elif "lampegiganten.no" in product["href"]:
         return add_lampegiganten_affiliate_link
     elif "cdon.no" in product["href"]:
@@ -182,8 +193,6 @@ def get_affiliate_handler(product: dict):
         return add_se_hemkop_affiliate_link
     elif "mat.se" in product["href"]:
         return add_se_mat_se_affiliate_link
-    elif "proffsmagasinet.se" in product["href"]:
-        return add_se_proffsmagasinet_affiliate_link
     elif "beijerbygg.se" in product["href"]:
         return add_se_beijerbygg_affiliate_link
     elif "skanskabyggvaror.se" in product["href"]:
@@ -210,5 +219,5 @@ def add_affilite_link_to_product(product: dict) -> dict:
         return handler(product)
 
 
-def add_affiliate_links(products: list) -> list:
-    return list(add_affilite_link_to_product(product) for product in products)
+def add_affiliate_links(products: Iterable) -> Iterable:
+    return (add_affilite_link_to_product(product) for product in products)

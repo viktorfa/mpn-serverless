@@ -1,7 +1,7 @@
 import json
 import boto3
 import botostubs
-
+from typing import Optional
 
 s3 = boto3.client("s3")  # type: botostubs.S3
 
@@ -25,11 +25,22 @@ def get_s3_file_content(bucket: str, key: str):
     return s3_object["Body"].read().decode()
 
 
-def get_s3_object(bucket: str, key: str):
+def get_s3_object(bucket: str, key: str, version=""):
     """
     Gets an s3 object.
     """
-    return s3.get_object(Bucket=bucket, Key=key)
+    if version:
+        return s3.get_object(Bucket=bucket, Key=key, VersionId=version)
+    else:
+        return s3.get_object(Bucket=bucket, Key=key)
+
+
+def get_s3_object_versions(bucket: str, key: str):
+    """
+    Gets an s3 object.
+    """
+    bucket_obj = boto3.resource("s3").Bucket(bucket)
+    return bucket_obj.object_versions.filter(Prefix=key)
 
 
 def save_to_s3(bucket: str, key: str, data):

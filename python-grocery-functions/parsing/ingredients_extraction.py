@@ -43,6 +43,7 @@ ingredients_config = [
     {"patterns": [r"peanøtter"], "property": "peanuts"},
     {"patterns": [r"rismel"], "property": "riceFlour"},
     {"patterns": [r"glukosesirup"], "property": "glucoseSyrup"},
+    {"patterns": [r"eddik"], "property": "vinegar"},
 ]
 
 

@@ -10,7 +10,7 @@ from scraper_feed.scraper_configs import (
     DEFAULT_EXTRACT_QUANTITY_FIELDS,
     DEFAULT_EXTRACT_CATEGORIES_FIELD,
 )
-from storage.db import get_handle_configs
+from storage.db import get_handle_configs, get_single_handle_config
 from amp_types.amp_product import HandleConfig, ScraperConfig
 from util.errors import NoHandleConfigError
 
@@ -79,6 +79,18 @@ def fetch_handle_configs(provenance: str) -> List[HandleConfig]:
 
     try:
         return list(generate_handle_config(x) for x in get_handle_configs(provenance))
+    except NoHandleConfigError:
+        logging.warn("No handle config found")
+        raise NoHandleConfigError()
+
+
+def fetch_single_handle_config(provenance: str) -> HandleConfig:
+    """
+    Finds a handle config from a database or uses a default one.
+    """
+
+    try:
+        return generate_handle_config(get_single_handle_config(provenance))
     except NoHandleConfigError:
         logging.warn("No handle config found")
         raise NoHandleConfigError()

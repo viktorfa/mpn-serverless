@@ -1,5 +1,6 @@
+from offer_feed.categories import handle_offers_for_categories
 from parsing.quantity_extraction import get_value_from_quantity, standardize_quantity
-from amp_types.amp_product import MpnOffer
+
 import json
 import pydash
 from bson import json_util
@@ -14,9 +15,7 @@ from typing import Iterable, TypedDict, List
 from datetime import datetime
 
 
-from storage.db import (
-    get_collection,
-)
+from storage.db import get_collection
 
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
@@ -205,31 +204,47 @@ def offer_feed_sns(event, context):
     aws_config.lambda_context = context
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
     provenance = sns_message["provenance"]
+    result = []
     try:
         offers_list = get_offers_list_for_gtins(provenance)
         if len(offers_list) > 0:
-            return handle_offers(offers_list)
+            result.append(handle_offers(offers_list))
         else:
-            return {"message": f"No offers with gtins for {provenance}"}
+            result.append({"message": f"No offers with gtins for {provenance}"})
     except Exception as e:
         logging.error(e)
         log_traceback(e)
-        return {"message": str(e)}
+        result.append({"message": str(e)})
+    try:
+        result.append(handle_offers_for_categories(sns_message))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+    return result
 
 
 def offer_feed_trigger(event, context):
     aws_config.lambda_context = context
     provenance = event["provenance"]
+    result = []
     try:
         offers_list = get_offers_list_for_gtins(provenance)
         if len(offers_list) > 0:
-            return handle_offers(offers_list)
+            result.append(handle_offers(offers_list))
         else:
-            return {"message": f"No offers with gtins for {provenance}"}
+            result.append({"message": f"No offers with gtins for {provenance}"})
     except Exception as e:
         logging.error(e)
         log_traceback(e)
-        return {"message": str(e)}
+        result.append({"message": str(e)})
+    try:
+        result.append(handle_offers_for_categories(event))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+    return result
 
 
 def offer_feed_meta_sns(event, context):

@@ -65,7 +65,7 @@ def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
                 "value": unit_pairs[idx][0],
                 "unit": unit_pairs[idx][1],
             }
-        elif number:
+        elif number is not None:
             result[key] = {
                 "key": key,
                 "value": number,

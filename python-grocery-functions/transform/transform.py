@@ -24,10 +24,11 @@ def add_to_destination(
         }
         if get(result, ["additionalPropertyDict", destination]):
             if field_config.get("force_replace") is True:
-                logging.debug(f"Replacing {field_config['destination']}.")
+                # logging.debug(f"Replacing {field_config['destination']}.")
                 result["additionalPropertyDict"][destination] = additional_property_item
             else:
-                logging.debug(f"Avoid replacing {field_config['destination']}")
+                pass
+                # logging.debug(f"Avoid replacing {field_config['destination']}")
         else:
             logging.debug(f"Creating new field {field_config['destination']}.")
             if result.get("additionalPropertyDict"):
@@ -40,12 +41,13 @@ def add_to_destination(
         existing_value = offer.get(a)
         if existing_value:
             if field_config.get("force_replace") is True:
-                logging.debug(f"Replacing {a}.")
+                # logging.debug(f"Replacing {a}.")
                 result[a] = value
             else:
-                logging.debug(f"Avoid replacing {a}")
+                pass
+                # logging.debug(f"Avoid replacing {a}")
         else:
-            logging.debug(f"Creating new field {a}.")
+            # logging.debug(f"Creating new field {a}.")
             result[a] = value
     return result
 

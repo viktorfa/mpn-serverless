@@ -51,17 +51,31 @@ def scraper_feed_sns(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     try:
-        return list(
-            json.dumps(
-                lambda_client.invoke(
-                    InvocationType="Event",
-                    FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                    Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
-                ),
-                default=str,
+        invocations = []
+        for config in configs:
+            invocations.append(
+                json.dumps(
+                    lambda_client.invoke(
+                        InvocationType="Event",
+                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
+                        Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
+                    ),
+                    default=str,
+                )
             )
-            for config in configs
-        )
+            invocations.append(
+                json.dumps(
+                    lambda_client.invoke(
+                        InvocationType="Event",
+                        FunctionName=os.environ[
+                            "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
+                        ],
+                        Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
+                    ),
+                    default=str,
+                )
+            )
+        return invocations
     except Exception as e:
         logging.error(e)
         log_traceback(e)
@@ -90,17 +104,32 @@ def trigger_scraper_feed(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     try:
-        return list(
-            json.dumps(
-                lambda_client.invoke(
-                    InvocationType="Event",
-                    FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                    Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
-                ),
-                default=str,
+        invocations = []
+        for config in configs:
+            invocations.append(
+                json.dumps(
+                    lambda_client.invoke(
+                        InvocationType="Event",
+                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
+                        Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
+                    ),
+                    default=str,
+                )
             )
-            for config in configs
-        )
+            invocations.append(
+                json.dumps(
+                    lambda_client.invoke(
+                        InvocationType="Event",
+                        FunctionName=os.environ[
+                            "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
+                        ],
+                        Payload=bytes(json.dumps({**config, "feed_key": key}), "utf-8"),
+                    ),
+                    default=str,
+                )
+            )
+        return invocations
+
     except Exception as e:
         logging.error(e)
         log_traceback(e)

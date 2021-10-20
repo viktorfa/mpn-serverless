@@ -129,8 +129,50 @@ class TestWithConfig(TestCase):
                 "extractQuantityFields": ["unit_price_raw", "product_variant", "title"],
                 "fieldMapping": [
                     {
-                        "source": "product_variant",
-                        "destination": "description",
+                        "source": "Ingredienser",
+                        "destination": "rawIngredients",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "Protein",
+                        "destination": "proteins",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "hvorav sukkerarter",
+                        "destination": "sugars",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "Energi",
+                        "destination": "energy",
+                        "replace_type": "key",
+                    },
+                    {"source": "Salt", "destination": "salt", "replace_type": "key"},
+                    {
+                        "source": "Kostfiber",
+                        "destination": "fibers",
+                        "replace_type": "key",
+                    },
+                    {"source": "Fett", "destination": "fats", "replace_type": "key"},
+                    {
+                        "source": "hvorav mettede fettsyrer",
+                        "destination": "satFats",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "hvorav enumettede fettsyrer",
+                        "destination": "monoFats",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "hvorav flerumettede fettsyrer",
+                        "destination": "polyFats",
+                        "replace_type": "key",
+                    },
+                    {
+                        "source": "Karbohydrater",
+                        "destination": "carbohydrates",
                         "replace_type": "key",
                     },
                 ],
@@ -478,5 +520,5 @@ class TestWithConfig(TestCase):
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         logging.debug("kolonial product:")
         logging.debug(json.dumps(result, default=str))
-        self.assertEqual(result[0]["mpnIngredients"]["co2"]["key"], "co2")
-        self.assertEqual(9.7, result[0]["mpnNutrition"]["carbohydrates"]["value"])
+        self.assertEqual(result[0]["mpnIngredients"]["vinegar"]["key"], "vinegar")
+        self.assertEqual(16, result[0]["mpnNutrition"]["carbohydrates"]["value"])
