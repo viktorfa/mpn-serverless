@@ -20,9 +20,10 @@ provider:
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
+  versionFunctions: false
 
   memorySize: 2048
-  timeout: 180
+  timeout: 450
 
   environment:
     MONGO_URI: ${env:MONGO_URI}
@@ -34,6 +35,7 @@ provider:
     SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
     HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
+    HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTriggerForPricing"
 
   iamRoleStatements:
     - Effect: Allow
@@ -44,8 +46,17 @@ provider:
     - Effect: "Allow"
       Action:
         - "s3:GetObject"
+        - "s3:GetObjectVersion"
       Resource: !Sub
         - "arn:aws:s3:::#{BucketName}/*"
+        - BucketName:
+            Ref: ScraperFeedBucket
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucketVersions"
+        - "s3:GetBucketVersioning"
+      Resource: !Sub
+        - "arn:aws:s3:::#{BucketName}"
         - BucketName:
             Ref: ScraperFeedBucket
     - Effect: "Allow"
@@ -61,6 +72,11 @@ provider:
         - "lambda:InvokeFunction"
       Resource:
         - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
+    - Effect: Allow
+      Action:
+        - "lambda:InvokeFunction"
+      Resource:
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-scraperFeedWithConfigTriggerForPricing"
 
 package:
   include:
@@ -90,6 +106,10 @@ functions:
     handler: scraper_feed.scraper_handler.trigger_scraper_feed
   scraperFeedWithConfigTrigger:
     handler: scraper_feed.scraper_handler.trigger_scraper_feed_with_config
+  scraperFeedWithConfigTriggerForPricing:
+    handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_with_config
+  scraperFeedPricingHistory:
+    handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
   productFeedSns:
     handler: offer_feed.offer_handler.offer_feed_sns
     events:
@@ -99,6 +119,15 @@ functions:
             Ref: ScraperFeedHandledTopic
   offerFeedTrigger:
     handler: offer_feed.offer_handler.offer_feed_trigger
+  offerFeedMetaTrigger:
+    handler: offer_feed.offer_handler.offer_feed_meta_trigger
+  offerFeedMetaSns:
+    handler: offer_feed.offer_handler.offer_feed_meta_sns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Ref: ScraperFeedHandledTopic
 
   bookFeedTrigger:
     handler: book_feed.handler.handle_book_offers_trigger
@@ -127,6 +156,14 @@ functions:
           method: post
           cors: true
 
+  updatePageviews:
+    handler: scraper_feed.google_anal.pageviews.handle
+    events:
+      - schedule:
+          rate: rate(6 hours)
+          enabled: true
+          description: "Every six hours"
+
 resources:
   - ${file(../s3-sns-cloudformation.yml)}
 
@@ -138,8 +175,9 @@ custom:
   vars: ${file(./sls-config.js)}
   pythonRequirements:
     # dockerizePip: true # Had some problem with C libs in python if using no-linux
-    slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
+    # slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
     # Caching pip
-    useDownloadCache: true
-    useStaticCache: true
+    #useDownloadCache: true
+    #useStaticCache: true
     fileName: requirements.txt
+    # slimPatternsAppendDefaults: false # Weird error with google-api-python-client https://russo.nyc/lambda-distribution-not-found-python/
