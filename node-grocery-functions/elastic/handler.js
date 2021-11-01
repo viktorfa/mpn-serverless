@@ -225,18 +225,18 @@ const migrateOffersToElastic = async (
   let response;
   while (true) {
     response = await elasticClient.listEngines({ page: { current: page } });
-    console.log("Elastic engines response:");
+    console.log(`Elastic engines response for page ${page}:`);
     console.log(response);
     engines.push(...response.results);
     page++;
-    if (engines.length >= response.meta.page.total_results || page === 10) {
+    if (engines.length >= response.meta.page.total_results || page === 20) {
       break;
     }
   }
 
   console.log("Existing elastic engines:");
   console.log(engines);
-  if (!response.results.find(({ name }) => name === engineName)) {
+  if (!engines.find(({ name }) => name === engineName)) {
     console.info(`Did not find existing engine ${engineName}. Creating it.`);
     const createEngineResponse = await elasticClient.createEngine(engineName, {
       language: null,
@@ -251,18 +251,27 @@ const migrateOffersToElastic = async (
     .value();
 
   const elasticResult = [];
+  const elasticResponsePromises = [];
 
   for (const chunk of elasticPromises) {
-    const elasticChunkResult = await indexElasticDocuments(
+    const elasticChunkResponse = indexElasticDocuments(
       chunk,
       engineName,
       elasticClient,
     );
-    elasticResult.push(...elasticChunkResult);
-    console.log(
-      `Indexed ${elasticChunkResult.length} objects to elastic in engine ${engineName}.`,
-    );
+    elasticResponsePromises.push(elasticChunkResponse);
+    console.log(`Indexing ${chunkSize} documents`);
   }
+
+  const elasticResponses = await Promise.all(elasticResponsePromises);
+
+  elasticResponses.forEach((x) => {
+    elasticResult.push(...x);
+  });
+
+  console.log(
+    `Indexed ${elasticResult.length} objects to elastic in engine ${engineName}.`,
+  );
 
   const errors = _.flatten(elasticResult.map(({ errors }) => errors));
   console.info(`Errors from elastic indexing: ${errors.length}`);
