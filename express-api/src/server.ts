@@ -7,7 +7,7 @@ const Sentry = require("@sentry/serverless");
 
 Sentry.AWSLambda.init({
   // 1 of every 1000 transactions are sampled for performance monitoring
-  tracesSampleRate: 0.001,
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.001 : 1.0,
 });
 
 if (process.env.NODE_ENV === "test") {

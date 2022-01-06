@@ -1,4 +1,5 @@
 service: node-express-read-api
+variablesResolutionMode: 20210326
 
 provider:
   name: aws
@@ -8,15 +9,16 @@ provider:
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-grocery-admin
   memorySize: 512
+  versionFunctions: false
   apiGateway:
     minimumCompressionSize: 1024
 
   environment:
-    MONGO_URI: ${env:MONGO_URI}
-    MONGO_DATABASE: ${env:MONGO_DATABASE}
-    ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
-    ELASTIC_URL: ${env:ELASTIC_URL}
-    SENTRY_DSN: ${env:SENTRY_DSN}
+    MONGO_URI: ${self:custom.vars.MONGO_URI}
+    MONGO_DATABASE: ${self:custom.vars.MONGO_DATABASE}
+    ELASTIC_API_KEY: ${self:custom.vars.ELASTIC_API_KEY}
+    ELASTIC_URL: ${self:custom.vars.ELASTIC_URL}
+    SENTRY_DSN: ${self:custom.vars.SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
     STAGE: ${self:custom.vars.stage, "dev"}
 
