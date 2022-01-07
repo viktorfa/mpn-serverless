@@ -1,8 +1,20 @@
 import { router } from "typera-express";
 import { Router } from "express";
 
-import { getByKey, list } from "@/api/controllers/categories.controller";
+import {
+  getAllCategoriesForDealer,
+  getCategoryMappingsForDealer,
+  list,
+  getByKey,
+  setMapping,
+} from "@/api/controllers/categories.controller";
 
-const routes: Router = router(list, getByKey).handler();
+const routes: Router = router(
+  getAllCategoriesForDealer,
+  getCategoryMappingsForDealer,
+  list,
+  getByKey,
+  setMapping,
+).handler();
 
 export default routes;

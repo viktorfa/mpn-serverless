@@ -11,7 +11,7 @@ import {
   getTagsForBiRelation,
   removeTagFromBiRelation,
 } from "../services/offer-relations";
-import { get, flatten } from "lodash";
+import { flatten } from "lodash";
 import { marketQueryParams } from "./typera-types";
 import { ObjectId } from "bson";
 
@@ -19,6 +19,7 @@ const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
   market: t.union([t.string, t.undefined]),
+  dealer: t.union([t.string, t.undefined]),
 });
 
 export const getOfferGroups: Route<
@@ -27,15 +28,19 @@ export const getOfferGroups: Route<
   .get("/")
   .use(Parser.query(offerGroupsQueryParams))
   .handler(async (request) => {
-    const { tags, limit, market } = request.query;
+    const { tags, limit, market, dealer } = request.query;
 
     let biRelationIds: string[] = [];
     let biRelations = [];
     const biRelationCollection = await getOfferBiRelationsCollection();
 
     const offerFilter: { market?: string } = {};
+    const biRelationFilter: { offerSet?: object } = {};
     if (market) {
       offerFilter.market = market;
+    }
+    if (dealer) {
+      biRelationFilter.offerSet = { $regex: dealer };
     }
     if (tags) {
       biRelationIds = await getBiRelationsForTags(
@@ -43,11 +48,17 @@ export const getOfferGroups: Route<
         limit ? Number.parseInt(limit) : undefined,
       );
       biRelations = await biRelationCollection
-        .find({ _id: { $in: biRelationIds.map((x) => new ObjectId(x)) } })
+        .find({
+          ...biRelationFilter,
+          _id: { $in: biRelationIds.map((x) => new ObjectId(x)) },
+        })
         .limit(32)
         .toArray();
     } else {
-      biRelations = await biRelationCollection.find({}).limit(32).toArray();
+      biRelations = await biRelationCollection
+        .find({ ...biRelationFilter })
+        .limit(32)
+        .toArray();
     }
     const offerUris = flatten(biRelations.map((x) => x.offerSet));
     const offers = await getOffersByUris(offerUris, offerFilter, null);

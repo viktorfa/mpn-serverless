@@ -19,5 +19,6 @@ export const offerTagsCollectionName = "offertags";
 export const offerBiRelationTagsCollectionName = "offerbirelationtags";
 
 export const mpnCategoriesCollectionName = "mpncategories";
+export const mpnCategoryMappingsCollectionName = "mpncategorymappings";
 export const spiderrunsCollectionName = "spiderruns";
 export const handlerunsCollectionName = "handleruns";
