@@ -2,6 +2,7 @@ import { router } from "typera-express";
 import { Router } from "express";
 
 import {
+  offerPricingHistory,
   list,
   find,
   promoted,
@@ -25,6 +26,7 @@ import {
 } from "@/api/controllers/search.controller";
 
 const routes: Router = router(
+  offerPricingHistory,
   getOfferGroups,
   list,
   promoted,

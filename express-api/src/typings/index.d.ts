@@ -221,3 +221,9 @@ type UriOfferGroup = {
   _id?: string;
   relationType?: string;
 };
+
+interface PricingHistoryObject {
+  pricing: Pricing;
+  date: string;
+  uri: string;
+}
