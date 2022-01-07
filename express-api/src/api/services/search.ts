@@ -57,6 +57,7 @@ export const searchWithFilter = async ({
   price,
   sort,
   boosts,
+  precision = 4,
 }: {
   query: string;
   engineName: string;
@@ -67,6 +68,7 @@ export const searchWithFilter = async ({
   price?: { from?: number; to?: number };
   sort?: { [key: string]: "desc" | "asc" };
   boosts?: AppSearchOfferBoosts;
+  precision?: number;
 }): Promise<{ items: MpnResultOffer[]; facets: any; meta: any }> => {
   const elasticClient = await getElasticClient();
   if (query.length > 127) {
@@ -114,7 +116,7 @@ export const searchWithFilter = async ({
   }
   const searchOptions: AppSearchParams = {
     page: { size: limit, current: page },
-    precision: 4,
+    precision,
     filters,
     facets,
   };

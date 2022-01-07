@@ -1,5 +1,5 @@
 import { getCollection } from "@/config/mongo";
-import { flatten, intersection } from "lodash";
+import { flatten } from "lodash";
 import { ObjectId, FindOneOptions, FilterQuery } from "mongodb";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import {
@@ -22,14 +22,18 @@ const getFindOneFilter = (
 export const findOne = async (id: string): Promise<MpnMongoOffer> => {
   const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
-  return offersCollection.findOne<MpnMongoOffer>(filter, {
+  const offer = await offersCollection.findOne<MpnMongoOffer>(filter, {
     projection: defaultOfferProjection,
   });
+  const offerWithDealer = await addDealerToOffers({ offers: [offer] });
+  return offerWithDealer[0];
 };
 export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
   const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
-  return offersCollection.findOne<FullMpnOffer>(filter);
+  const offer = await offersCollection.findOne<FullMpnOffer>(filter);
+  const offerWithDealer = await addDealerToOffers({ offers: [offer] });
+  return offerWithDealer[0];
 };
 
 export const getOffersForSiteCollection = async (
@@ -176,18 +180,20 @@ export const getOffersInUriGroups = async (
 
   const offers = await getOffersByUris(uris, filter, defaultOfferProjection);
 
-  const uriToOfferMap = offers.reduce((acc, offer) => {
+  const offersWithDealer = await addDealerToOffers({ offers });
+
+  const uriToOfferMap = offersWithDealer.reduce((acc, offer) => {
     return { ...acc, [offer.uri]: offer };
   }, {});
 
   const result: SimilarOffersObject[] = [];
   offerGroups.forEach((offerGroup) => {
-    const offers = offerGroup.uris
+    const groupOffers = offerGroup.uris
       .filter((uri) => !!uriToOfferMap[uri])
       .map((uri) => uriToOfferMap[uri]);
     if (offers.length > 0) {
       result.push({
-        offers,
+        offers: groupOffers,
         title: offerGroup.title ?? offers[0].title,
         _id: offerGroup._id,
         relationType: offerGroup.relationType,
@@ -217,4 +223,65 @@ export const getSimilarGroupedOffersFromOfferUris = async (
   });
 
   return getOffersInUriGroups(offerGroups, filter);
+};
+
+const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
+
+export const getOffersWithDealer = async ({
+  selection,
+  projection = defaultOfferProjection,
+  sort = {},
+  limit = 30,
+}) => {
+  console.time();
+  const offersCollection = await getCollection(offerCollectionName);
+  console.timeEnd();
+  console.time();
+  const offers = await offersCollection
+    .find(selection)
+    .project(projection)
+    .sort(sort)
+    .limit(limit)
+    .toArray();
+  console.timeEnd();
+
+  const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
+  console.time();
+  const dealerCollection = await getCollection("dealers");
+  const dealers = await dealerCollection
+    .find({ key: { $in: dealerKeys } })
+    .project(defaultDealerProjection)
+    .toArray();
+  console.timeEnd();
+  const dealerMap = {};
+  dealers.forEach((dealer) => {
+    dealerMap[dealer.key] = dealer;
+  });
+
+  const result = offers.map((offer) => {
+    return { ...offer, dealerObject: dealerMap[offer.dealer] };
+  });
+
+  return result;
+};
+
+export const addDealerToOffers = async ({ offers }) => {
+  const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
+  console.time();
+  const dealerCollection = await getCollection("dealers");
+  const dealers = await dealerCollection
+    .find({ key: { $in: dealerKeys } })
+    .project(defaultDealerProjection)
+    .toArray();
+  console.timeEnd();
+  const dealerMap = {};
+  dealers.forEach((dealer) => {
+    dealerMap[dealer.key] = dealer;
+  });
+
+  const result = offers.map((offer) => {
+    return { ...offer, dealerObject: dealerMap[offer.dealer] || null };
+  });
+
+  return result;
 };

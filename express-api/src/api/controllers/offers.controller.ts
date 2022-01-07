@@ -2,9 +2,11 @@ import _ from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
+  addDealerToOffers,
   addTagToOffers,
   findOne,
   findOneFull,
+  getOffersWithDealer,
   getOfferUrisForTags,
   getSimilarGroupedOffersFromOfferUris,
   getTagsForOffer,
@@ -31,6 +33,7 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { getQuantityObject, getValueObject } from "../utils/quantity";
+import { getPricingHistory } from "../services/pricing-history";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
@@ -72,11 +75,14 @@ export const list: Route<
 
     const offerCollection = await getCollection(offerCollectionName);
 
-    const result = await offerCollection
-      .find(selection, defaultOfferProjection)
+    const offers = await offerCollection
+      .find(selection)
+      .project(defaultOfferProjection)
       .sort({ pageviews: -1, url_fingerprint: 1 })
       .limit(_limit)
       .toArray();
+
+    const result = await addDealerToOffers({ offers });
 
     return Response.ok({ items: result });
   });
@@ -136,13 +142,13 @@ const similarHandler = async (request) => {
 
   //if (useSearch === true || !offerHasSimilarOffers) {
   if (!offerHasSimilarOffers) {
-    return Response.ok(
-      await searchElastic(
-        offer.title.substring(0, 127),
-        getEngineName(productCollection),
-        32,
-      ),
+    const result = await searchElastic(
+      offer.title.substring(0, 127),
+      getEngineName(productCollection),
+      32,
     );
+    const resultWithDealer = await addDealerToOffers({ offers: result });
+    return Response.ok(resultWithDealer);
   }
 
   const now = getNowDate();
@@ -169,20 +175,20 @@ const similarHandler = async (request) => {
     console.warn(
       `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
     );
-    return Response.ok(
-      await searchElastic(
-        offer.title.substring(0, 127),
-        getEngineName(productCollection),
-        32,
-      ),
+    const result = await searchElastic(
+      offer.title.substring(0, 127),
+      getEngineName(productCollection),
+      32,
     );
+    const resultWithDealer = await addDealerToOffers({ offers: result });
+    return Response.ok(resultWithDealer);
   }
   const result = similarOffers.map((x, i) => ({
     ...x,
     score: offer.similarOffers[i].score,
   }));
-
-  return Response.ok(result);
+  const resultWithDealer = await addDealerToOffers({ offers: result });
+  return Response.ok(resultWithDealer);
 };
 
 const similarOffersQueryParams = t.type({
@@ -267,8 +273,16 @@ export const extra: Route<
       engineName,
       limit: _limit,
       boosts,
+      precision: 2,
     });
-    return Response.ok(searchResults.items.filter((x) => x.score > 1));
+    searchResults.items = searchResults.items.filter(
+      (offer) => offer.score > 1,
+    );
+    searchResults.items = await addDealerToOffers({
+      offers: searchResults.items,
+    });
+
+    return Response.ok(searchResults.items);
   });
 
 export const similarExtra: Route<
@@ -298,7 +312,13 @@ export const similarExtra: Route<
     const query = offer.title.substring(0, 127);
 
     const searchResults = await searchElastic(query, "extraoffers", _limit);
-    return Response.ok(searchResults.filter((offer) => offer.score > 20));
+
+    const filteredOffers = searchResults.filter((offer) => offer.score > 20);
+    const offersWithDealer = await addDealerToOffers({
+      offers: filteredOffers,
+    });
+
+    return Response.ok(offersWithDealer);
   });
 
 const similarFromExtraOffersQueryParams = t.type({
@@ -337,7 +357,12 @@ export const similarFromExtra: Route<
       _limit,
     );
 
-    return Response.ok(searchResults.filter((offer) => offer.score > 10));
+    const filteredOffers = searchResults.filter((offer) => offer.score > 10);
+    const offersWithDealer = await addDealerToOffers({
+      offers: filteredOffers,
+    });
+
+    return Response.ok(offersWithDealer);
   });
 
 export const promoted: Route<
@@ -383,7 +408,9 @@ export const promoted: Route<
       result.push(...extraOffers);
     }
 
-    return Response.ok(_.take(result, _limit));
+    const limitedResult = _.take(result, _limit);
+    const dealerResult = await addDealerToOffers({ offers: limitedResult });
+    return Response.ok(dealerResult);
   });
 
 export const find: Route<
@@ -437,9 +464,13 @@ export const relatedOffers: Route<
         .project(defaultOfferProjection)
         .toArray();
 
+      const offersWithDealer = await addDealerToOffers({ offers });
+
       return Response.ok({
-        identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
-        interchangeable: offers.filter((offer) =>
+        identical: offersWithDealer.filter((offer) =>
+          identicalUris.includes(offer.uri),
+        ),
+        interchangeable: offersWithDealer.filter((offer) =>
           interchangeableUris.includes(offer.uri),
         ),
       });
@@ -576,3 +607,17 @@ export const getOfferGroups: Route<
       ),
     });
   });
+
+export const offerPricingHistory: Route<
+  Response.Ok<object> | Response.NotFound | Response.BadRequest<string>
+> = route.get("/:id/pricing").handler(async (request) => {
+  const offer = await findOne(request.routeParams.id);
+
+  if (!offer) {
+    return Response.notFound();
+  }
+
+  const pricingObjects = await getPricingHistory({ uri: offer.uri });
+
+  return Response.ok(pricingObjects);
+});

@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { Parser, Response, Route, route, URL } from "typera-express";
+import { Parser, Response, Route, route } from "typera-express";
 import * as t from "io-ts";
 import {
   search as searchElastic,
@@ -13,6 +13,7 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { findByKeys } from "../services/categories";
+import { addDealerToOffers } from "../services/offers";
 
 export const getEngineName = (productCollectionName: string): string => {
   if (stage === "prod") {
@@ -138,6 +139,8 @@ export const search: Route<
         result.categories[x.key] = x;
       });
     }
+
+    result.items = await addDealerToOffers({ offers: result.items });
     return Response.ok(result);
   });
 
