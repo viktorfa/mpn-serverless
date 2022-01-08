@@ -89,6 +89,38 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "debyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "dkgroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "dkbyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "ukbyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "ukgroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "ukbeautyoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "usbyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "usgroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "usbeautyoffers"
 
   deleteOffersFromElastic:
     handler: elastic/handler.handleTriggerDeleteEvent
@@ -114,6 +146,10 @@ functions:
           input:
             engineName: extraoffers
       - schedule:
+          rate: rate(41 minutes)
+          input:
+            engineName: seextraoffers
+      - schedule:
           rate: rate(70 minutes)
           input:
             engineName: beautyoffers
@@ -129,6 +165,46 @@ functions:
           rate: rate(68 minutes)
           input:
             engineName: debyggoffers
+      - schedule:
+          rate: rate(75 minutes)
+          input:
+            engineName: ukbeautyoffers
+      - schedule:
+          rate: rate(72 minutes)
+          input:
+            engineName: ukgroceryoffers
+      - schedule:
+          rate: rate(68 minutes)
+          input:
+            engineName: ukbyggoffers
+      - schedule:
+          rate: rate(75 minutes)
+          input:
+            engineName: usbeautyoffers
+      - schedule:
+          rate: rate(72 minutes)
+          input:
+            engineName: usgroceryoffers
+      - schedule:
+          rate: rate(68 minutes)
+          input:
+            engineName: usbyggoffers
+      - schedule:
+          rate: rate(72 minutes)
+          input:
+            engineName: dkgroceryoffers
+      - schedule:
+          rate: rate(68 minutes)
+          input:
+            engineName: dkbyggoffers
+      - schedule:
+          rate: rate(73 minutes)
+          input:
+            engineName: figroceryoffers
+      - schedule:
+          rate: rate(65 minutes)
+          input:
+            engineName: fibyggoffers
 
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
