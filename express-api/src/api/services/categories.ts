@@ -11,9 +11,9 @@ export const findOne = async ({
 }): Promise<MpnCategory> => {
   const categoriesCollection = await getCollection(mpnCategoriesCollectionName);
   if (id) {
-    return categoriesCollection.findOne({ _id: new ObjectId(id) });
+    return categoriesCollection.findOne<MpnCategory>({ _id: new ObjectId(id) });
   } else if (key) {
-    return categoriesCollection.findOne({ key });
+    return categoriesCollection.findOne<MpnCategory>({ key });
   } else {
     throw new Error("Need uri or id to get category");
   }
@@ -24,5 +24,7 @@ export const findByKeys = async ({
   keys: string[];
 }): Promise<MpnCategory[]> => {
   const categoriesCollection = await getCollection(mpnCategoriesCollectionName);
-  return categoriesCollection.find({ key: { $in: keys } }).toArray();
+  return categoriesCollection
+    .find<MpnCategory>({ key: { $in: keys } })
+    .toArray();
 };

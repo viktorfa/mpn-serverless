@@ -15,7 +15,7 @@ const productCollectionQueryParams = t.type({
   productCollection: t.string,
 });
 
-const addOfferRelationBody = t.type({
+const addOfferReviewBody = t.type({
   review: t.type({
     body: t.string,
     author: t.string,
@@ -36,7 +36,7 @@ export const add: Route<
   | Response.BadRequest<string>
 > = route
   .post("/")
-  .use(Parser.body(addOfferRelationBody))
+  .use(Parser.body(addOfferReviewBody))
   .handler(async (request) => {
     const offer = await findOne(request.body.review.uri);
     if (!offer) {
@@ -57,7 +57,7 @@ export const remove: Route<
 > = route.delete("/:id").handler(async (request) => {
   const createReviewResult = await removeReview(request.routeParams.id);
 
-  if (createReviewResult.nModified > 0) {
+  if (createReviewResult > 0) {
     return Response.noContent();
   } else {
     return Response.notFound(
@@ -70,7 +70,7 @@ export const approve: Route<
 > = route.put("/:id/approve").handler(async (request) => {
   const createReviewResult = await approveReview(request.routeParams.id);
 
-  if (createReviewResult.nModified > 0) {
+  if (createReviewResult > 0) {
     return Response.noContent();
   } else {
     return Response.notFound(
@@ -85,12 +85,14 @@ export const getReviews: Route<
   const reviewCollection = await getCollection(offerReviewsCollectionName);
   if (get(request, ["user", "role"]) === "admin") {
     return Response.ok(
-      await reviewCollection.find({ uri: request.routeParams.uri }).toArray(),
+      await reviewCollection
+        .find<OfferReview>({ uri: request.routeParams.uri })
+        .toArray(),
     );
   } else {
     return Response.ok(
       await reviewCollection
-        .find({ uri: request.routeParams.uri, status: "enabled" })
+        .find<OfferReview>({ uri: request.routeParams.uri, status: "enabled" })
         .toArray(),
     );
   }

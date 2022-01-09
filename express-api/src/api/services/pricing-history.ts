@@ -6,7 +6,10 @@ import { getCollection } from "@/config/mongo";
 export const getPricingHistory = async ({ uri }) => {
   const offerPricingCollection = await getCollection("offerpricings");
   const pricingHistory: PricingHistoryObject[] = uniqBy(
-    await offerPricingCollection.find({ uri }).sort({ date: 1 }).toArray(),
+    await offerPricingCollection
+      .find<PricingHistoryObject>({ uri })
+      .sort({ date: 1 })
+      .toArray(),
     (x) => x.date,
   );
   if (pricingHistory.length > 0) {

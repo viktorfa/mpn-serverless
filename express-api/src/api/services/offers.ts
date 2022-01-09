@@ -1,6 +1,6 @@
 import { getCollection } from "@/config/mongo";
 import { flatten } from "lodash";
-import { ObjectId, FindOneOptions, FilterQuery } from "mongodb";
+import { ObjectId, Filter } from "mongodb";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import {
   offerCollectionName,
@@ -33,13 +33,13 @@ export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
   let filter = getFindOneFilter(id);
   const offer = await offersCollection.findOne<FullMpnOffer>(filter);
   const offerWithDealer = await addDealerToOffers({ offers: [offer] });
-  return offerWithDealer[0];
+  return offerWithDealer[0] as FullMpnOffer;
 };
 
 export const getOffersForSiteCollection = async (
   siteCollection: string,
-  selection: FilterQuery<FullMpnOffer> = {},
-  projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
+  selection: Filter<MpnOffer> = {},
+  projection = defaultOfferProjection,
   limit: number = 30,
 ): Promise<MpnOffer[]> => {
   const now = getNowDate();
@@ -49,8 +49,8 @@ export const getOffersForSiteCollection = async (
 };
 
 export const getOffers = async (
-  selection: FilterQuery<FullMpnOffer> = {},
-  projection: FindOneOptions<FullMpnOffer> = defaultOfferProjection,
+  selection: Filter<MpnMongoOffer> = {},
+  projection = defaultOfferProjection,
   limit = 30,
   includeExpired = false,
 ): Promise<MpnOffer[]> => {
@@ -59,7 +59,11 @@ export const getOffers = async (
     const now = getNowDate();
     selection.validThrough = { $gte: now };
   }
-  return offersCollection.find(selection, projection).limit(limit).toArray();
+  return offersCollection
+    .find(selection)
+    .project<MpnOffer>(projection)
+    .limit(limit)
+    .toArray();
 };
 
 export const getOffersByUris = async (
@@ -156,13 +160,13 @@ export const removeTagFromOffers = async (offerUris: string[], tag: string) => {
   return tagsCollection.bulkWrite(writeOperations);
 };
 
-export const getTagsForOffer = async (uri: string): Promise<string[]> => {
+export const getTagsForOffer = async (uri: string): Promise<OfferTag[]> => {
   const tagsCollection = await getCollection(offerTagsCollectionName);
 
   const now = getNowDate();
 
   return tagsCollection
-    .find({
+    .find<OfferTag>({
       uri,
       $or: [
         { validThrough: { $gte: now } },
@@ -265,7 +269,7 @@ export const getOffersWithDealer = async ({
   return result;
 };
 
-export const addDealerToOffers = async ({ offers }) => {
+export const addDealerToOffers = async <T = MpnOffer>({ offers }) => {
   const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
   console.time();
   const dealerCollection = await getCollection("dealers");
@@ -280,7 +284,10 @@ export const addDealerToOffers = async ({ offers }) => {
   });
 
   const result = offers.map((offer) => {
-    return { ...offer, dealerObject: dealerMap[offer.dealer] || null };
+    return {
+      ...offer,
+      dealerObject: dealerMap[offer.dealer] || { key: offer.dealer },
+    };
   });
 
   return result;

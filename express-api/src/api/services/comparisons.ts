@@ -9,17 +9,19 @@ import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 
 export const getComparisonConfig = async (
   categories?: string[],
-): Promise<ComparisonConfig> => {
+): Promise<ComparisonConfig[]> => {
   const borsCollection = await getCollection(categoryComparisonsCollectionName);
   if (categories) {
-    return borsCollection.find({ category: { $in: categories } }).toArray();
+    return borsCollection
+      .find<ComparisonConfig>({ category: { $in: categories } })
+      .toArray();
   } else {
-    return borsCollection.find().toArray();
+    return borsCollection.find<ComparisonConfig>({}).toArray();
   }
 };
 export const getComparisonInstance = async (
   categories: string[],
-): Promise<ComparisonInstance> => {
+): Promise<ComparisonInstance[]> => {
   const now = new Date();
 
   const comparisonConfig = await getComparisonConfig(categories);
@@ -39,27 +41,38 @@ export const getComparisonInstance = async (
   };
   const collection = await getCollection(offerCollectionName);
   const offers = await collection
-    .find(selection, defaultOfferProjection)
-    .project(defaultOfferProjection)
+    .find(selection)
+    .project<MpnOffer>(defaultOfferProjection)
     .toArray();
 
-  const offerMap = offers.reduce(
-    (acc, offer) => ({ ...acc, [offer.uri]: offer }),
-    {},
-  );
-
-  const result = [];
+  const offerMap: { [key: string]: MpnOffer } = {};
+  offers.forEach((offer) => {
+    offerMap[offer.uri] = offer;
+  });
+  const result: ComparisonInstance[] = [];
 
   for (const productConfig of comparisonConfig) {
-    for (const dealerConfig of Object.values(
+    const comparisonInstance: ComparisonInstance = {
+      category: productConfig.category,
+      name: productConfig.name,
+      productCollection: productConfig.productCollection,
+      quantityUnit: productConfig.quantityUnit,
+      quantityValue: productConfig.quantityValue,
+      title: productConfig.title,
+      useUnitPrice: productConfig.useUnitPrice,
+      dealers: {},
+    };
+    for (const [dealerKey, dealerConfig] of Object.entries(
       productConfig.dealers,
-    ) as DealerInstance[]) {
+    )) {
+      const dealerInstance = { ...dealerConfig, product: null };
       const uri = _.get(dealerConfig, "uri");
       if (uri) {
-        dealerConfig.product = offerMap[uri];
+        dealerInstance.product = offerMap[uri];
       }
+      comparisonInstance.dealers[dealerKey] = dealerInstance;
     }
-    result.push(productConfig);
+    result.push(comparisonInstance);
   }
 
   return result;

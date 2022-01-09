@@ -16,6 +16,7 @@ import {
   extra,
   putOfferQuantity,
   getOfferGroups,
+  findByGtin,
 } from "@/api/controllers/offers.controller";
 import {
   search,
@@ -45,6 +46,7 @@ const routes: Router = router(
   postAddTagToOffers,
   getTagsForOfferHandler,
   putRemoveTagFromOffers,
+  findByGtin,
 ).handler();
 
 export default routes;

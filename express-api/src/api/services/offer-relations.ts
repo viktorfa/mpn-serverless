@@ -116,7 +116,7 @@ export const getOfferBiRelations = async (
     offerBiRelationsCollectionName,
   );
   const relationObjects = await biRelationsOffersCollection
-    .find({
+    .find<IdenticalOfferRelation>({
       offerSet: uri,
     })
     .toArray();
@@ -139,7 +139,7 @@ export const getBiRelationsForOfferUris = async (
   );
   const biRelations: IdenticalOfferRelation[] =
     await biRelationsOffersCollection
-      .find({
+      .find<IdenticalOfferRelation>({
         offerSet: { $in: uris },
         ...filter,
       })
@@ -160,7 +160,7 @@ export const getBiRelationById = async (
     offerBiRelationsCollectionName,
   );
   const result: IdenticalOfferRelation =
-    await biRelationsOffersCollection.findOne({
+    await biRelationsOffersCollection.findOne<IdenticalOfferRelation>({
       _id: new ObjectId(id),
     });
 
@@ -196,13 +196,13 @@ export const removeTagFromBiRelation = async (
 
 export const getTagsForBiRelation = async (
   biRelationId: string,
-): Promise<string[]> => {
+): Promise<OfferTag[]> => {
   const tagsCollection = await getCollection(offerBiRelationTagsCollectionName);
 
   const now = getNowDate();
 
   return tagsCollection
-    .find({
+    .find<OfferTag>({
       biRelationId,
       $or: [
         { validThrough: { $gte: now } },

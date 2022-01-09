@@ -1,14 +1,13 @@
-import mongodb, { Collection, MongoClient } from "mongodb";
+import { Collection, MongoClient } from "mongodb";
 
 import { mongoUri, mongoDatabase } from "./vars";
 
 let client: MongoClient = null;
 
 const connectToMongo = async (): Promise<MongoClient> => {
-  if (!client || !client.isConnected()) {
+  if (!client) {
     console.log(`Connecting to: ${mongoUri}`);
-    client = await mongodb.MongoClient.connect(mongoUri, {
-      useUnifiedTopology: true,
+    client = await MongoClient.connect(mongoUri, {
       keepAlive: true,
     });
   } else {

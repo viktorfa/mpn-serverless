@@ -32,6 +32,7 @@ const defaultOfferFields = [
   "mpnNutrition",
   "mpnIngredients",
   "mpnCategories",
+  "market",
 ];
 
 export const defaultOfferProjection = defaultOfferFields.reduce(
@@ -75,6 +76,7 @@ export const elasticOfferToMpnOffer = (
     provenance: elasticOffer.provenance.raw,
     gtins: getJsonFromRaw<Record<string, string>>(elasticOffer.gtins),
     mpnStock: elasticOffer.mpn_stock?.raw,
+    market: elasticOffer.market?.raw,
 
     score: elasticOffer._meta.score,
   };
@@ -119,6 +121,7 @@ export const mpnOfferToElasticOffer = (
     provenance: offer.provenance,
     gtins: get(offer, ["gtins"], {}),
     mpn_stock: offer.mpnStock || "",
+    market: offer.market || "",
 
     pricing: offer.pricing || {},
     value: offer.value || {},

@@ -24,5 +24,16 @@ interface OfferInstance {
   dealers: { [dealer: string]: DealerInstance };
 }
 
-type ComparisonConfig = OfferConfig[];
-type ComparisonInstance = OfferInstance[];
+interface ComparisonConfig extends OfferConfigBase {
+  dealers: { [dealer: string]: DealerConfig };
+}
+interface ComparisonInstance {
+  dealers: { [dealer: string]: DealerInstance };
+  category: string;
+  name: string;
+  productCollection: string;
+  quantityUnit?: string;
+  quantityValue?: number;
+  title: string;
+  useUnitPrice: boolean;
+}

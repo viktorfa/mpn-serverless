@@ -63,6 +63,7 @@ interface MpnOffer {
   provenance: string;
   gtins?: Record<string, string>;
   mpnStock: string;
+  market: string;
 }
 interface MpnMongoOffer extends MpnOffer {
   readonly _id: { toString(): string };
@@ -103,6 +104,7 @@ interface ElasticMpnOffer {
   provenance: string;
   gtins: Record<string, string>;
   mpn_stock: string;
+  market: string;
 }
 
 interface RawField<
@@ -138,6 +140,7 @@ interface ElasticMpnOfferRaw {
   provenance: RawField;
   gtins?: RawField<Record<string, string>>;
   mpn_stock: RawField;
+  market: RawField;
 
   quantity: RawField;
   value: RawField;
@@ -204,6 +207,14 @@ interface MpnCategory {
   key: string;
   level: number;
   parent: string;
+}
+
+interface MpnCategoryInTree {
+  text: string;
+  key: string;
+  level: number;
+  parentObject: null | MpnCategory;
+  children: MpnCategory[];
 }
 
 type ListResponse<T> = {

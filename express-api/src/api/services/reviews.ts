@@ -12,7 +12,7 @@ export const addReview = async (
     status: reviewStatus,
     ...review,
   });
-  return mongoResult.result;
+  return mongoResult.insertedId;
 };
 
 export const removeReview = async (reviewId: string) => {
@@ -27,7 +27,7 @@ export const removeReview = async (reviewId: string) => {
     },
     { upsert: false },
   );
-  return mongoResult.result;
+  return mongoResult.modifiedCount;
 };
 
 export const approveReview = async (reviewId: string) => {
@@ -42,5 +42,5 @@ export const approveReview = async (reviewId: string) => {
     },
     { upsert: false },
   );
-  return mongoResult.result;
+  return mongoResult.modifiedCount;
 };

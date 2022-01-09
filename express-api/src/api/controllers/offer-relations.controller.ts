@@ -57,7 +57,7 @@ export const addIdenticalOffers: Route<
     }
     const offersCollection = await getCollection(offerCollectionName);
     const targetOffers = await offersCollection
-      .find({
+      .find<MpnMongoOffer>({
         uri: { $in: request.body.targetUris },
       })
       .toArray();

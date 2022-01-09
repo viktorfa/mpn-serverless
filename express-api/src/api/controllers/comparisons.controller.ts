@@ -6,6 +6,7 @@ import {
   getComparisonConfig,
   getComparisonInstance,
 } from "../services/comparisons";
+import { UpdateResult, InsertOneResult } from "mongodb";
 
 const comparisonDataQueryParams = t.type({
   categories: t.union([t.string, t.undefined]),
@@ -15,7 +16,7 @@ const comparisonQueryParams = t.type({
 });
 
 export const getData: Route<
-  Response.Ok<ComparisonConfig> | Response.BadRequest<string>
+  Response.Ok<ComparisonConfig[]> | Response.BadRequest<string>
 > = route
   .get("/data")
   .use(Parser.query(comparisonDataQueryParams))
@@ -27,7 +28,7 @@ export const getData: Route<
   });
 
 export const getBors: Route<
-  Response.Ok<ComparisonInstance> | Response.BadRequest<string>
+  Response.Ok<ComparisonInstance[]> | Response.BadRequest<string>
 > = route
   .get("/")
   .use(Parser.query(comparisonQueryParams))
@@ -61,7 +62,7 @@ export const putOffer: Route<
   .use(Parser.body(putComparisonRequestBody))
   .handler(async (request) => {
     const result = await addOfferToComparisons(request.body);
-    if (result.result.ok) {
+    if (result.modifiedCount > 0) {
       return Response.noContent();
     }
     return Response.internalServerError(`Could not add offer to comparison.`);
@@ -86,7 +87,9 @@ export const putConfig: Route<
   .use(Parser.body(putComparisonConfigRequestBody))
   .handler(async (request) => {
     const result = await createOrUpdateComparisonConfig(request.body);
-    if (result.result.ok) {
+    if (result["modifiedCount"]) {
+      return Response.noContent();
+    } else if (result["insertedId"]) {
       return Response.noContent();
     }
     return Response.internalServerError(`Could not add offer to comparison.`);

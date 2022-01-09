@@ -23,7 +23,7 @@ import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
-import { FilterQuery } from "mongodb";
+import { Filter } from "mongodb";
 import { offerCollectionName } from "../utils/constants";
 import {
   getLimitFromQueryParam,
@@ -57,7 +57,7 @@ export const list: Route<
 
     let _limit = getLimitFromQueryParam(limit, 32, 128);
 
-    const selection: FilterQuery<FullMpnOffer> = {
+    const selection: Filter<FullMpnOffer> = {
       siteCollection: productCollection,
     };
     if (tags) {
@@ -77,7 +77,7 @@ export const list: Route<
 
     const offers = await offerCollection
       .find(selection)
-      .project(defaultOfferProjection)
+      .project<MpnOffer>(defaultOfferProjection)
       .sort({ pageviews: -1, url_fingerprint: 1 })
       .limit(_limit)
       .toArray();
@@ -169,7 +169,9 @@ const similarHandler = async (request) => {
       $project: defaultOfferProjection,
     },
   ];
-  const similarOffers = await offersCollection.aggregate(pipeline).toArray();
+  const similarOffers = await offersCollection
+    .aggregate<MpnOffer>(pipeline)
+    .toArray();
 
   if (similarOffers.length === 0) {
     console.warn(
@@ -388,7 +390,8 @@ export const promoted: Route<
     const offerCollection = await getCollection(offerCollectionName);
 
     const promotedOffers = await offerCollection
-      .find(selection, defaultOfferProjection)
+      .find(selection)
+      .project<MpnOffer>(defaultOfferProjection)
       .limit(_limit)
       .toArray();
 
@@ -401,7 +404,7 @@ export const promoted: Route<
           siteCollection: productCollection,
           isPromotionRestricted: { $ne: true },
         })
-        .project(defaultOfferProjection)
+        .project<MpnOffer>(defaultOfferProjection)
         .sort({ pageviews: -1 })
         .limit(_limit - promotedOffers.length)
         .toArray();
@@ -431,6 +434,48 @@ export const find: Route<
   }
 });
 
+export const findByGtin: Route<
+  Response.Ok<{ items: MpnOffer[] }> | Response.BadRequest<string>
+> = route
+  .get("/gtin/:gtin")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const offerCollection = await getCollection(offerCollectionName);
+    const offers = await offerCollection
+      .find({
+        $or: [
+          { "gtins.ean": request.routeParams.gtin },
+          { "gtins.gtin12": request.routeParams.gtin },
+          { "gtins.gtin13": request.routeParams.gtin },
+          { "gtins.nobb": request.routeParams.gtin },
+          { "gtins.isbn": request.routeParams.gtin },
+        ],
+      })
+      .project<MpnOffer>(defaultOfferProjection)
+      .toArray();
+    const offersWithDealer = await addDealerToOffers({ offers });
+    const responseData = {
+      items: offersWithDealer,
+      market: "",
+      title: "",
+      description: "",
+      shortDescription: "",
+      subtitle: "",
+      imageUrl: "",
+    };
+    if (request.query.market) {
+      responseData.market = request.query.market;
+    }
+    const mainOffer =
+      offersWithDealer.find((x) => x.market === request.query.market) ||
+      offersWithDealer.find(() => true);
+    responseData.title = mainOffer.title;
+    responseData.description = mainOffer.description;
+    responseData.subtitle = mainOffer.subtitle;
+    responseData.imageUrl = mainOffer.imageUrl;
+    return Response.ok(responseData);
+  });
+
 export const relatedOffers: Route<
   | Response.Ok<{ identical: MpnOffer[]; interchangeable: MpnOffer[] }>
   | Response.NotFound
@@ -453,7 +498,7 @@ export const relatedOffers: Route<
         ["interchangeable", "offerSet"],
         [],
       ).filter((x) => x !== request.routeParams.id);
-      const offerFilter: FilterQuery<OfferInstance> = {
+      const offerFilter: Filter<OfferInstance> = {
         uri: { $in: [...identicalUris, ...interchangeableUris] },
       };
       if (request.query.market) {
@@ -461,7 +506,7 @@ export const relatedOffers: Route<
       }
       const offers = await offerCollection
         .find(offerFilter)
-        .project(defaultOfferProjection)
+        .project<MpnOffer>(defaultOfferProjection)
         .toArray();
 
       const offersWithDealer = await addDealerToOffers({ offers });
@@ -512,7 +557,7 @@ export const putRemoveTagFromOffers: Route<
   });
 
 export const getTagsForOfferHandler: Route<
-  Response.Ok<string[]> | Response.BadRequest<string>
+  Response.Ok<OfferTag[]> | Response.BadRequest<string>
 > = route.get("/:id/tags").handler(async (request) => {
   return Response.ok(await getTagsForOffer(request.routeParams.id));
 });
@@ -530,7 +575,7 @@ export const putOfferQuantity: Route<
   .use(Parser.body(putQuantityPutBody))
   .handler(async (request) => {
     const offerCollection = await getCollection(offerCollectionName);
-    const offer: MpnMongoOffer = await offerCollection.findOne({
+    const offer: MpnMongoOffer = await offerCollection.findOne<MpnMongoOffer>({
       uri: request.body.uri,
     });
     if (!offer) {

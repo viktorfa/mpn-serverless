@@ -6,7 +6,7 @@ import {
   mpnCategoryMappingsCollectionName,
   offerCollectionName,
 } from "../utils/constants";
-import { FilterQuery } from "mongodb";
+import { Filter } from "mongodb";
 
 const categoriesQueryParams = t.type({
   level: t.union([t.string, t.undefined]),
@@ -25,7 +25,7 @@ export const list: Route<
     const categoriesCollection = await getCollection(
       mpnCategoriesCollectionName,
     );
-    const filter: FilterQuery<MpnCategory> = {};
+    const filter: Filter<MpnCategory> = {};
     if (level) {
       filter.level = Number.parseInt(level);
     }
@@ -35,7 +35,9 @@ export const list: Route<
     if (context) {
       filter.context = context;
     }
-    const result = await categoriesCollection.find(filter).toArray();
+    const result = await categoriesCollection
+      .find<MpnCategory>(filter)
+      .toArray();
 
     return Response.ok(result);
   });
@@ -85,21 +87,21 @@ export const getCategoryMappingsForDealer: Route<
 });
 
 export const getByKey: Route<
-  Response.Ok<MpnCategory[]> | Response.BadRequest<string>
+  Response.Ok<MpnCategoryInTree> | Response.BadRequest<string>
 > = route.get("/:key").handler(async (request) => {
   const categoriesCollection = await getCollection(mpnCategoriesCollectionName);
 
-  const category = await categoriesCollection.findOne({
+  const category = await categoriesCollection.findOne<MpnCategory>({
     key: request.routeParams.key,
   });
   let parentObject = null;
   if (category.parent) {
-    parentObject = await categoriesCollection.findOne({
+    parentObject = await categoriesCollection.findOne<MpnCategory>({
       key: category.parent,
     });
   }
   const children = await categoriesCollection
-    .find({
+    .find<MpnCategory>({
       parent: request.routeParams.key,
     })
     .toArray();

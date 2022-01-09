@@ -147,7 +147,7 @@ export const putRemoveTagFromOfferGroup: Route<
   });
 
 export const getTagsForOfferGroupHandler: Route<
-  Response.Ok<string[]> | Response.BadRequest<string>
+  Response.Ok<OfferTag[]> | Response.BadRequest<string>
 > = route.get("/:id/tags").handler(async (request) => {
   return Response.ok(await getTagsForBiRelation(request.routeParams.id));
 });
