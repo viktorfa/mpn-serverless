@@ -7,6 +7,7 @@ import {
   offerCollectionName,
 } from "../utils/constants";
 import { Filter } from "mongodb";
+import { groupBy } from "lodash";
 
 const categoriesQueryParams = t.type({
   level: t.union([t.string, t.undefined]),
@@ -43,7 +44,8 @@ export const list: Route<
   });
 
 export const getAllCategoriesForDealer: Route<
-  Response.Ok<string[][]> | Response.BadRequest<string>
+  | Response.Ok<{ categories: string[]; count: number }[]>
+  | Response.BadRequest<string>
 > = route.get("/dealer/:dealer").handler(async (request) => {
   const offerCollection = await getCollection(offerCollectionName);
 
@@ -56,18 +58,25 @@ export const getAllCategoriesForDealer: Route<
     })
     .project({ categories: 1 })
     .toArray();
-  const categories: string[] = offers
+  const offersWithJsonCategories = offers
     .map((x) => {
       if (x.categories && x.categories.length > 0) {
-        return JSON.stringify(x.categories);
+        return { categories: JSON.stringify(x.categories) };
       } else {
-        return null;
+        return { categories: null };
       }
     })
-    .filter((x) => !!x);
-  const categoriesSet = new Set(categories);
-
-  const result = Array.from(categoriesSet).map((x) => JSON.parse(x));
+    .filter((x) => !!x.categories);
+  const categoryGroupedOffers = groupBy(offersWithJsonCategories, "categories");
+  const result: { categories: string[]; count: number }[] = [];
+  Object.entries(categoryGroupedOffers).forEach(
+    ([categoriesString, offers]) => {
+      result.push({
+        categories: JSON.parse(categoriesString),
+        count: offers.length,
+      });
+    },
+  );
 
   return Response.ok(result);
 });

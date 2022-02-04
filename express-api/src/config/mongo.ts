@@ -2,16 +2,16 @@ import { Collection, MongoClient } from "mongodb";
 
 import { mongoUri, mongoDatabase } from "./vars";
 
-let client: MongoClient = null;
+let client: MongoClient = new MongoClient();
 
 const connectToMongo = async (): Promise<MongoClient> => {
-  if (!client) {
-    console.log(`Connecting to: ${mongoUri}`);
+  if (!client || !client.isConnected()) {
     client = await MongoClient.connect(mongoUri, {
       keepAlive: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
   } else {
-    console.log(`Using cached mongo connection.`);
   }
   return client;
 };

@@ -6,6 +6,7 @@ import {
 } from "@/api/utils/constants";
 import { getCollection } from "@/config/mongo";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
+import { addDealerToOffers } from "@/api/services/offers";
 
 export const getComparisonConfig = async (
   categories?: string[],
@@ -45,8 +46,10 @@ export const getComparisonInstance = async (
     .project<MpnOffer>(defaultOfferProjection)
     .toArray();
 
+  const offersWithDealer = await addDealerToOffers({ offers });
+
   const offerMap: { [key: string]: MpnOffer } = {};
-  offers.forEach((offer) => {
+  offersWithDealer.forEach((offer) => {
     offerMap[offer.uri] = offer;
   });
   const result: ComparisonInstance[] = [];

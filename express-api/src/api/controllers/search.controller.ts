@@ -13,7 +13,8 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { findByKeys } from "../services/categories";
-import { addDealerToOffers } from "../services/offers";
+import { addDealerToOffers, defaultDealerProjection } from "../services/offers";
+import { getCollection } from "@/config/mongo";
 
 export const getEngineName = (productCollectionName: string): string => {
   if (stage === "prod") {
@@ -139,8 +140,34 @@ export const search: Route<
         result.categories[x.key] = x;
       });
     }
+    const dealerKeys = Array.from(
+      new Set(result.items.map((offer) => offer.dealer)),
+    );
+    const dealerCollection = await getCollection("dealers");
+    const dealerObjects = await dealerCollection
+      .find({ key: { $in: dealerKeys } })
+      .project(defaultDealerProjection)
+      .toArray();
+    const dealerMap = {};
+    dealerObjects.forEach((dealer) => {
+      dealerMap[dealer.key] = dealer;
+    });
+    const newDealerFacet = [{ data: [] }];
+    newDealerFacet[0].data = result.facets.dealer[0].data.map((dealer) => {
+      if (dealerMap[dealer.value]) {
+        return { ...dealerMap[dealer.value], ...dealer };
+      } else {
+        return { ...dealer };
+      }
+    });
+    result.facets.dealer = newDealerFacet;
 
-    result.items = await addDealerToOffers({ offers: result.items });
+    result.items = result.items.map((offer) => {
+      return {
+        ...offer,
+        dealerObject: dealerMap[offer.dealer] || { key: offer.dealer },
+      };
+    });
     return Response.ok(result);
   });
 

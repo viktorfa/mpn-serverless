@@ -648,7 +648,9 @@ export const getOfferGroups: Route<
       items: await getSimilarGroupedOffersFromOfferUris(
         offerUris,
         offerFilter,
-        { relationType: { $in: ["identical", "identicaldifferentsize"] } },
+        {
+          relationType: { $in: ["identical", "identicaldifferentsize"] },
+        },
       ),
     });
   });

@@ -89,10 +89,7 @@ export const getOfferUrisForTags = async (
   const tagObjects = await tagsCollection
     .find({
       tag: { $in: tags },
-      $or: [
-        { validThrough: { $gte: now } },
-        { validThrough: { $exists: false } },
-      ],
+      $or: [{ validThrough: { $gte: now } }],
     })
     .limit(limit)
     .toArray();
@@ -195,10 +192,10 @@ export const getOffersInUriGroups = async (
     const groupOffers = offerGroup.uris
       .filter((uri) => !!uriToOfferMap[uri])
       .map((uri) => uriToOfferMap[uri]);
-    if (offers.length > 0) {
+    if (groupOffers.length > 0) {
       result.push({
         offers: groupOffers,
-        title: offerGroup.title ?? offers[0].title,
+        title: offerGroup.title ?? groupOffers[0].title,
         _id: offerGroup._id,
         relationType: offerGroup.relationType,
       });
@@ -229,7 +226,7 @@ export const getSimilarGroupedOffersFromOfferUris = async (
   return getOffersInUriGroups(offerGroups, filter);
 };
 
-const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
+export const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
 
 export const getOffersWithDealer = async ({
   selection,
@@ -271,13 +268,11 @@ export const getOffersWithDealer = async ({
 
 export const addDealerToOffers = async <T = MpnOffer>({ offers }) => {
   const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
-  console.time();
   const dealerCollection = await getCollection("dealers");
   const dealers = await dealerCollection
     .find({ key: { $in: dealerKeys } })
     .project(defaultDealerProjection)
     .toArray();
-  console.timeEnd();
   const dealerMap = {};
   dealers.forEach((dealer) => {
     dealerMap[dealer.key] = dealer;

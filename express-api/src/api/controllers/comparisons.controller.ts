@@ -6,7 +6,6 @@ import {
   getComparisonConfig,
   getComparisonInstance,
 } from "../services/comparisons";
-import { UpdateResult, InsertOneResult } from "mongodb";
 
 const comparisonDataQueryParams = t.type({
   categories: t.union([t.string, t.undefined]),

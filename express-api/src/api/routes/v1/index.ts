@@ -8,6 +8,7 @@ import offerGroupsRoute from "@/api/routes/v1/offer-groups.route";
 import categoriesRoute from "@/api/routes/v1/categories.route";
 import spiderrunsRoute from "@/api/routes/v1/spiderruns.route";
 import handlerunsRoute from "@/api/routes/v1/handleruns.route";
+import promotionsRoute from "@/api/routes/v1/promotions.route";
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use("/comparisons", comparisonRoutes);
 router.use("/offer-groups", offerGroupsRoute);
 router.use("/spiderruns", spiderrunsRoute);
 router.use("/handleruns", handlerunsRoute);
+router.use("/plakater", promotionsRoute);
 
 export default router;
