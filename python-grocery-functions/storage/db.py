@@ -5,6 +5,8 @@ from bson.objectid import ObjectId
 from pymongo import UpdateOne, InsertOne
 from copy import deepcopy
 import itertools
+import logging
+from util.utils import log_traceback
 
 from config.mongo import get_collection
 from util.helpers import get_product_uri
@@ -67,12 +69,18 @@ def save_promoted_offers(df, collection_name: str):
 def save_scraped_products(offers: List[MpnOffer]):
     offer_updates = (add_meta_fields_to_scraper_offers(x) for x in offers)
     result = []
-    for chunk in chunked_iterable(offer_updates, 10000):
-        result.append(bulk_upsert(chunk, "mpnoffers"))
+    for chunk in chunked_iterable(offer_updates, 1000):
+        try:
+            # Can get a write error here, probably due to high write load on Mongo
+            result.append(bulk_upsert(chunk, "mpnoffers"))
+        except Exception as e:
+            logging.error(e)
+            log_traceback(e)
     return result
 
 
 def get_handle_configs(provenance: str):
+    print(f"Getting handle config for {provenance}")
     collection = get_collection("handleconfigs")
     result = list(
         x
