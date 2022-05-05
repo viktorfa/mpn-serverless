@@ -1,3 +1,4 @@
+from datetime import timedelta
 import json
 from json.decoder import JSONDecodeError
 import logging
@@ -5,6 +6,7 @@ import os
 
 from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
+from pymongo import UpdateOne
 from config.mongo import get_collection
 from scraper_feed.handle_config import fetch_single_handle_config
 from util.utils import log_traceback
@@ -87,6 +89,23 @@ def trigger_scraper_feed_pricing_with_history(event, context):
             logging.error(f"No handle config for {provenance}")
             return {"messsage": f"No handle config for {provenance}"}
 
+        namespace = config["namespace"]
+
+        if namespace not in [
+            "coop",
+            "kolonial",
+            "meny",
+            "www.holdbart.no",
+            "europris",
+            "hemkop",
+            "mat.se",
+            "matsmart",
+            "ica_online",
+            "coop_online",
+            "willys_se",
+        ]:
+            return {"message": f"Will not store prices for namespace {namespace}"}
+
         try:
             bucket = os.environ["SCRAPER_FEED_BUCKET"]
             versions = get_s3_object_versions(bucket, key)
@@ -149,11 +168,15 @@ def handle_feed_with_config_for_pricing(
         if not sku:
             continue
         uri = get_product_uri(config["namespace"], sku)
+        if not offer.get("price"):
+            continue
+
+        scrape_time = config["scrape_time"]
         pricing_objects.append(
             {
                 "uri": uri,
                 "pricing": {"price": offer["price"]},
-                "date": config["scrape_time"].strftime("%Y-%m-%d"),
+                "date": scrape_time.strftime("%Y-%m-%d"),
             }
         )
 
@@ -162,11 +185,66 @@ def handle_feed_with_config_for_pricing(
 
     mongo_collection = get_collection("offerpricings")
 
+    uris = list(x["uri"] for x in pricing_objects)
+
+    ten_days_before_scrape_time = scrape_time - timedelta(days=15)
+
+    previous_prices = mongo_collection.aggregate(
+        [
+            {
+                "$match": {
+                    "uri": {"$in": uris},
+                    "date": {"$gt": ten_days_before_scrape_time.strftime("%Y-%m-%d")},
+                }
+            },
+            {"$sort": {"date": -1}},
+            {"$group": {"_id": "$uri", "doc": {"$first": "$$ROOT"}}},
+            {"$unwind": {"path": "$doc"}},
+            {"$replaceRoot": {"newRoot": "$doc"}},
+        ]
+    )
+    previous_prices_map = {}
+
+    for x in previous_prices:
+        previous_prices_map[x["uri"]] = x
+
+    for x in pricing_objects:
+        uri = x["uri"]
+        previous_pricing = previous_prices_map.get(uri)
+        if not previous_pricing:
+            continue
+        if previous_pricing["date"] == x["date"]:
+            continue
+        current_price = x["pricing"]["price"]
+        previous_price = previous_pricing["pricing"]["price"]
+
+        diff = current_price - previous_price
+        diff_percentage = (diff / previous_price) * 100
+
+        x["difference"] = diff
+        x["differencePercentage"] = diff_percentage
+
     if os.getenv("STAGE") == "dev":
-        result = mongo_collection.insert_many(pricing_objects[:512], ordered=False)
+        result = mongo_collection.bulk_write(
+            list(
+                UpdateOne(
+                    {"uri": x["uri"], "date": x["date"]}, {"$set": x}, upsert=True
+                )
+                for x in pricing_objects[:512]
+            ),
+            ordered=False,
+        )
     else:
-        result = mongo_collection.insert_many(pricing_objects, ordered=False)
+        result = mongo_collection.bulk_write(
+            list(
+                UpdateOne(
+                    {"uri": x["uri"], "date": x["date"]}, {"$set": x}, upsert=True
+                )
+                for x in pricing_objects
+            ),
+            ordered=False,
+        )
 
     logging.debug(result)
 
-    return len(result.inserted_ids)
+    return result.matched_count

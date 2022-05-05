@@ -46,9 +46,9 @@ def add_de_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn02-21'
+            f'{product["href"]}&tag=mpn06e-21'
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn02-21'
+            else f'{product["href"]}?tag=mpn06e-21'
         )
 
     return {**product, "ahref": ahref}
@@ -61,6 +61,18 @@ def add_com_amazon_affiliate_link(product: dict) -> dict:
             f'{product["href"]}&tag=epstein0b-20'
             if "?" in product["href"]
             else f'{product["href"]}?tag=epstein0b-20'
+        )
+
+    return {**product, "ahref": ahref}
+
+
+def add_sg_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn00-22'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn00-22'
         )
 
     return {**product, "ahref": ahref}
@@ -170,6 +182,14 @@ def add_strawberrynet_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": ahref}
 
 
+def add_davidsen_affiliate_link(product: dict) -> dict:
+    if "track.adtraction.com" in product["href"]:
+        return product
+    escaped_original_href = product["href"]
+    new_href = f"https://track.adtraction.com/t/t?a=1659447672&as=1685097411&t=2&tk=1&url={escaped_original_href}"
+    return {**product, "ahref": new_href}
+
+
 def get_affiliate_handler(product: dict):
     if "byggmax.no" in product["href"]:
         return add_byggmax_affiliate_link
@@ -179,6 +199,8 @@ def get_affiliate_handler(product: dict):
         return add_de_amazon_affiliate_link
     elif "amazon.com" in product["href"]:
         return add_com_amazon_affiliate_link
+    elif "amazon.sg" in product["href"]:
+        return add_sg_amazon_affiliate_link
     elif "amazon.co.uk" in product["href"]:
         return add_uk_amazon_affiliate_link
     elif "grontfokus.no" in product["href"]:
@@ -207,6 +229,8 @@ def get_affiliate_handler(product: dict):
         return add_buildor_se_affiliate_link
     elif "www.strawberrynet.com" in product["href"]:
         return add_strawberrynet_affiliate_link
+    elif "www.davidsenshop.dk" in product["href"]:
+        return add_davidsen_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
