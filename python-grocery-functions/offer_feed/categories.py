@@ -6,13 +6,30 @@ from copy import deepcopy
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
 
-from storage.db import get_collection
+from storage.db import chunked_iterable, get_collection
 from amp_types.amp_product import HandleConfig, MpnOffer
+from util.utils import log_traceback
 
 
 def get_offer_context_from_site_collection(site_collection: str) -> Optional[str]:
     if site_collection == "groceryoffers":
         return "amp-no"
+    elif site_collection == "degroceryoffers":
+        return "amp-de"
+    elif site_collection == "dkgroceryoffers":
+        return "amp-dk"
+    elif site_collection == "segroceryoffers":
+        return "amp-se"
+    elif site_collection == "byggoffers":
+        return "bygg-no"
+    elif site_collection == "debyggoffers":
+        return "bygg-de"
+    elif site_collection == "dkbyggoffers":
+        return "bygg-dk"
+    elif site_collection == "sebyggoffers":
+        return "bygg-se"
+    elif site_collection == "beautyoffers":
+        return "beauty-no"
     return None
 
 
@@ -31,7 +48,11 @@ def get_mpn_categories_for_meny_offer(offer: MpnOffer, target_cat_map):
 
 
 def get_mpn_categories_for_offer(offer: MpnOffer, source_cat_map, target_cat_map):
-    map_source = source_cat_map.get(json.dumps(offer["categories"]))
+    offer_categories = deepcopy(offer["categories"])
+    map_source = None
+    while len(offer_categories) > 0 and not map_source:
+        map_source = source_cat_map.get(json.dumps(offer_categories))
+        offer_categories = offer_categories[: len(offer_categories) - 1]
     if not map_source:
         logging.debug(f"No map_source for {json.dumps(offer['categories'])}")
         return []
@@ -47,18 +68,19 @@ def get_mpn_categories_for_offer(offer: MpnOffer, source_cat_map, target_cat_map
 
 
 def handle_offers_for_categories(config: HandleConfig):
+    logging.info("handle_offers_for_categories")
     now = datetime.now()
     offer_collection = get_collection("mpnoffers")
+    provenance = config["provenance"]
     offers = offer_collection.find(
         {
-            "provenance": config["provenance"],
-            "uri": {"$regex": f"^{config['namespace']}"},
+            "provenance": provenance,
             "validThrough": {"$gt": now},
             "categories.0": {"$exists": 1},
         },
         {"categories": 1, "slugCategories": 1},
     )
-    logging.info(f"Trying to find categories for {offers.count()} offers")
+    logging.info(f"Trying to find categories for offers with provenance {provenance}")
     offer_context = get_offer_context_from_site_collection(config["collection_name"])
     if not offer_context:
         return None
@@ -89,6 +111,15 @@ def handle_offers_for_categories(config: HandleConfig):
                 {"$set": {"mpnCategories": offer_mpn_categories}},
             )
         )
-    logging.debug(len(updates))
-    result = offer_collection.bulk_write(updates)
-    return result.modified_count
+    logging.debug(f"Updates: {len(updates)}")
+
+    result = 0
+    for chunk in chunked_iterable(updates, 1000):
+        try:
+            # Can get a write error here, probably due to high write load on Mongo
+            cursor = offer_collection.bulk_write(list(chunk))
+            result += cursor.modified_count
+        except Exception as e:
+            logging.error(e)
+            log_traceback(e)
+    return result
