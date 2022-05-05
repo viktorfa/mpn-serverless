@@ -46,6 +46,7 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
                     **product,
                     "gtins": get_book_gtins(product),
                     "uri": product["book_uri"],
+                    "ahref": product.get("trackingUrl"),
                 }
                 for product in products
             )

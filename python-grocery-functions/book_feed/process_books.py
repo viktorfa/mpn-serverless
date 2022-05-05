@@ -43,7 +43,10 @@ def merge_similar_books():
 
     logging.debug(f"Writing {len(updates)} updates")
 
-    return book_collection.bulk_write(updates).bulk_api_result
+    if len(updates) > 0:
+        return book_collection.bulk_write(updates).bulk_api_result
+    else:
+        return None
 
 
 def process_books(offer_filter={}):
@@ -59,6 +62,7 @@ def process_books(offer_filter={}):
             "dealer": 1,
             "price": 1,
             "href": 1,
+            "ahref": 1,
             "title": 1,
             "author": 1,
             "book_type": 1,
@@ -84,6 +88,7 @@ def process_books(offer_filter={}):
         book_offer = {
             "price": offer.get("price"),
             "href": offer["href"],
+            "ahref": offer.get("ahref"),
             "uri": offer["uri"],
             "dealer": offer["dealer"],
             "title": offer["title"],

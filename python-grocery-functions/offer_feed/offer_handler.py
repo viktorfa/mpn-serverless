@@ -51,7 +51,7 @@ def handle_offers_for_meta(
     for offer in offers:
         manual_quantity = pydash.get(offer, ["meta", "quantity", "manual", "value"])
         auto_quantity = pydash.get(offer, ["meta", "quantity", "auto", "value"])
-        if manual_quantity:
+        if manual_quantity and manual_quantity["size"]["amount"]["min"]:
             value = get_value_from_quantity(offer, manual_quantity["size"])
             new_offer = {"quantity": manual_quantity, "value": {"size": value}}
             new_offer = standardize_quantity(new_offer)
@@ -66,7 +66,7 @@ def handle_offers_for_meta(
                     },
                 )
             )
-        elif auto_quantity:
+        elif auto_quantity and auto_quantity["size"]["amount"]["min"]:
             value = get_value_from_quantity(offer, auto_quantity["size"])
             new_offer = {"quantity": auto_quantity, "value": {"size": value}}
             new_offer = standardize_quantity(new_offer)
@@ -96,6 +96,7 @@ def handle_offers(
 ):
     """
     Adds offers with the same gtins to be identical."""
+    logging.info("handle_offers")
     operations = []
     now = datetime.now()
     for offers in offers_list:
@@ -132,7 +133,7 @@ def handle_offers(
         )
         operations.append(upsert_operation2)
 
-    print(f"{len(operations)} operations to add identical offers")
+    logging.info(f"{len(operations)} operations to add identical offers")
 
     collection = get_collection("offerbirelations")
 
@@ -159,6 +160,7 @@ def get_scraped_offers(provenance: str) -> List[dict]:
 
 
 def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
+    logging.info(f"get_offers_list_for_gtins for provenance {provenance}")
     now = datetime.now()
     collection = get_collection("mpnoffers")
     scraped_offers = collection.find(
@@ -205,6 +207,14 @@ def offer_feed_sns(event, context):
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
     provenance = sns_message["provenance"]
     result = []
+
+    try:
+        result.append(handle_offers_for_categories(sns_message))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+
     try:
         offers_list = get_offers_list_for_gtins(provenance)
         if len(offers_list) > 0:
@@ -215,12 +225,7 @@ def offer_feed_sns(event, context):
         logging.error(e)
         log_traceback(e)
         result.append({"message": str(e)})
-    try:
-        result.append(handle_offers_for_categories(sns_message))
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        result.append({"message": str(e)})
+
     return result
 
 
@@ -228,6 +233,14 @@ def offer_feed_trigger(event, context):
     aws_config.lambda_context = context
     provenance = event["provenance"]
     result = []
+
+    try:
+        result.append(handle_offers_for_categories(event))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+
     try:
         offers_list = get_offers_list_for_gtins(provenance)
         if len(offers_list) > 0:
@@ -238,12 +251,7 @@ def offer_feed_trigger(event, context):
         logging.error(e)
         log_traceback(e)
         result.append({"message": str(e)})
-    try:
-        result.append(handle_offers_for_categories(event))
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        result.append({"message": str(e)})
+
     return result
 
 

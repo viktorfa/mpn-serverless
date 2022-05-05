@@ -6,9 +6,10 @@ from amp_types.amp_product import ScraperOffer, PricingField
 
 
 def get_product_pricing(product: ScraperOffer) -> PricingField:
+    currency = product.get("priceCurrency") or product.get("currency") or ""
     return dict(
         price=product.get("price"),
-        currency=product.get("priceCurrency", currency_codes.NOK),
+        currency=currency,
         prePrice=product.get("prePrice"),
         priceUnit=product.get("priceUnit", "pcs"),
     )
@@ -75,18 +76,60 @@ def get_provenance_id(product):
 
 def get_stock_status(product):
     availability = product.get("availability")
-    if not availability:
-        return "OutOfStock"
+    if availability is None:
+        return "Unknown"
     elif availability in [
-        "InStock",
-        "http://schema.org/InStock",
-        "https://schema.org/InStock",
+        "Auf Lager.",
+        "I lager",
+        "På lager",
+        "På nettlager",
         "in stock",
+        "in_stock",
         "instock",
+        "yes",
+        "Ja",
+        "True",
+        "true",
+        "1",
+        1,
     ]:
         return "InStock"
+    elif availability in [
+        "Ikke på lager",
+        "Ikke på nettlager",
+        "out of stock",
+        "out_of_stock",
+        "not_in_stock",
+        "outofstock",
+        "no",
+        "Nei",
+        "Nej",
+        "False",
+        "false",
+        "0",
+        0,
+    ]:
+        return "OutOfStock"
+    elif "OutOfStock" in str(availability):
+        return "OutOfStock"
+    elif "InStock" in str(availability):
+        return "InStock"
+    elif "InStoreOnly" in str(availability):
+        return "InStoreOnly"
+    elif "PreOrder" in str(availability):
+        return "PreOrder"
+    elif "SoldOut" in str(availability):
+        return "SoldOut"
+    elif "OnlineOnly" in str(availability):
+        return "OnlineOnly"
+    elif "LimitedAvailability" in str(availability):
+        return "LimitedAvailability"
+    elif "Discontinued" in str(availability):
+        return "Discontinued"
+    elif "BackOrder" in str(availability):
+        return "BackOrder"
     else:
-        return availability
+        return "Unknown"
 
 
 def remove_none_fields(offer: dict) -> dict:
