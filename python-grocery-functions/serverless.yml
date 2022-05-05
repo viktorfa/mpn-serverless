@@ -155,6 +155,15 @@ functions:
           path: scrape/{id}
           method: post
           cors: true
+  invokeHandleHttp:
+    environment:
+      SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-handle
+    handler: scraper_management.handler.handle_feed
+    events:
+      - http:
+          path: handle/{id}
+          method: post
+          cors: true
 
   updatePageviews:
     handler: scraper_feed.google_anal.pageviews.handle
