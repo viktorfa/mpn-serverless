@@ -1,20 +1,22 @@
-const mongodb = require("mongodb");
+const { MongoClient } = require("mongodb");
 
 const { mongoUri, mongoDatabase } = require("./vars");
 
 /**
- * @type {mongodb.MongoClient}
+ * @type {MongoClient}
  */
 let client = null;
 
 /**
- * @returns {Promise<mongodb.MongoClient>}
+ * @returns {Promise<MongoClient>}
  */
 const connectToMongo = async () => {
   if (!client || !client.isConnected()) {
     console.log(`Connecting to: ${mongoUri}`);
-    client = await mongodb.MongoClient.connect(mongoUri, {
+    client = await MongoClient.connect(mongoUri, {
+      useNewUrlParser: true,
       useUnifiedTopology: true,
+      keepAlive: true,
     });
   }
   return client;
