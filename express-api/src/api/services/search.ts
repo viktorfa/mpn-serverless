@@ -1,15 +1,37 @@
+import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import { elasticOfferToMpnOffer } from "@/api/models/mpnOffer.model";
 import { getElasticClient } from "@/config/elastic";
 import { getNowDate } from "../utils/helpers";
 import APIError from "../utils/APIError";
+import { getCollection } from "@/config/mongo";
+import { offerCollectionName } from "../utils/constants";
 import { getOffersByUris } from "./offers";
 
-export const search = async (
-  query: string,
-  engineName: string,
+export const searchWithMongo = async ({
+  query,
+  productCollections,
+  markets,
   limit = 32,
-): Promise<MpnResultOffer[]> => {
-  const elasticClient = await getElasticClient();
+  page = 1,
+  dealers,
+  categories,
+  price,
+  sort,
+  boosts,
+  precision = 4,
+}: {
+  query: string;
+  productCollections?: string[];
+  markets?: string[];
+  limit?: number;
+  page?: number;
+  dealers?: string[];
+  categories?: string[];
+  price?: { from?: number; to?: number };
+  sort?: { [key: string]: 1 | -1 };
+  boosts?: AppSearchOfferBoosts;
+  precision?: number;
+}): Promise<MpnMongoSearchResponse> => {
   if (query.length > 127) {
     const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
     console.error(message);
@@ -19,35 +41,140 @@ export const search = async (
     });
   }
   const now = getNowDate();
-  const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
-    engineName,
-    query,
-    { page: { size: limit }, filters: { valid_through: { from: now } } },
-  );
+  const filters: Record<string, any> = {};
 
-  try {
-    const mpnResults = searchResponse.results.map((x) => {
-      return elasticOfferToMpnOffer(x);
-    });
+  if (dealers) {
+    filters.dealer = { $in: dealers };
+  }
+  if (price) {
+    filters.price = {};
+    if (price.from) {
+      filters.price.$gte = price.from;
+    }
+    if (price.to) {
+      filters.price.$lte = price.to;
+    }
+  }
 
-    // Filter offers that only exist in Elastic and not in Mongo
-    const resultUris = mpnResults.map((x) => x.uri);
-    const urisFromMongoSet = new Set(
-      (await getOffersByUris(resultUris, null, { uri: 1 })).map((x) => x.uri),
-    );
+  const offerCollection = await getCollection(offerCollectionName);
 
-    const validOffers = mpnResults.filter((x) => urisFromMongoSet.has(x.uri));
+  const facets: Record<string, { type: string; path: string }> = {
+    dealersFacet: {
+      type: "string",
+      path: "dealer",
+    },
+  };
 
-    return validOffers;
-  } catch (e) {
-    console.error(e);
-    throw new APIError({
-      status: 500,
-      message: `Could not search for ${query}`,
+  const operator = {
+    compound: {
+      filter: [],
+      must: [],
+      should: [],
+    },
+  };
+
+  operator.compound.filter.push({ range: { gte: now, path: "validThrough" } });
+  if (markets) {
+    operator.compound.filter.push({ text: { query: markets, path: "market" } });
+  }
+  if (productCollections) {
+    operator.compound.filter.push({
+      text: { query: productCollections, path: "siteCollection" },
     });
   }
+  if (categories) {
+    operator.compound.filter.push({
+      text: { query: categories, path: "mpnCategories.key" },
+    });
+  }
+
+  if (query) {
+    operator.compound.must.push({
+      text: {
+        path: ["title", "subtitle", "brand"],
+        query,
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["title"],
+        query,
+        score: { boost: { value: 3 } },
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["subtitle", "brand"],
+        query,
+        score: { boost: { value: 1 } },
+      },
+    });
+  }
+
+  if (sort) {
+    operator.compound.should.push({
+      near: {
+        path: Object.keys(sort)[0],
+        origin: Object.values(sort)[0] === 1 ? 0.0 : 1e7 * 1.0,
+        pivot: 2,
+        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
+      },
+    });
+  }
+
+  const aggregationPipeline: Record<string, any>[] = [
+    {
+      $search: {
+        facet: {
+          operator,
+          facets,
+        },
+      },
+    },
+    { $match: filters },
+    { $limit: Math.min(limit, 1000) }, // Will be incredibly slow when sorting if the results are many
+    { $skip: (Math.max(page - 1, 0) || 0) * limit },
+    {
+      $project: {
+        ...defaultOfferProjection,
+        score: { $meta: "searchScore" },
+      },
+    },
+    {
+      $facet: {
+        items: [{ $limit: limit }],
+        meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
+      },
+    },
+  ];
+
+  const mongoSearchResponse = await offerCollection
+    .aggregate(aggregationPipeline, { allowDiskUse: true })
+    .toArray();
+
+  if (mongoSearchResponse[0].items.length === 0) {
+    return {
+      items: [],
+      meta: { count: 0, page: 1 },
+      facets: { dealersFacet: { buckets: [] } },
+    };
+  }
+
+  const meta: MpnMongoSearchResponseMeta = {
+    count: mongoSearchResponse[0].meta[0].count.lowerBound,
+    page,
+  };
+
+  const result = {
+    items: mongoSearchResponse[0].items,
+    meta,
+    facets: mongoSearchResponse[0].meta[0].facet,
+  };
+
+  return result;
 };
-export const searchWithFilter = async ({
+
+export const searchWithElastic = async ({
   query,
   engineName,
   limit = 32,

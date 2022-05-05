@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { sortBy } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
@@ -6,18 +6,14 @@ import {
   addTagToOffers,
   findOne,
   findOneFull,
-  getOffersWithDealer,
   getOfferUrisForTags,
   getSimilarGroupedOffersFromOfferUris,
   getTagsForOffer,
   removeTagFromOffers,
 } from "@/api/services/offers";
-import {
-  search as searchElastic,
-  searchWithFilter,
-} from "@/api/services/search";
+import { searchWithElastic, searchWithMongo } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
-import { getNowDate } from "../utils/helpers";
+import { getDaysAhead, getNowDate } from "../utils/helpers";
 import { getEngineName } from "@/api/controllers/search.controller";
 import { indexDocuments } from "../services/elastic";
 import { getCollection } from "@/config/mongo";
@@ -114,7 +110,7 @@ export const addToElastic: Route<
   });
 
 const similarHandler = async (request) => {
-  const { productCollection } = request.query;
+  const { productCollection, market } = request.query;
   const useSearch = getBoolean(request.query.useSearch);
 
   const offersCollection = await getCollection(offerCollectionName);
@@ -142,12 +138,15 @@ const similarHandler = async (request) => {
 
   //if (useSearch === true || !offerHasSimilarOffers) {
   if (!offerHasSimilarOffers) {
-    const result = await searchElastic(
-      offer.title.substring(0, 127),
-      getEngineName(productCollection),
-      32,
-    );
-    const resultWithDealer = await addDealerToOffers({ offers: result });
+    const mongoSearchResponse = await searchWithMongo({
+      query: offer.title.substring(0, 127),
+      productCollections: [productCollection],
+      markets: [market],
+      limit: 32,
+    });
+    const resultWithDealer = await addDealerToOffers({
+      offers: mongoSearchResponse.items,
+    });
     return Response.ok(resultWithDealer);
   }
 
@@ -177,11 +176,96 @@ const similarHandler = async (request) => {
     console.warn(
       `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
     );
-    const result = await searchElastic(
-      offer.title.substring(0, 127),
-      getEngineName(productCollection),
-      32,
+    const mongoSearchResponse = await searchWithMongo({
+      query: offer.title.substring(0, 127),
+      productCollections: [productCollection],
+      markets: [market],
+      limit: 32,
+    });
+    const resultWithDealer = await addDealerToOffers({
+      offers: mongoSearchResponse.items,
+    });
+    return Response.ok(resultWithDealer);
+  }
+  const result = similarOffers.map((x, i) => ({
+    ...x,
+    score: offer.similarOffers[i].score,
+  }));
+  const resultWithDealer = await addDealerToOffers({ offers: result });
+  return Response.ok(resultWithDealer);
+};
+
+const similarHandlerV1 = async (request) => {
+  const { productCollection } = request.query;
+  const useSearch = getBoolean(request.query.useSearch);
+
+  const offersCollection = await getCollection(offerCollectionName);
+
+  let offer: FullMpnOffer;
+  try {
+    offer = await findOneFull(request.routeParams.id);
+    if (!offer) {
+      throw new Error();
+    }
+  } catch (e) {
+    return Response.notFound(
+      `Could not find offer with id ${request.routeParams.id}`,
     );
+  }
+
+  const offerHasSimilarOffers =
+    offer.similarOffers && offer.similarOffers.length > 0;
+
+  if (!offerHasSimilarOffers) {
+    console.warn(
+      `Offer ${request.routeParams.id} did not have any similar offers.`,
+    );
+  }
+
+  //if (useSearch === true || !offerHasSimilarOffers) {
+  if (!offerHasSimilarOffers) {
+    const elasticResponse = await searchWithElastic({
+      query: offer.title.substring(0, 127),
+      engineName: getEngineName(productCollection),
+      limit: 32,
+    });
+    const resultWithDealer = await addDealerToOffers({
+      offers: elasticResponse.items,
+    });
+    return Response.ok(resultWithDealer);
+  }
+
+  const now = getNowDate();
+  const similarOffersUris = offer.similarOffers.map((x) => x.uri);
+  const pipeline = [
+    {
+      $match: {
+        _id: { $ne: offer._id },
+        uri: { $in: similarOffersUris },
+        validThrough: { $gte: now },
+      },
+    },
+    {
+      $addFields: { __order: { $indexOfArray: [similarOffersUris, "$uri"] } },
+    },
+    { $sort: { __order: 1 } },
+    {
+      $project: defaultOfferProjection,
+    },
+  ];
+  const similarOffers = await offersCollection
+    .aggregate<MpnOffer>(pipeline)
+    .toArray();
+
+  if (similarOffers.length === 0) {
+    console.warn(
+      `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
+    );
+    const result = await searchWithElastic({
+      query: offer.title.substring(0, 127),
+      engineName: getEngineName(productCollection),
+      limit: 32,
+    });
     const resultWithDealer = await addDealerToOffers({ offers: result });
     return Response.ok(resultWithDealer);
   }
@@ -214,6 +298,22 @@ export const similarEnd: Route<
   .get("/:id/similar")
   .use(Parser.query(similarOffersQueryParams))
   .handler(similarHandler);
+export const similarV1: Route<
+  | Response.Ok<MpnOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/similar/:id")
+  .use(Parser.query(similarOffersQueryParams))
+  .handler(similarHandlerV1);
+export const similarEndV1: Route<
+  | Response.Ok<MpnOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/:id/similar")
+  .use(Parser.query(similarOffersQueryParams))
+  .handler(similarHandlerV1);
 
 const extraOffersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -222,6 +322,45 @@ const extraOffersQueryParams = t.type({
 });
 
 export const extra: Route<
+  | Response.Ok<MpnResultOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/extra/:id")
+  .use(Parser.query(extraOffersQueryParams))
+  .handler(async (request) => {
+    const { limit, productCollection, market } = request.query;
+    let _limit = getLimitFromQueryParam(limit, 5);
+
+    let offer: FullMpnOffer;
+    try {
+      offer = await findOneFull(request.routeParams.id);
+      if (!offer) {
+        throw new Error();
+      }
+    } catch (e) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+
+    const query = offer.title.substring(0, 127);
+
+    const searchResults = await searchWithMongo({
+      query,
+      markets: [market],
+      limit: _limit,
+    });
+    searchResults.items = searchResults.items.filter(
+      (offer) => offer.score > 1,
+    );
+    searchResults.items = await addDealerToOffers({
+      offers: searchResults.items,
+    });
+
+    return Response.ok(searchResults.items);
+  });
+export const extraV1: Route<
   | Response.Ok<MpnResultOffer[]>
   | Response.BadRequest<string>
   | Response.NotFound<string>
@@ -270,7 +409,7 @@ export const extra: Route<
       ];
     }
 
-    const searchResults = await searchWithFilter({
+    const searchResults = await searchWithElastic({
       query,
       engineName,
       limit: _limit,
@@ -313,9 +452,15 @@ export const similarExtra: Route<
 
     const query = offer.title.substring(0, 127);
 
-    const searchResults = await searchElastic(query, "extraoffers", _limit);
+    const searchResults = await searchWithElastic({
+      query,
+      engineName: "extraoffers",
+      limit: _limit,
+    });
 
-    const filteredOffers = searchResults.filter((offer) => offer.score > 20);
+    const filteredOffers = searchResults.items.filter(
+      (offer) => offer.score > 20,
+    );
     const offersWithDealer = await addDealerToOffers({
       offers: filteredOffers,
     });
@@ -353,13 +498,15 @@ export const similarFromExtra: Route<
 
     const query = offer.title.substring(0, 127);
 
-    const searchResults = await searchElastic(
+    const searchResults = await searchWithElastic({
       query,
-      getEngineName(productCollection),
-      _limit,
-    );
+      engineName: getEngineName(productCollection),
+      limit: _limit,
+    });
 
-    const filteredOffers = searchResults.filter((offer) => offer.score > 10);
+    const filteredOffers = searchResults.items.filter(
+      (offer) => offer.score > 10,
+    );
     const offersWithDealer = await addDealerToOffers({
       offers: filteredOffers,
     });
@@ -668,3 +815,76 @@ export const offerPricingHistory: Route<
 
   return Response.ok(pricingObjects);
 });
+
+const priceDifferencesQueryParams = t.type({
+  direction: t.union([t.string, t.undefined]),
+  namespaces: t.union([t.string, t.undefined]),
+  categories: t.union([t.string, t.undefined]),
+  limit: t.union([t.string, t.undefined]),
+});
+
+export const offersWithPriceDifference: Route<
+  Response.Ok<object[]> | Response.BadRequest<string>
+> = route
+  .get("/pricedifferences")
+  .use(Parser.query(priceDifferencesQueryParams))
+  .handler(async (request) => {
+    const direction = request.query.direction || "desc";
+    const namespaces = request.query.namespaces || "kolonial,meny,coop";
+    const categories = request.query.categories || "";
+    const limit = request.query.limit;
+    let _limit = getLimitFromQueryParam(limit, 32, 128);
+
+    const sortDirection = direction === "desc" ? -1 : 1;
+    const namespacesArray = namespaces.split(",");
+    const categoriesArray = categories.split(",").filter((x) => !!x);
+
+    const before8Days = getDaysAhead(-8);
+
+    const offerPricingCollection = await getCollection("offerpricings");
+    const pricingObjects = await offerPricingCollection
+      .find({
+        date: { $gt: before8Days.toISOString().substring(0, 10) }, // YYYY-MM-DD
+        difference: { $exists: 1 },
+        uri: { $regex: `^(${namespacesArray.join("|")})\:` },
+      })
+      .sort({ difference: sortDirection })
+      .limit(1024)
+      .toArray();
+
+    const pricingMap = {};
+
+    pricingObjects.forEach((x) => {
+      pricingMap[x.uri] = x;
+    });
+
+    const offerCollection = await getCollection(offerCollectionName);
+    const offerSelection = {
+      uri: { $in: Object.keys(pricingMap) },
+    };
+    if (categoriesArray.length > 0) {
+      offerSelection["mpnCategories.key"] = { $in: categoriesArray };
+    }
+    console.log("categoriesArray");
+    console.log(categoriesArray);
+    console.log("Object.keys(pricingMap)");
+    console.log(Object.keys(pricingMap));
+    const offers = await offerCollection
+      .find(offerSelection)
+      .project(defaultOfferProjection)
+      .limit(_limit)
+      .toArray();
+
+    let result = await addDealerToOffers({ offers });
+
+    result = result.map((x) => {
+      return { ...x, pricingHistoryObject: pricingMap[x.uri] };
+    });
+
+    result = sortBy(
+      result,
+      (x) => x.pricingHistoryObject.difference * sortDirection,
+    );
+
+    return Response.ok(result);
+  });

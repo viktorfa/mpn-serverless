@@ -238,3 +238,16 @@ interface PricingHistoryObject {
   date: string;
   uri: string;
 }
+
+interface MpnMongoSearchResponse {
+  meta: MpnMongoSearchResponseMeta;
+  items: MpnResultOffer[];
+  facets: MpnMongoSearchResponseFacets;
+}
+interface MpnMongoSearchResponseMeta {
+  count: number;
+  page: number;
+}
+interface MpnMongoSearchResponseFacets {
+  [key: string]: { buckets: any[] };
+}

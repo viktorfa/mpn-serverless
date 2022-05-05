@@ -4,7 +4,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 
 import firebaseAuth from "@/api/auth/firebase";
-import routes from "@/api/routes/v1";
+import routesV1 from "@/api/routes/v1";
+import routesV2 from "@/api/routes/v2";
 import * as Sentry from "@sentry/serverless";
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(firebaseAuth);
 
 app.use(bodyParser.json());
 
-app.use("/v1", routes);
+app.use("/v1", routesV1);
+app.use("/v2", routesV2);
 
 export default app;

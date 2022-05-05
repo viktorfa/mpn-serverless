@@ -16,8 +16,8 @@ provider:
   environment:
     MONGO_URI: ${self:custom.vars.MONGO_URI}
     MONGO_DATABASE: ${self:custom.vars.MONGO_DATABASE}
-    ELASTIC_API_KEY: ${self:custom.vars.ELASTIC_API_KEY}
-    ELASTIC_URL: ${self:custom.vars.ELASTIC_URL}
+    #ELASTIC_API_KEY: ${self:custom.vars.ELASTIC_API_KEY}
+    #ELASTIC_URL: ${self:custom.vars.ELASTIC_URL}
     SENTRY_DSN: ${self:custom.vars.SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
     STAGE: ${self:custom.vars.stage, "dev"}
