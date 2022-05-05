@@ -15,11 +15,12 @@ const updateAutocompleteInMongo = async (
   productCollectionName,
 ) => {
   const autocompleteCollection = await getCollection("autocompletedata");
-  const autocompleteUpsertCursor = await autocompleteCollection.findOneAndUpdate(
-    { productCollection: productCollectionName },
-    { $set: { tokens: autocompleteData } },
-    { upsert: true },
-  );
+  const autocompleteUpsertCursor =
+    await autocompleteCollection.findOneAndUpdate(
+      { productCollection: productCollectionName },
+      { $set: { tokens: autocompleteData } },
+      { upsert: true },
+    );
   console.info("Updated autocomplete data in mongo");
   console.info(autocompleteUpsertCursor);
   return autocompleteUpsertCursor;
@@ -94,6 +95,9 @@ const processProducts = async (
   limit = 2 ** 20,
 ) => {
   console.info(`Processing ${siteCollectionName} with prefix ${prefix}`);
+  if (storeInS3 !== true) {
+    return [];
+  }
   const productCollection = await getCollection(defaultOfferCollection);
 
   const allProducts = await productCollection
@@ -109,14 +113,16 @@ const processProducts = async (
   console.info(`Fetched ${allProducts.length} products from database`);
 
   const autocompleteData = getAutocompleteData(allProducts);
-  const mongoUpdatePromise = updateAutocompleteInMongo(
+  const mongoUpdatePromise = new Promise((res) => res());
+  /*const mongoUpdatePromise = updateAutocompleteInMongo(
     autocompleteData,
     siteCollectionName,
-  );
-  const mongoUpdateTermsPromise = updateAutocompleteTermsInMongo(
+  );*/
+  const mongoUpdateTermsPromise = new Promise((res) => res());
+  /*const mongoUpdateTermsPromise = updateAutocompleteTermsInMongo(
     autocompleteData,
     siteCollectionName,
-  );
+  );*/
   const promises = [mongoUpdatePromise, mongoUpdateTermsPromise];
   if (storeInS3 === true) {
     promises.push(updateAutocompleteInS3(autocompleteData, prefix));
