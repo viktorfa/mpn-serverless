@@ -99,6 +99,13 @@ class TestGetCategories(TestCase):
         actual = get_categories(categories, categories_limits)
         self.assertListEqual(actual, categories[1:])
 
+    def test_get_categories_remove_first_array_length_1(self):
+        categories = ["Hjem", "Grønnsaker", "Bananer"]
+        categories_limits = [1]
+
+        actual = get_categories(categories, categories_limits)
+        self.assertListEqual(actual, categories[1:])
+
     def test_get_categories_no_config(self):
         categories = ["Hjem", "Grønnsaker", "Bananer"]
         categories_limits = None

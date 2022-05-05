@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from parsing.ingredients_extraction import extract_ingredients
 from parsing.nutrition_extraction import extract_nutritional_data
+from parsing.category_extraction import extract_categories
 from parsing.property_extraction import (
     extract_dimensions,
     extract_properties,
@@ -86,7 +87,7 @@ def get_categories(categories, categories_limits):
     to the handle config, since breadcrumbs often include the product name and the root category like "Home".
     """
     try:
-        start_index, end_index = categories_limits
+        start_index, end_index = [*categories_limits, None, None][:2]
         if is_integer_num(start_index) and not is_integer_num(end_index):
             return categories[start_index:]
         elif is_integer_num(end_index) and not is_integer_num(start_index):
@@ -195,6 +196,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["mpnProperties"] = standardize_additional_properties(offer, config)
     result["mpnIngredients"] = extract_ingredients(offer, config)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
+    if offer["dealer"] == "meny":
+        result["mpnCategories"] = extract_categories({**offer, **result}, config)
 
     result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)

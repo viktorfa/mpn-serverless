@@ -44,6 +44,21 @@ class TestGetCategories(TestCase):
             ],
         )
 
+    def test_with_only_map_in_level_0(self):
+        actual = get_mpn_categories_for_offer(
+            {"categories": ["Meieri", "Melk"]},
+            {json.dumps(["Meieri"]): {"target": "meieri"}},
+            {
+                "meieri": {"key": "meieri", "parent": None, "text": "Meieri"},
+            },
+        )
+        self.assertListEqual(
+            actual,
+            [
+                {"key": "meieri", "parent": None, "text": "Meieri"},
+            ],
+        )
+
     def test_for_meny_offer(self):
         self.assertListEqual(
             get_mpn_categories_for_meny_offer({"slugCategories": ["balla"]}, {}), []
