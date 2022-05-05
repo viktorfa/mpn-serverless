@@ -92,11 +92,19 @@ functions:
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
+            mongoCollection: "debeautyoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
             mongoCollection: "dkgroceryoffers"
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "dkbyggoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "dkbeautyoffers"
       - schedule:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
@@ -121,95 +129,117 @@ functions:
           rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "usbeautyoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "sggroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "thgroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "nlgroceryoffers"
+      - schedule:
+          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "frgroceryoffers"
 
-  deleteOffersFromElastic:
-    handler: elastic/handler.handleTriggerDeleteEvent
-    events:
-      - schedule:
-          rate: rate(55 minutes)
-          input:
-            engineName: byggoffers
-      - schedule:
-          rate: rate(110 minutes)
-          input:
-            engineName: groceryoffers
-      - schedule:
-          rate: rate(125 minutes)
-          input:
-            engineName: segroceryoffers
-      - schedule:
-          rate: rate(65 minutes)
-          input:
-            engineName: sebyggoffers
-      - schedule:
-          rate: rate(45 minutes)
-          input:
-            engineName: extraoffers
-      - schedule:
-          rate: rate(41 minutes)
-          input:
-            engineName: seextraoffers
-      - schedule:
-          rate: rate(70 minutes)
-          input:
-            engineName: beautyoffers
-      - schedule:
-          rate: rate(75 minutes)
-          input:
-            engineName: sebeautyoffers
-      - schedule:
-          rate: rate(72 minutes)
-          input:
-            engineName: degroceryoffers
-      - schedule:
-          rate: rate(68 minutes)
-          input:
-            engineName: debyggoffers
-      - schedule:
-          rate: rate(75 minutes)
-          input:
-            engineName: ukbeautyoffers
-      - schedule:
-          rate: rate(72 minutes)
-          input:
-            engineName: ukgroceryoffers
-      - schedule:
-          rate: rate(68 minutes)
-          input:
-            engineName: ukbyggoffers
-      - schedule:
-          rate: rate(75 minutes)
-          input:
-            engineName: usbeautyoffers
-      - schedule:
-          rate: rate(72 minutes)
-          input:
-            engineName: usgroceryoffers
-      - schedule:
-          rate: rate(68 minutes)
-          input:
-            engineName: usbyggoffers
-      - schedule:
-          rate: rate(72 minutes)
-          input:
-            engineName: dkgroceryoffers
-      - schedule:
-          rate: rate(68 minutes)
-          input:
-            engineName: dkbyggoffers
-      - schedule:
-          rate: rate(73 minutes)
-          input:
-            engineName: figroceryoffers
-      - schedule:
-          rate: rate(65 minutes)
-          input:
-            engineName: fibyggoffers
+  # deleteOffersFromElastic:
+  #   handler: elastic/handler.handleTriggerDeleteEvent
+  #   events:
+  #     - schedule:
+  #         rate: rate(55 minutes)
+  #         input:
+  #           engineName: byggoffers
+  #     - schedule:
+  #         rate: rate(110 minutes)
+  #         input:
+  #           engineName: groceryoffers
+  #     - schedule:
+  #         rate: rate(125 minutes)
+  #         input:
+  #           engineName: segroceryoffers
+  #     - schedule:
+  #         rate: rate(65 minutes)
+  #         input:
+  #           engineName: sebyggoffers
+  #     - schedule:
+  #         rate: rate(45 minutes)
+  #         input:
+  #           engineName: extraoffers
+  #     - schedule:
+  #         rate: rate(41 minutes)
+  #         input:
+  #           engineName: seextraoffers
+  #     - schedule:
+  #         rate: rate(70 minutes)
+  #         input:
+  #           engineName: beautyoffers
+  #     - schedule:
+  #         rate: rate(75 minutes)
+  #         input:
+  #           engineName: sebeautyoffers
+  #     - schedule:
+  #         rate: rate(72 minutes)
+  #         input:
+  #           engineName: degroceryoffers
+  #     - schedule:
+  #         rate: rate(68 minutes)
+  #         input:
+  #           engineName: debyggoffers
+  #     - schedule:
+  #         rate: rate(75 minutes)
+  #         input:
+  #           engineName: ukbeautyoffers
+  #     - schedule:
+  #         rate: rate(72 minutes)
+  #         input:
+  #           engineName: ukgroceryoffers
+  #     - schedule:
+  #         rate: rate(68 minutes)
+  #         input:
+  #           engineName: ukbyggoffers
+  #     - schedule:
+  #         rate: rate(75 minutes)
+  #         input:
+  #           engineName: usbeautyoffers
+  #     - schedule:
+  #         rate: rate(72 minutes)
+  #         input:
+  #           engineName: usgroceryoffers
+  #     - schedule:
+  #         rate: rate(68 minutes)
+  #         input:
+  #           engineName: usbyggoffers
+  #     - schedule:
+  #         rate: rate(72 minutes)
+  #         input:
+  #           engineName: dkgroceryoffers
+  #     - schedule:
+  #         rate: rate(68 minutes)
+  #         input:
+  #           engineName: dkbyggoffers
+  #     - schedule:
+  #         rate: rate(73 minutes)
+  #         input:
+  #           engineName: figroceryoffers
+  #     - schedule:
+  #         rate: rate(65 minutes)
+  #         input:
+  #           engineName: fibyggoffers
+  #     - schedule:
+  #         rate: rate(85 minutes)
+  #         input:
+  #           engineName: sggroceryoffers
 
-  migrateOffersToElastic:
-    handler: elastic/handler.handleTriggerMigrateEvent
-  migrateOffersToElasticSns:
-    handler: elastic/handler.handleSnsMigrateEvent
+  migrateDealersToCloudflareKv:
+    handler: cloudflare-kv/handler.migrateDealersToCloudflare
+  migrateOffersToCloudflareKv:
+    handler: cloudflare-kv/handler.handleTriggerMigrateEvent
+  migrateOffersToCloudflareSns:
+    handler: cloudflare-kv/handler.handleSnsMigrateEvent
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -217,6 +247,17 @@ functions:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
               - Stage: ${self:provider.stage}
+  migrateOffersToElastic:
+    handler: elastic/handler.handleTriggerMigrateEvent
+  migrateOffersToElasticSns:
+    handler: elastic/handler.handleSnsMigrateEvent
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Fn::ImportValue: !Sub
+    #          - "#{Stage}-ScraperFeedHandledTopicArn"
+    #          - Stage: ${self:provider.stage}
 
   handlePageViewsFeed:
     handler: stats/handler.handleFeed
