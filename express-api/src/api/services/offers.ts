@@ -25,6 +25,9 @@ export const findOne = async (id: string): Promise<MpnMongoOffer> => {
   const offer = await offersCollection.findOne<MpnMongoOffer>(filter, {
     projection: defaultOfferProjection,
   });
+  if (!offer) {
+    return null;
+  }
   const offerWithDealer = await addDealerToOffers({ offers: [offer] });
   return offerWithDealer[0];
 };
@@ -32,6 +35,9 @@ export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
   const offersCollection = await getCollection(offerCollectionName);
   let filter = getFindOneFilter(id);
   const offer = await offersCollection.findOne<FullMpnOffer>(filter);
+  if (!offer) {
+    return null;
+  }
   const offerWithDealer = await addDealerToOffers({ offers: [offer] });
   return offerWithDealer[0] as FullMpnOffer;
 };
@@ -59,6 +65,7 @@ export const getOffers = async (
     const now = getNowDate();
     selection.validThrough = { $gte: now };
   }
+
   return offersCollection
     .find(selection)
     .project<MpnOffer>(projection)

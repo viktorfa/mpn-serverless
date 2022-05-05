@@ -7,7 +7,7 @@ import {
   offerCollectionName,
 } from "../utils/constants";
 import { Filter } from "mongodb";
-import { groupBy } from "lodash";
+import { groupBy, take } from "lodash";
 
 const categoriesQueryParams = t.type({
   level: t.union([t.string, t.undefined]),
@@ -26,7 +26,7 @@ export const list: Route<
     const categoriesCollection = await getCollection(
       mpnCategoriesCollectionName,
     );
-    const filter: Filter<MpnCategory> = {};
+    const filter: Filter<MpnCategory> = { active: { $ne: false } };
     if (level) {
       filter.level = Number.parseInt(level);
     }
@@ -43,43 +43,58 @@ export const list: Route<
     return Response.ok(result);
   });
 
+const dealerCategoriesQueryParams = t.type({
+  level: t.union([t.string, t.undefined]),
+});
+
 export const getAllCategoriesForDealer: Route<
   | Response.Ok<{ categories: string[]; count: number }[]>
   | Response.BadRequest<string>
-> = route.get("/dealer/:dealer").handler(async (request) => {
-  const offerCollection = await getCollection(offerCollectionName);
+> = route
+  .get("/dealer/:dealer")
+  .use(Parser.query(dealerCategoriesQueryParams))
+  .handler(async (request) => {
+    const offerCollection = await getCollection(offerCollectionName);
+    const level = request.query.level
+      ? Number.parseInt(request.query.level)
+      : null;
+    const now = new Date();
 
-  const now = new Date();
+    const offers = await offerCollection
+      .find({
+        validThrough: { $gt: now },
+        dealer: request.routeParams.dealer,
+      })
+      .project({ categories: 1 })
+      .toArray();
+    const offersWithJsonCategories = offers
+      .map((x) => {
+        if (x.categories && x.categories.length > 0) {
+          const categories = Number.isInteger(level)
+            ? take(x.categories, level + 1)
+            : x.categories;
+          return { categories: JSON.stringify(categories) };
+        } else {
+          return { categories: null };
+        }
+      })
+      .filter((x) => !!x.categories);
+    const categoryGroupedOffers = groupBy(
+      offersWithJsonCategories,
+      "categories",
+    );
+    const result: { categories: string[]; count: number }[] = [];
+    Object.entries(categoryGroupedOffers).forEach(
+      ([categoriesString, offers]) => {
+        result.push({
+          categories: JSON.parse(categoriesString),
+          count: offers.length,
+        });
+      },
+    );
 
-  const offers = await offerCollection
-    .find({
-      validThrough: { $gt: now },
-      dealer: request.routeParams.dealer,
-    })
-    .project({ categories: 1 })
-    .toArray();
-  const offersWithJsonCategories = offers
-    .map((x) => {
-      if (x.categories && x.categories.length > 0) {
-        return { categories: JSON.stringify(x.categories) };
-      } else {
-        return { categories: null };
-      }
-    })
-    .filter((x) => !!x.categories);
-  const categoryGroupedOffers = groupBy(offersWithJsonCategories, "categories");
-  const result: { categories: string[]; count: number }[] = [];
-  Object.entries(categoryGroupedOffers).forEach(
-    ([categoriesString, offers]) => {
-      result.push({
-        categories: JSON.parse(categoriesString),
-        count: offers.length,
-      });
-    },
-  );
-
-  return Response.ok(result);
-});
+    return Response.ok(result);
+  });
 
 export const getCategoryMappingsForDealer: Route<
   Response.Ok<any[]> | Response.BadRequest<string>
@@ -91,6 +106,19 @@ export const getCategoryMappingsForDealer: Route<
       dealer: request.routeParams.dealer,
     })
     .toArray();
+
+  return Response.ok(result);
+});
+
+export const getDealersForContext: Route<
+  Response.Ok<any[]> | Response.BadRequest<string>
+> = route.get("/dealers/:siteCollection").handler(async (request) => {
+  const collection = await getCollection(offerCollectionName);
+
+  const result = await collection.distinct("dealer", {
+    validThrough: { $gt: new Date() },
+    siteCollection: request.routeParams.siteCollection,
+  });
 
   return Response.ok(result);
 });
@@ -119,7 +147,7 @@ export const getByKey: Route<
 });
 
 const putDealerMappingBody = t.type({
-  source: t.string,
+  source: t.array(t.string),
   target: t.string,
   context: t.string,
   dealer: t.string,

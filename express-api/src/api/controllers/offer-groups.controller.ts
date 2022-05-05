@@ -1,6 +1,6 @@
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
-import { getOffersByUris } from "@/api/services/offers";
+import { addDealerToOffers, getOffersByUris } from "@/api/services/offers";
 import {
   addTagToBiRelation,
   getBiRelationById,
@@ -14,6 +14,7 @@ import {
 import { flatten } from "lodash";
 import { marketQueryParams } from "./typera-types";
 import { ObjectId } from "bson";
+import { defaultOfferProjection } from "../models/mpnOffer.model";
 
 const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
@@ -61,9 +62,14 @@ export const getOfferGroups: Route<
         .toArray();
     }
     const offerUris = flatten(biRelations.map((x) => x.offerSet));
-    const offers = await getOffersByUris(offerUris, offerFilter, null);
+    const offers = await getOffersByUris(
+      offerUris,
+      offerFilter,
+      defaultOfferProjection,
+    );
+    const offersWithDealer = await addDealerToOffers({ offers });
     const offerMap = {};
-    offers.forEach((x) => {
+    offersWithDealer.forEach((x) => {
       offerMap[x.uri] = x;
     });
     const result = [];

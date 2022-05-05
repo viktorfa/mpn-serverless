@@ -7,6 +7,7 @@ import {
   list,
   getByKey,
   setMapping,
+  getDealersForContext,
 } from "@/api/controllers/categories.controller";
 
 const routes: Router = router(
@@ -15,6 +16,7 @@ const routes: Router = router(
   list,
   getByKey,
   setMapping,
+  getDealersForContext,
 ).handler();
 
 export default routes;
