@@ -98,19 +98,17 @@ def handle_offers_for_categories(config: HandleConfig):
 
     for offer in offers:
         if config["provenance"] == "meny_api_spider":
-            offer_mpn_categories = get_mpn_categories_for_meny_offer(
-                offer, mpn_categories_map
-            )
+            pass
         else:
             offer_mpn_categories = get_mpn_categories_for_offer(
                 offer, category_mappings_map, mpn_categories_map
             )
-        updates.append(
-            UpdateOne(
-                {"_id": ObjectId(offer["_id"])},
-                {"$set": {"mpnCategories": offer_mpn_categories}},
+            updates.append(
+                UpdateOne(
+                    {"_id": ObjectId(offer["_id"])},
+                    {"$set": {"mpnCategories": offer_mpn_categories}},
+                )
             )
-        )
     logging.debug(f"Updates: {len(updates)}")
 
     result = 0
