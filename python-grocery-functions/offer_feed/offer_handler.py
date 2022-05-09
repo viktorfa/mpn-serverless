@@ -171,8 +171,25 @@ def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
         },
         {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
     )
+    all_scraped_gtins = set([])
+
+    for offer in scraped_offers:
+        all_scraped_gtins.update(offer["gtins"].values())
+
+    all_scraped_gtins = list(all_scraped_gtins)
+
     all_offers = collection.find(
-        {"validThrough": {"$gt": now}, "gtins": {"$exists": True, "$ne": {}}},
+        {
+            "$or": [
+                {"gtins.gtin13": {"$in": all_scraped_gtins}},
+                {"gtins.gtin12": {"$in": all_scraped_gtins}},
+                {"gtins.gtin8": {"$in": all_scraped_gtins}},
+                {"gtins.gtin": {"$in": all_scraped_gtins}},
+                {"gtins.ean": {"$in": all_scraped_gtins}},
+                {"gtins.nobb": {"$in": all_scraped_gtins}},
+                {"gtins.upc": {"$in": all_scraped_gtins}},
+            ]
+        },
         {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
     )
     gtin_offer_map = {}
