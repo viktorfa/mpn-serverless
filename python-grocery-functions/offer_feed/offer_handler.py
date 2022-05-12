@@ -1,3 +1,4 @@
+from bleach import ALLOWED_TAGS
 from offer_feed.categories import handle_offers_for_categories
 from parsing.quantity_extraction import get_value_from_quantity, standardize_quantity
 
@@ -11,14 +12,16 @@ from util.utils import log_traceback
 
 import aws_config
 import boto3
-from typing import Iterable, TypedDict, List
+from typing import Iterable, Mapping, TypedDict, List
 from datetime import datetime
+from pprint import pprint
 
 
 from storage.db import get_collection
 
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+from offer_feed.gtins import get_lists_of_offers_with_same_gtins
 
 
 if not os.getenv("IS_LOCAL"):
@@ -171,49 +174,64 @@ def get_offers_list_for_gtins(provenance: str) -> List[List[dict]]:
         },
         {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
     )
-    all_scraped_gtins = set([])
+    scraped_offers = list(scraped_offers)
+    logging.debug(
+        f"{datetime.now() - now} Got {len(scraped_offers)} offers with provenance {provenance}"
+    )
+    all_scraped_gtin13_ean = set([])
+    all_scraped_gtin12 = set([])
+    all_scraped_gtin8 = set([])
+    all_scraped_gtin = set([])
+    all_scraped_nobb = set([])
+    all_scraped_upc = set([])
 
     for offer in scraped_offers:
-        all_scraped_gtins.update(offer["gtins"].values())
+        for key, value in offer.get("gtins", {}).items():
+            if key in ("gtin13", "ean"):
+                all_scraped_gtin13_ean.add(value)
+            elif key == "gtin12":
+                all_scraped_gtin12.add(value)
+            elif key == "gtin8":
+                all_scraped_gtin8.add(value)
+            elif key == "gtin":
+                all_scraped_gtin.add(value)
+            elif key == "nobb":
+                all_scraped_nobb.add(value)
+            elif key == "upc":
+                all_scraped_upc.add(value)
 
-    all_scraped_gtins = list(all_scraped_gtins)
+    logging.debug(f"{datetime.now() - now} Made sets with gtins")
+    logging.debug(f"all_scraped_gtin13_ean {len(all_scraped_gtin13_ean)}")
+    logging.debug(f"all_scraped_gtin12 {len(all_scraped_gtin12)}")
+    logging.debug(f"all_scraped_gtin8 {len(all_scraped_gtin8)}")
+    logging.debug(f"all_scraped_gtin {len(all_scraped_gtin)}")
+    logging.debug(f"all_scraped_nobb {len(all_scraped_nobb)}")
+    logging.debug(f"all_scraped_upc {len(all_scraped_upc)}")
 
-    all_offers = collection.find(
+    all_offers: Iterable[dict] = collection.find(
         {
             "$or": [
-                {"gtins.gtin13": {"$in": all_scraped_gtins}},
-                {"gtins.gtin12": {"$in": all_scraped_gtins}},
-                {"gtins.gtin8": {"$in": all_scraped_gtins}},
-                {"gtins.gtin": {"$in": all_scraped_gtins}},
-                {"gtins.ean": {"$in": all_scraped_gtins}},
-                {"gtins.nobb": {"$in": all_scraped_gtins}},
-                {"gtins.upc": {"$in": all_scraped_gtins}},
-            ]
+                {"gtins.gtin13": {"$in": list(all_scraped_gtin13_ean)}},
+                {"gtins.gtin12": {"$in": list(all_scraped_gtin12)}},
+                {"gtins.gtin8": {"$in": list(all_scraped_gtin8)}},
+                {"gtins.gtin": {"$in": list(all_scraped_gtin)}},
+                {"gtins.ean": {"$in": list(all_scraped_gtin13_ean)}},
+                {"gtins.nobb": {"$in": list(all_scraped_nobb)}},
+                {"gtins.upc": {"$in": list(all_scraped_upc)}},
+            ],
+            "provenance": {"$ne": provenance},
         },
         {"uri": 1, "provenance": 1, "gtins": 1, "dealer": 1},
     )
-    gtin_offer_map = {}
-    for offer in all_offers:
-        for gtin_key, gtin_value in offer.get("gtins", {}).items():
-            gtin = f"{gtin_key}_{gtin_value}"
-            if gtin in gtin_offer_map.keys():
-                gtin_offer_map[gtin].append(offer)
-            else:
-                gtin_offer_map[gtin] = [offer]
+    # all_offers = list(all_offers)
+    logging.debug(f"{datetime.now() - now} Got all offers with scraped gtins")
 
-    offers_list = []
+    offers_list = get_lists_of_offers_with_same_gtins(scraped_offers, all_offers)
 
-    for offer in scraped_offers:
-        for gtin_key, gtin_value in offer.get("gtins", {}).items():
-            gtin = f"{gtin_key}_{gtin_value}"
-            # Remove self from identical offers
-            identical_offers = list(
-                (x for x in gtin_offer_map.get(gtin, []) if x["uri"] != offer["uri"])
-            )
-            if len(identical_offers) > 0:
-                offers_list.append([offer, *identical_offers])
+    logging.debug(
+        f"{datetime.now() - now} Mapped scraped offers to matched gtin offers {len(offers_list)}"
+    )
 
-    print(f"gtins found: {len(gtin_offer_map.keys())}")
     return offers_list
 
 
@@ -305,3 +323,7 @@ def offer_feed_meta_trigger(event, context):
         logging.error(e)
         log_traceback(e)
         return {"message": str(e)}
+
+
+if __name__ == "__main__":
+    get_offers_list_for_gtins("blivakker_no_feed_spider")
