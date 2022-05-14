@@ -91,7 +91,7 @@ def trigger_scraper_feed(event, context):
     aws_config.lambda_context = context
 
     try:
-        key = event["key"]
+        key = event["feed_key"]
         provenance = key.split("/")[0]
         configs = fetch_handle_configs(provenance)
         lambda_client = boto3.client("lambda")  # type: botostubs.Lambda
