@@ -190,9 +190,19 @@ def add_davidsen_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": new_href}
 
 
+def add_locamo_de_affiliate_link(product: dict) -> dict:
+    if "pin.locamo.de" in product["href"]:
+        return product
+    escaped_original_href = encode_uri_component(product["href"])
+    new_href = f"https://pin.locamo.de/t/t?a=1714038695&as=1650547786&t=2&tk=1&url={escaped_original_href}"
+    return {**product, "ahref": new_href}
+
+
 def get_affiliate_handler(product: dict):
-    if "byggmax.no" in product["href"]:
-        return add_byggmax_affiliate_link
+    if not "byggmax.no" in product["href"]:
+        return
+    # elif "byggmax.no" in product["href"]:
+    #    return add_byggmax_affiliate_link
     elif "amazon.se" in product["href"]:
         return add_se_amazon_affiliate_link
     elif "amazon.de" in product["href"]:
@@ -219,8 +229,8 @@ def get_affiliate_handler(product: dict):
         return add_se_beijerbygg_affiliate_link
     elif "skanskabyggvaror.se" in product["href"]:
         return add_se_skanska_affiliate_link
-    elif "byggmax.se" in product["href"]:
-        return add_se_byggmax_affiliate_link
+    # elif "byggmax.se" in product["href"]:
+    #    return add_se_byggmax_affiliate_link
     elif "www.slikkepott.no" in product["href"]:
         return add_slikkepott_affiliate_link
     elif "natur.no" in product["href"]:
@@ -231,6 +241,8 @@ def get_affiliate_handler(product: dict):
         return add_strawberrynet_affiliate_link
     elif "www.davidsenshop.dk" in product["href"]:
         return add_davidsen_affiliate_link
+    elif "www.locamo.de" in product["href"]:
+        return add_locamo_de_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
