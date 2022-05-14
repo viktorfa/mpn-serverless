@@ -196,7 +196,7 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["mpnProperties"] = standardize_additional_properties(offer, config)
     result["mpnIngredients"] = extract_ingredients(offer, config)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
-    if offer["dealer"] == "meny":
+    if config["provenance"] == "meny_api_spider":
         result["mpnCategories"] = extract_categories({**offer, **result}, config)
 
     result = analyze_quantity({**offer, **result})
