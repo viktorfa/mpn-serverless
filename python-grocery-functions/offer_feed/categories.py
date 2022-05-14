@@ -70,8 +70,23 @@ def get_mpn_categories_for_offer(offer: MpnOffer, source_cat_map, target_cat_map
 def handle_offers_for_categories(config: HandleConfig):
     logging.info("handle_offers_for_categories")
     now = datetime.now()
-    offer_collection = get_collection("mpnoffers")
     provenance = config["provenance"]
+    logging.info(f"Trying to find categories for offers with provenance {provenance}")
+    offer_context = get_offer_context_from_site_collection(config["collection_name"])
+    if not offer_context:
+        return None
+    category_mappings = get_collection("mpncategorymappings").find(
+        {"context": offer_context}
+    )
+
+    category_mappings = list(category_mappings)
+    if len(category_mappings) == 0:
+        logging.info(
+            f"No category mappings for provenance {provenance} and context {offer_context}"
+        )
+        return None
+
+    offer_collection = get_collection("mpnoffers")
     offers = offer_collection.find(
         {
             "provenance": provenance,
@@ -79,13 +94,6 @@ def handle_offers_for_categories(config: HandleConfig):
             "categories.0": {"$exists": 1},
         },
         {"categories": 1, "slugCategories": 1},
-    )
-    logging.info(f"Trying to find categories for offers with provenance {provenance}")
-    offer_context = get_offer_context_from_site_collection(config["collection_name"])
-    if not offer_context:
-        return None
-    category_mappings = get_collection("mpncategorymappings").find(
-        {"context": offer_context}
     )
     category_mappings_map = {}
     for x in category_mappings:
