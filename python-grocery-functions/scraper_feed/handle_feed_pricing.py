@@ -80,7 +80,7 @@ def trigger_scraper_feed_pricing_with_history(event, context):
     result = []
 
     try:
-        key = event["key"]
+        key = event["feed_key"]
         provenance = key.split("/")[0]
         lambda_client = boto3.client("lambda")  # type: botostubs.Lambda
         config = fetch_single_handle_config(provenance)
