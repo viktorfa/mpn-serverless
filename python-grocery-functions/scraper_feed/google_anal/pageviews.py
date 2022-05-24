@@ -1,12 +1,22 @@
-import json
 import os
 import logging
 import pydash
 from pymongo.operations import UpdateOne
-from googleapiclient.discovery import build
-from oauth2client.service_account import ServiceAccountCredentials
+
+import sentry_sdk
+from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+
+from scraper_feed.google_anal.utils import (
+    sites,
+    initialize_analyticsreporting,
+)
 
 from storage.db import get_collection
+
+if not os.getenv("IS_LOCAL"):
+    sentry_sdk.init(
+        integrations=[AwsLambdaIntegration()],
+    )
 
 logger = logging.getLogger()
 logging.getLogger("botocore").setLevel(logging.WARNING)
@@ -18,44 +28,6 @@ if os.getenv("IS_LOCAL"):
 else:
     logging.basicConfig(level=logging.INFO)
     logger.setLevel(logging.INFO)
-
-SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
-KEY_FILE_LOCATION = "scraper_feed/google_anal/_SECRET_mpnmpn-779aa439f931.json"
-
-sites = {
-    "bygg-de": {"view_id": "250610345", "offer_string": "/angebote/"},
-    "amp-de": {"view_id": "250230468", "offer_string": "/angebote/"},
-    "amp-dk": {"view_id": "252921853", "offer_string": "/tilbud/"},
-    "bygg-dk": {"view_id": "252899683", "offer_string": "/tilbud/"},
-    "bygg-no": {"view_id": "209692000", "offer_string": "/tilbud/"},
-    "beauty-no": {"view_id": "239885466", "offer_string": "/tilbud/"},
-    "amp-no": {"view_id": "187893382", "offer_string": "/tilbud/"},
-    "bygg-se": {"view_id": "234405434", "offer_string": "/erbjudande/"},
-    "beauty-se": {"view_id": "240724194", "offer_string": "/erbjudande/"},
-    "amp-se": {"view_id": "234437137", "offer_string": "/erbjudande/"},
-    "bygg-uk": {"view_id": "252885276", "offer_string": "/offers/"},
-    "beauty-uk": {"view_id": "252859573", "offer_string": "/offers/"},
-    "amp-uk": {"view_id": "252812272", "offer_string": "/offers/"},
-    "bygg-us": {"view_id": "252892165", "offer_string": "/offers/"},
-    "beauty-us": {"view_id": "252892678", "offer_string": "/offers/"},
-    "amp-us": {"view_id": "252904698", "offer_string": "/offers/"},
-}
-
-
-def initialize_analyticsreporting():
-    """Initializes an Analytics Reporting API V4 service object.
-
-    Returns:
-      An authorized Analytics Reporting API V4 service object.
-    """
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        KEY_FILE_LOCATION, SCOPES
-    )
-
-    # Build the service object.
-    analytics = build("analyticsreporting", "v4", credentials=credentials)
-
-    return analytics
 
 
 def get_report(analytics, view_id, offer_string, page_size=6000):
@@ -105,6 +77,26 @@ def get_report(analytics, view_id, offer_string, page_size=6000):
                                         "dimensionName": "ga:pagepath",
                                         "operator": "PARTIAL",
                                         "expressions": ["/erbjudande/"],
+                                    },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/tarjouksia/"],
+                                    },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/offres/"],
+                                    },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/aanbiedingen/"],
+                                    },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/oferty/"],
                                     },
                                 ]
                             }
@@ -160,6 +152,7 @@ def get_and_save_pageviews(max_pages=6000):
     reports = []
 
     for site_key, site_config in sites.items():
+        logging.info(f"Getting report for {site_key}")
         response = get_report(
             analytics, site_config["view_id"], site_config["offer_string"], max_pages
         )
