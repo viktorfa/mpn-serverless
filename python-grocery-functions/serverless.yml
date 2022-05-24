@@ -1,3 +1,5 @@
+org: matpanett
+app: python-sls-function
 # Welcome to Serverless!
 #
 # This file is the main config file for your service.
@@ -146,6 +148,12 @@ functions:
           enabled: true
           description: "Every day"
 
+  handleHttpOptions:
+    handler: scraper_management.handler.handle_options
+    events:
+      - http:
+          path: "{proxy+}"
+          method: options
   invokeScrapeHttp:
     environment:
       SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-scrape
@@ -154,7 +162,6 @@ functions:
       - http:
           path: scrape/{id}
           method: post
-          cors: true
   invokeHandleHttp:
     environment:
       SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-handle
@@ -163,7 +170,6 @@ functions:
       - http:
           path: handle/{id}
           method: post
-          cors: true
 
   updatePageviews:
     handler: scraper_feed.google_anal.pageviews.handle

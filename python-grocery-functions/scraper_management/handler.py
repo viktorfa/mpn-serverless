@@ -11,6 +11,26 @@ from scraper_feed.handle_config import fetch_handle_configs
 lambda_client = boto_client("lambda")
 
 
+def get_cors_headers(event):
+    cors_origin = event["headers"]["origin"]
+    cors_headers = event["headers"].get("access-control-request-headers")
+    cors_method = event["headers"].get("access-control-request-method")
+
+    headers = {
+        "access-control-allow-origin": cors_origin,
+    }
+    if cors_headers:
+        headers["access-control-allow-headers"] = cors_headers
+    if cors_method:
+        headers["access-control-allow-methods"] = cors_method
+
+    return headers
+
+
+def handle_options(event, context):
+    return {"statusCode": 204, "body": "", "headers": get_cors_headers(event)}
+
+
 def handle_scrape(event, context):
     logging.info(json.dumps(event))
     print(json.dumps(event))
@@ -37,6 +57,7 @@ def handle_scrape(event, context):
     return {
         "statusCode": 200,
         "body": json.dumps(spider_config, default=str),
+        "headers": {**get_cors_headers(event), "content-type": "application/json"},
     }
 
 
@@ -70,4 +91,8 @@ def handle_feed(event, context):
         )
         result.append(lambda_response)
 
-    return {"statusCode": 200, "body": json.dumps(result, default=str)}
+    return {
+        "statusCode": 200,
+        "body": json.dumps(result, default=str),
+        "headers": {**get_cors_headers(event), "content-type": "application/json"},
+    }
