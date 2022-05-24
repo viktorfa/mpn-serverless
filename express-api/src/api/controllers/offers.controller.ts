@@ -6,6 +6,7 @@ import {
   addTagToOffers,
   findOne,
   findOneFull,
+  findSimilarPromoted,
   getOfferUrisForTags,
   getSimilarGroupedOffersFromOfferUris,
   getTagsForOffer,
@@ -130,13 +131,6 @@ const similarHandler = async (request) => {
   const offerHasSimilarOffers =
     offer.similarOffers && offer.similarOffers.length > 0;
 
-  if (!offerHasSimilarOffers) {
-    console.warn(
-      `Offer ${request.routeParams.id} did not have any similar offers.`,
-    );
-  }
-
-  //if (useSearch === true || !offerHasSimilarOffers) {
   if (!offerHasSimilarOffers) {
     const mongoSearchResponse = await searchWithMongo({
       query: offer.title.substring(0, 127),
@@ -280,6 +274,8 @@ const similarHandlerV1 = async (request) => {
 const similarOffersQueryParams = t.type({
   productCollection: t.string,
   useSearch: t.union([t.string, t.undefined]),
+  market: t.union([t.string, t.undefined]),
+  limit: t.union([t.string, t.undefined]),
 });
 
 export const similar: Route<
@@ -290,6 +286,29 @@ export const similar: Route<
   .get("/similar/:id")
   .use(Parser.query(similarOffersQueryParams))
   .handler(similarHandler);
+
+const similarPromotedOffersQueryParams = t.type({
+  market: t.union([t.string, t.undefined]),
+  limit: t.union([t.string, t.undefined]),
+});
+
+export const similarPromoted: Route<
+  | Response.Ok<MpnOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/similar/promoted/:id")
+  .use(Parser.query(similarPromotedOffersQueryParams))
+  .handler(async (request) => {
+    const { market, limit } = request.query;
+    const _limit = getLimitFromQueryParam(limit, 2);
+    const result = await findSimilarPromoted({
+      limit: _limit,
+      market,
+      uri: request.routeParams.id,
+    });
+    return Response.ok(result);
+  });
 export const similarEnd: Route<
   | Response.Ok<MpnOffer[]>
   | Response.BadRequest<string>
@@ -835,20 +854,32 @@ export const offersWithPriceDifference: Route<
     const limit = request.query.limit;
     let _limit = getLimitFromQueryParam(limit, 32, 128);
 
-    const sortDirection = direction === "desc" ? -1 : 1;
+    const sortDirection = direction === "desc" ? 1 : -1;
     const namespacesArray = namespaces.split(",");
     const categoriesArray = categories.split(",").filter((x) => !!x);
 
-    const before8Days = getDaysAhead(-8);
+    const before7Days = getDaysAhead(-7);
 
     const offerPricingCollection = await getCollection("offerpricings");
+
+    const filter: Record<string, any> = {
+      date: { $gt: before7Days.toISOString().substring(0, 10) }, // YYYY-MM-DD
+      uri: { $regex: `^(${namespacesArray.join("|")})\:` },
+    };
+
+    if (direction === "desc") {
+      filter.differencePercentage = {
+        $gt: 30,
+      };
+    } else {
+      filter.differencePercentage = {
+        $lt: -30,
+      };
+    }
+
     const pricingObjects = await offerPricingCollection
-      .find({
-        date: { $gt: before8Days.toISOString().substring(0, 10) }, // YYYY-MM-DD
-        difference: { $exists: 1 },
-        uri: { $regex: `^(${namespacesArray.join("|")})\:` },
-      })
-      .sort({ difference: sortDirection })
+      .find(filter)
+      .sort({ differencePercentage: sortDirection })
       .limit(1024)
       .toArray();
 
@@ -865,10 +896,6 @@ export const offersWithPriceDifference: Route<
     if (categoriesArray.length > 0) {
       offerSelection["mpnCategories.key"] = { $in: categoriesArray };
     }
-    console.log("categoriesArray");
-    console.log(categoriesArray);
-    console.log("Object.keys(pricingMap)");
-    console.log(Object.keys(pricingMap));
     const offers = await offerCollection
       .find(offerSelection)
       .project(defaultOfferProjection)
