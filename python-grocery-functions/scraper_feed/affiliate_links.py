@@ -11,7 +11,7 @@ def add_byggmax_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://track.adtraction.com/t/t?a=708216731&as=1532500727&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_lampegiganten_affiliate_link(product: dict) -> dict:
@@ -19,7 +19,7 @@ def add_lampegiganten_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://id.lampegiganten.no/t/t?a=1493664807&as=1532500727&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_grontfokus_affiliate_link(product: dict) -> dict:
@@ -27,7 +27,7 @@ def add_grontfokus_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://at.grontfokus.no/t/t?a=1095685414&as=1532500727&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_amazon_affiliate_link(product: dict) -> dict:
@@ -95,7 +95,7 @@ def add_elimport_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://clk.tradedoubler.com/click?p=308985&a=3191775&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_cdon_affiliate_link(product: dict) -> dict:
@@ -103,7 +103,7 @@ def add_cdon_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = encode_uri_component(product["href"])
     new_href = f"https://clk.tradedoubler.com/click?p=116&a=3191774&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_slikkepott_affiliate_link(product: dict) -> dict:
@@ -113,14 +113,14 @@ def add_slikkepott_affiliate_link(product: dict) -> dict:
     new_href = (
         f"https://slikkepott.no/tt/?tt=19005_12_392741_&r={escaped_original_href}"
     )
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_natur_no_affiliate_link(product: dict) -> dict:
     if "?___store=nno&aff_id=1119" in product["href"]:
         return product
     new_href = f"{product['href']}?___store=nno&aff_id=1119"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_matsmart_affiliate_link(product: dict) -> dict:
@@ -128,7 +128,7 @@ def add_se_matsmart_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://id.matsmart.se/t/t?a=1136290811&as=1573089692&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_hemkop_affiliate_link(product: dict) -> dict:
@@ -136,7 +136,7 @@ def add_se_hemkop_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://track.adtraction.com/t/t?a=1479128955&as=1573089692&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_mat_se_affiliate_link(product: dict) -> dict:
@@ -144,7 +144,7 @@ def add_se_mat_se_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://on.mat.se/t/t?a=1123786747&as=1573089692&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_beijerbygg_affiliate_link(product: dict) -> dict:
@@ -152,7 +152,7 @@ def add_se_beijerbygg_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://dot.beijerbygg.se/t/t?a=1127510938&as=1573089698&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_skanska_affiliate_link(product: dict) -> dict:
@@ -160,7 +160,7 @@ def add_se_skanska_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://ion.skanskabyggvaror.se/t/t?a=1064671461&as=1573089698&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_se_byggmax_affiliate_link(product: dict) -> dict:
@@ -168,7 +168,7 @@ def add_se_byggmax_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://track.adtraction.com/t/t?a=23959178&as=1573089698&t=2&tk=1&url={escaped_original_href}"
-    return {**product, "href": new_href, "ahref": new_href}
+    return {**product, "ahref": new_href}
 
 
 def add_buildor_se_affiliate_link(product: dict) -> dict:
@@ -199,7 +199,7 @@ def add_locamo_de_affiliate_link(product: dict) -> dict:
 
 
 def get_affiliate_handler(product: dict):
-    if not "byggmax.no" in product["href"]:
+    if "byggmax.no" in product["href"]:
         return
     # elif "byggmax.no" in product["href"]:
     #    return add_byggmax_affiliate_link
@@ -223,8 +223,8 @@ def get_affiliate_handler(product: dict):
         return add_se_matsmart_affiliate_link
     elif "hemkop.se" in product["href"]:
         return add_se_hemkop_affiliate_link
-    elif "mat.se" in product["href"]:
-        return add_se_mat_se_affiliate_link
+    # elif "mat.se" in product["href"]:
+    #    return add_se_mat_se_affiliate_link
     elif "beijerbygg.se" in product["href"]:
         return add_se_beijerbygg_affiliate_link
     elif "skanskabyggvaror.se" in product["href"]:
@@ -246,7 +246,7 @@ def get_affiliate_handler(product: dict):
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
-    if product.get("ahref") and not not product["ahref"]:
+    if not not product.get("ahref"):
         return product
     handler = get_affiliate_handler(product)
     if handler is None:
