@@ -61,3 +61,8 @@ def json_time_to_datetime(json_time_string: str) -> datetime:
 
 def get_product_uri(provenance: str, _id: str) -> str:
     return "{}:product:{}".format(provenance, _id)
+
+
+def get_difference_percentage(original: float, new: float) -> float:
+    diff = new - original
+    return (diff / original) * 100

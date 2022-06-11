@@ -3,19 +3,26 @@ import json
 from json.decoder import JSONDecodeError
 import logging
 import os
+from typing import Dict, List, Mapping
 
 from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
-from pymongo import UpdateOne
+from pymongo import InsertOne, UpdateOne
 from config.mongo import get_collection
 from scraper_feed.handle_config import fetch_single_handle_config
+from scraper_feed.pricing_history import get_price_difference_update_set
 from util.utils import log_traceback
 import boto3
 import botostubs
 
 import aws_config
 from util.helpers import get_product_uri
-from amp_types.amp_product import EventHandleConfig, HandleConfig
+from amp_types.amp_product import (
+    EventHandleConfig,
+    HandleConfig,
+    PriceHistoryForOffer,
+    PriceHistoryRecord,
+)
 from storage.s3 import get_s3_object, get_s3_object_versions
 
 import sentry_sdk
@@ -43,6 +50,15 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     logging.info(event)
     aws_config.lambda_context = context
 
+    if "amazon" in event["namespace"]:
+        return
+    if "shopgun" in event["namespace"]:
+        return
+    if "computersalg" in event["namespace"]:
+        return
+    if "cdon" in event["namespace"]:
+        return
+
     try:
         bucket = os.environ["SCRAPER_FEED_BUCKET"]
         key = event["feed_key"]
@@ -57,8 +73,13 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         logging.warn("No items in scraper feed")
         return {"message": "No items in scraped feed"}
     try:
-        result = handle_feed_with_config_for_pricing(
-            json.loads(file_content), {**event, "scrape_time": scrape_time}
+        # Limit the number of offers to avoid too much database load
+        offers = json.loads(file_content)[:20000]
+        if os.getenv("STAGE") == "dev":
+            offers = offers[:512]
+
+        result = handle_feed_with_config_for_pricing_series(
+            offers, {**event, "scrape_time": scrape_time}
         )
 
         return {
@@ -89,23 +110,6 @@ def trigger_scraper_feed_pricing_with_history(event, context):
             logging.error(f"No handle config for {provenance}")
             return {"messsage": f"No handle config for {provenance}"}
 
-        namespace = config["namespace"]
-
-        if namespace not in [
-            "coop",
-            "kolonial",
-            "meny",
-            "www.holdbart.no",
-            "europris",
-            "hemkop",
-            "mat.se",
-            "matsmart",
-            "ica_online",
-            "coop_online",
-            "willys_se",
-        ]:
-            return {"message": f"Will not store prices for namespace {namespace}"}
-
         try:
             bucket = os.environ["SCRAPER_FEED_BUCKET"]
             versions = get_s3_object_versions(bucket, key)
@@ -117,16 +121,18 @@ def trigger_scraper_feed_pricing_with_history(event, context):
                 file_content = version_data["Body"].read().decode()
                 try:
                     result.append(
-                        handle_feed_with_config_for_pricing(
+                        handle_feed_with_config_for_pricing_series(
                             json.loads(file_content),
                             {**config, "scrape_time": scrape_time},
+                            use_history=False,
                         )
                     )
                 except JSONDecodeError:
                     # Means empty S3 file
                     pass
-                except BulkWriteError:
+                except BulkWriteError as e:
                     # Means duplicate pricing object for one day
+                    log_traceback(e)
                     pass
             logging.info(f"Ran pricing for {len(result)} feeds")
 
@@ -140,6 +146,99 @@ def trigger_scraper_feed_pricing_with_history(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     return json.dumps(result, default=str)
+
+
+def handle_feed_with_config_for_pricing_series(
+    feed: list, config: HandleConfig, use_history=True
+):
+    if not config["namespace"]:
+        raise Exception("Config needs namespace")
+    if not config["scrape_time"]:
+        raise Exception("Config needs scrape_time")
+    if not config["collection_name"]:
+        raise Exception("Config needs collection_name")
+
+    pricing_object_map: Dict[str, PriceHistoryRecord] = {}
+
+    scrape_time = config["scrape_time"]
+    scrape_time_string = scrape_time.strftime("%Y-%m-%d")
+
+    for offer in feed:
+        sku = next(
+            (
+                x
+                for x in (
+                    offer.get("provenanceId"),
+                    offer.get("provenance_id"),
+                    offer.get("sku"),
+                )
+                if x
+            ),
+            None,
+        )
+        if not sku:
+            continue
+        uri = get_product_uri(config["namespace"], sku)
+        if not offer.get("price") > 0:
+            continue
+
+        pricing_object_map[uri] = {
+            "price": offer["price"],
+            "date": scrape_time_string,
+        }
+
+    pricing_collection = get_collection("offerpricinghistories")
+    price_history_map: Dict[str, PriceHistoryForOffer] = {}
+    if use_history:
+        existing_price_histories: List[PriceHistoryForOffer] = pricing_collection.find(
+            {"uri": {"$in": list(pricing_object_map.keys())}}
+        )
+        for price_history in existing_price_histories:
+            price_history_map[price_history["uri"]] = price_history
+    else:
+        pass
+
+    updates = []
+
+    for uri, pricing_object in pricing_object_map.items():
+        price_history = price_history_map.get(uri, None)
+        if price_history:
+            update_set = get_price_difference_update_set(
+                price_history, config, pricing_object["price"]
+            )
+            updates.append(
+                UpdateOne(
+                    {"uri": uri},
+                    {
+                        "$set": update_set,
+                        "$addToSet": {"history": pricing_object},
+                    },
+                )
+            )
+        else:
+            updates.append(
+                UpdateOne(
+                    {"uri": uri},
+                    {
+                        "$set": {
+                            "siteCollection": config["collection_name"],
+                            "updatedAt": scrape_time,
+                            "latestPrice": pricing_object["price"],
+                        },
+                        "$addToSet": {"history": pricing_object},
+                    },
+                    upsert=True,
+                )
+            )
+
+    if os.getenv("STAGE") == "dev":
+        result = pricing_collection.bulk_write(updates[:512])
+    else:
+        result = pricing_collection.bulk_write(updates)
+
+    logging.debug(result)
+
+    return result.matched_count
 
 
 def handle_feed_with_config_for_pricing(

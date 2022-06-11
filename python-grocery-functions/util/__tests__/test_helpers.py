@@ -2,7 +2,12 @@ import json
 from datetime import datetime
 from unittest import TestCase
 
-from util.helpers import json_time_to_datetime, json_handler, get_nested
+from util.helpers import (
+    get_difference_percentage,
+    json_time_to_datetime,
+    json_handler,
+    get_nested,
+)
 
 
 class TestHelpers(TestCase):
@@ -30,3 +35,10 @@ class TestHelpers(TestCase):
         self.assertEqual(get_nested({1: "yay"}, [1]), "yay")
         self.assertEqual(get_nested({"a": {"b": {"c": "yay"}}}, "a.b.c"), "yay")
         self.assertEqual(get_nested({"a": "yay"}, "a"), "yay")
+
+    def test_get_difference_percentage(self):
+        self.assertEqual(get_difference_percentage(10, 2), -80)
+        self.assertEqual(get_difference_percentage(10, 20), 100)
+        self.assertEqual(get_difference_percentage(10, 30), 200)
+        self.assertEqual(get_difference_percentage(10, 0), -100)
+        self.assertEqual(get_difference_percentage(10, 10), 0)

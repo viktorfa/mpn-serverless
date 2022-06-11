@@ -85,7 +85,7 @@ class TestWithConfig(TestCase):
     def test_meny_products(self):
         config = generate_handle_config(
             {
-                "provenance": "meny",
+                "provenance": "meny_api_spider",
                 "namespace": "meny",
                 "market": "no",
                 "collection_name": "groceryoffers",
