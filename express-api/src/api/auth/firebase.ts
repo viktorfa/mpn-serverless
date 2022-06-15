@@ -19,7 +19,7 @@ const getFirebaseAuth = () => {
 };
 
 const getBearerToken = (req: Request) => {
-  const bearerToken = req.headers["authorization"] as string;
+  const bearerToken = req.headers.authorization as string;
   if (!bearerToken) {
     return false;
   }
@@ -29,11 +29,28 @@ const getBearerToken = (req: Request) => {
   }
   return idToken;
 };
+const getCognitoIdentityId = (req: Request) => {
+  const cognitoToken = req.headers.authorization as string;
+  if (!cognitoToken) {
+    return false;
+  }
+  const [scheme, idToken] = cognitoToken.split(" ");
+  if (scheme !== "Cognito" || !idToken) {
+    return false;
+  }
+  return idToken;
+};
 
 const canBypassAuthentication = (req: Request) => {
   if (["GET", "OPTIONS", "HEAD"].includes(req.method)) {
     return true;
   } else if (req.method === "POST" && req.path.startsWith("/v1/reviews")) {
+    return true;
+  } else if (
+    req.method === "POST" &&
+    req.path === "/v1/offers" &&
+    !!getCognitoIdentityId(req)
+  ) {
     return true;
   } else if (process.env.NODE_ENV !== "production") {
     return true;
@@ -58,6 +75,12 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     }
     next();
   } else {
+    const cognitoIdentityId = getCognitoIdentityId(req);
+    if (req.method === "POST" && /\/offers\/?$/.test(req.path)) {
+      if (!!cognitoIdentityId) {
+        next();
+      }
+    }
     const bearerToken = getBearerToken(req);
     if (!bearerToken) {
       return res
