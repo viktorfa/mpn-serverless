@@ -1,7 +1,6 @@
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
-import cors from "cors";
 
 import firebaseAuth from "@/api/auth/firebase";
 import routesV1 from "@/api/routes/v1";
@@ -10,7 +9,6 @@ import * as Sentry from "@sentry/serverless";
 
 const app = express();
 
-app.use(cors());
 app.use(morgan("tiny"));
 
 app.use((req, _res, next) => {
@@ -31,5 +29,16 @@ app.use(bodyParser.json());
 
 app.use("/v1", routesV1);
 app.use("/v2", routesV2);
+
+/*app.use((_req, res, next) => {
+  Sentry.AWSLambda.getCurrentHub().setTag("statusCode", res.statusCode);
+  if (res.statusCode >= 400) {
+    Sentry.AWSLambda.getCurrentHub().captureMessage(
+      res.statusMessage,
+      Sentry.Severity.Warning,
+    );
+  }
+  next();
+});*/
 
 export default app;
