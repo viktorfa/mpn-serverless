@@ -8,14 +8,22 @@ import {
 } from "@/api/utils/constants";
 import { getDaysAhead, getNowDate, isMongoUri } from "@/api/utils/helpers";
 import { getBiRelationsForOfferUris } from "@/api/services/offer-relations";
+import { searchWithMongo } from "./search";
 
 const getFindOneFilter = (
   id: string,
-): Record<"_id", ObjectId> | Record<"uri", string> => {
+): Record<"_id", ObjectId> | Record<"uri", { $in: string[] }> => {
   if (isMongoUri(id)) {
     return { _id: new ObjectId(id) };
   } else {
-    return { uri: id };
+    const [dealer, type, provenanceId] = id.split(":");
+    const capitalizedProvenanceId = provenanceId.toUpperCase();
+    const uriWithCapitalizedProvenanceId = [
+      dealer,
+      type,
+      capitalizedProvenanceId,
+    ].join(":");
+    return { uri: { $in: [id, uriWithCapitalizedProvenanceId] } };
   }
 };
 
@@ -241,26 +249,20 @@ export const getOffersWithDealer = async ({
   sort = {},
   limit = 30,
 }) => {
-  console.time();
   const offersCollection = await getCollection(offerCollectionName);
-  console.timeEnd();
-  console.time();
   const offers = await offersCollection
     .find(selection)
     .project(projection)
     .sort(sort)
     .limit(limit)
     .toArray();
-  console.timeEnd();
 
   const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
-  console.time();
   const dealerCollection = await getCollection("dealers");
   const dealers = await dealerCollection
     .find({ key: { $in: dealerKeys } })
     .project(defaultDealerProjection)
     .toArray();
-  console.timeEnd();
   const dealerMap = {};
   dealers.forEach((dealer) => {
     dealerMap[dealer.key] = dealer;
@@ -293,4 +295,59 @@ export const addDealerToOffers = async <T = MpnOffer>({ offers }) => {
   });
 
   return result;
+};
+export const addPricingToOffers = async <T = MpnOffer>({ offers }) => {
+  const offerUris = offers.map((x) => x.uri);
+  const pricingHistoriesCollection = await getCollection(
+    "offerpricinghistories",
+  );
+  const pricingHistories = await pricingHistoriesCollection
+    .find({ uri: { $in: offerUris } })
+    .toArray();
+  const pricingHistoriesMap = {};
+  pricingHistories.forEach((x) => {
+    pricingHistoriesMap[x.uri] = x;
+  });
+
+  const result = offers.map((offer) => {
+    return {
+      ...offer,
+      pricingHistory: pricingHistoriesMap[offer.uri],
+    };
+  });
+
+  return result;
+};
+
+export const findSimilarPromoted = async ({
+  uri,
+  limit,
+  market,
+}: {
+  uri: string;
+  market: string;
+  limit: number;
+}): Promise<MpnResultOffer[] | null> => {
+  let offer: FullMpnOffer;
+  try {
+    offer = await findOneFull(uri);
+    if (!offer) {
+      throw new Error();
+    }
+  } catch (e) {
+    return null;
+  }
+  const mongoSearchResponse = await searchWithMongo({
+    query: offer.title.substring(0, 127),
+    markets: [market],
+    limit,
+    isPartner: true,
+  });
+  mongoSearchResponse.items = mongoSearchResponse.items.filter(
+    (x) => x.uri !== uri,
+  );
+  const resultWithDealer = await addDealerToOffers({
+    offers: mongoSearchResponse.items,
+  });
+  return resultWithDealer;
 };

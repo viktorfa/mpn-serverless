@@ -1,8 +1,9 @@
-import _, { sortBy } from "lodash";
+import _, { sortBy, take } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
   addDealerToOffers,
+  addPricingToOffers,
   addTagToOffers,
   findOne,
   findOneFull,
@@ -30,7 +31,11 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { getQuantityObject, getValueObject } from "../utils/quantity";
-import { getPricingHistory } from "../services/pricing-history";
+import {
+  getPricingHistory,
+  getPricingHistoryV2,
+} from "../services/pricing-history";
+import { addDays } from "date-fns";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
@@ -834,12 +839,34 @@ export const offerPricingHistory: Route<
 
   return Response.ok(pricingObjects);
 });
+export const offerPricingHistoryV2: Route<
+  Response.Ok<object> | Response.NotFound | Response.BadRequest<string>
+> = route.get("/:id/pricing").handler(async (request) => {
+  const offerPricingHistoryCollection = await getCollection(
+    "offerpricinghistories",
+  );
+  const pricingHistory = await offerPricingHistoryCollection.findOne({
+    uri: request.routeParams.id,
+  });
+  if (!pricingHistory) {
+    return Response.notFound();
+  }
+
+  const pricingObjects = getPricingHistoryV2({
+    pricingHistory,
+    endDate: addDays(pricingHistory.updatedAt, 7),
+  });
+
+  return Response.ok(pricingObjects);
+});
 
 const priceDifferencesQueryParams = t.type({
   direction: t.union([t.string, t.undefined]),
   namespaces: t.union([t.string, t.undefined]),
   categories: t.union([t.string, t.undefined]),
+  productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
+  daysPast: t.union([t.string, t.undefined]),
 });
 
 export const offersWithPriceDifference: Route<
@@ -849,38 +876,77 @@ export const offersWithPriceDifference: Route<
   .use(Parser.query(priceDifferencesQueryParams))
   .handler(async (request) => {
     const direction = request.query.direction || "desc";
-    const namespaces = request.query.namespaces || "kolonial,meny,coop";
     const categories = request.query.categories || "";
     const limit = request.query.limit;
     let _limit = getLimitFromQueryParam(limit, 32, 128);
 
-    const sortDirection = direction === "desc" ? 1 : -1;
-    const namespacesArray = namespaces.split(",");
+    const sortDirection = direction === "desc" ? -1 : 1;
     const categoriesArray = categories.split(",").filter((x) => !!x);
 
     const before7Days = getDaysAhead(-7);
 
-    const offerPricingCollection = await getCollection("offerpricings");
+    const offerPricingCollection = await getCollection("offerpricinghistories");
 
     const filter: Record<string, any> = {
-      date: { $gt: before7Days.toISOString().substring(0, 10) }, // YYYY-MM-DD
-      uri: { $regex: `^(${namespacesArray.join("|")})\:` },
+      updatedAt: { $gt: before7Days },
+      siteCollection: request.query.productCollection || "groceryoffers",
     };
 
+    let differenceField = "difference";
+    let differencePercentageField = "differencePercentage";
+
+    switch (request.query.daysPast) {
+      case "7":
+        differenceField = "difference7DaysMean";
+        differencePercentageField = "difference7DaysMeanPercentage";
+        break;
+      case "30":
+        differenceField = "difference30DaysMean";
+        differencePercentageField = "difference30DaysMeanPercentage";
+        break;
+      case "90":
+        differenceField = "difference90DaysMean";
+        differencePercentageField = "difference90DaysMeanPercentage";
+        break;
+      case "365":
+        differenceField = "difference365DaysMean";
+        differencePercentageField = "difference365DaysMeanPercentage";
+        break;
+      default:
+        break;
+    }
+
     if (direction === "desc") {
-      filter.differencePercentage = {
-        $gt: 30,
+      filter[differencePercentageField] = {
+        $gt: 10,
       };
     } else {
-      filter.differencePercentage = {
-        $lt: -30,
+      filter[differencePercentageField] = {
+        $lt: -10,
       };
     }
 
-    const pricingObjects = await offerPricingCollection
+    const sort = { [differencePercentageField]: sortDirection };
+
+    const pricingLimit = categoriesArray.length > 0 ? 1024 : _limit;
+
+    const pricingObjects: OfferPricingHistory[] = await offerPricingCollection
       .find(filter)
-      .sort({ differencePercentage: sortDirection })
-      .limit(1024)
+      .project({
+        uri: 1,
+        difference: 1,
+        differencePercentage: 1,
+        difference7DaysMean: 1,
+        difference7DaysMeanPercentage: 1,
+        difference30DaysMean: 1,
+        difference30DaysMeanPercentage: 1,
+        difference90DaysMean: 1,
+        difference90DaysMeanPercentage: 1,
+        difference365DaysMean: 1,
+        difference365DaysMeanPercentage: 1,
+      })
+      .sort(sort)
+      .limit(pricingLimit)
       .toArray();
 
     const pricingMap = {};
@@ -889,29 +955,69 @@ export const offersWithPriceDifference: Route<
       pricingMap[x.uri] = x;
     });
 
+    const offerLimit = pricingObjects.length;
     const offerCollection = await getCollection(offerCollectionName);
     const offerSelection = {
-      uri: { $in: Object.keys(pricingMap) },
+      uri: { $in: take(pricingObjects, offerLimit).map((x) => x.uri) },
     };
     if (categoriesArray.length > 0) {
       offerSelection["mpnCategories.key"] = { $in: categoriesArray };
     }
+
     const offers = await offerCollection
       .find(offerSelection)
       .project(defaultOfferProjection)
-      .limit(_limit)
+      .limit(offerLimit)
       .toArray();
 
-    let result = await addDealerToOffers({ offers });
+    if (offers.length === 0) {
+      return Response.ok([]);
+    }
 
-    result = result.map((x) => {
-      return { ...x, pricingHistoryObject: pricingMap[x.uri] };
+    const offersWithDealer = await addDealerToOffers({ offers });
+
+    const offersMap = {};
+    offersWithDealer.map((x) => {
+      offersMap[x.uri] = x;
     });
 
-    result = sortBy(
-      result,
-      (x) => x.pricingHistoryObject.difference * sortDirection,
-    );
+    const result = pricingObjects
+      .filter((x) => Object.keys(offersMap).includes(x.uri))
+      .map((x) => ({ ...offersMap[x.uri], pricingHistoryObject: x }));
 
-    return Response.ok(result);
+    return Response.ok(take(result, _limit));
+  });
+
+const detailedOffersQueryParams = t.type({
+  uris: t.string,
+});
+
+export const getDetailedOffers: Route<
+  Response.Ok<ListOffersResponse> | Response.BadRequest<string>
+> = route
+  .get("/detailed")
+  .use(Parser.query(detailedOffersQueryParams))
+  .handler(async (request) => {
+    const uris = request.query.uris.split(",");
+
+    const selection: Filter<FullMpnOffer> = {
+      uri: { $in: uris },
+    };
+
+    const now = getNowDate();
+    selection.validThrough = { $gte: now };
+
+    const offerCollection = await getCollection(offerCollectionName);
+
+    const offers = await offerCollection
+      .find(selection)
+      .project<MpnOffer>(defaultOfferProjection)
+      .toArray();
+
+    const offersWithDealer = await addDealerToOffers({ offers });
+    const offersWithPricing = await addPricingToOffers({
+      offers: offersWithDealer,
+    });
+
+    return Response.ok({ items: offersWithPricing });
   });
