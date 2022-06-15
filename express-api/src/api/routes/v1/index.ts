@@ -9,6 +9,8 @@ import categoriesRoute from "@/api/routes/v1/categories.route";
 import spiderrunsRoute from "@/api/routes/v1/spiderruns.route";
 import handlerunsRoute from "@/api/routes/v1/handleruns.route";
 import promotionsRoute from "@/api/routes/v1/promotions.route";
+import customOffersRoute from "@/api/routes/v1/custom-offers.route";
+import productGameRoute from "@/api/routes/v1/product-game.route";
 
 const router = express.Router();
 
@@ -20,6 +22,7 @@ router.get("/echo/:message", (req, res) =>
 );
 
 router.use("/offers", offerRoutes);
+router.use("/offers", customOffersRoute);
 router.use("/categories", categoriesRoute);
 router.use("/offer-relations", offerRelationsRoutes);
 router.use("/reviews", reviewsRoutes);
@@ -28,5 +31,6 @@ router.use("/offer-groups", offerGroupsRoute);
 router.use("/spiderruns", spiderrunsRoute);
 router.use("/handleruns", handlerunsRoute);
 router.use("/plakater", promotionsRoute);
+router.use("/product-game", productGameRoute);
 
 export default router;
