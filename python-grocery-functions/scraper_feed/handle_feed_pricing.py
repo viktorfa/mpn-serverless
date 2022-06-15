@@ -11,6 +11,7 @@ from pymongo import InsertOne, UpdateOne
 from config.mongo import get_collection
 from scraper_feed.handle_config import fetch_single_handle_config
 from scraper_feed.pricing_history import get_price_difference_update_set
+from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
 import botostubs
@@ -33,16 +34,7 @@ if not os.getenv("IS_LOCAL"):
         integrations=[AwsLambdaIntegration()],
     )
 
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-if os.getenv("IS_LOCAL"):
-    logging.basicConfig(level=logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-    logger.setLevel(logging.INFO)
+configure_lambda_logging()
 
 
 def trigger_scraper_feed_with_config(event: EventHandleConfig, context):

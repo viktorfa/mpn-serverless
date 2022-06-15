@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from scraper_feed.handle_config import fetch_handle_configs
+from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
 import botostubs
@@ -19,16 +20,8 @@ if not os.getenv("IS_LOCAL"):
         integrations=[AwsLambdaIntegration()],
     )
 
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-if os.getenv("IS_LOCAL"):
-    logging.basicConfig(level=logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-    logger.setLevel(logging.INFO)
+
+configure_lambda_logging()
 
 
 def scraper_feed_sns(event, context):

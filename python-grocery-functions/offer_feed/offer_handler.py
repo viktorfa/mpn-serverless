@@ -8,6 +8,7 @@ from bson import json_util
 import logging
 import os
 from pymongo import UpdateOne
+from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 
 import aws_config
@@ -29,12 +30,9 @@ if not os.getenv("IS_LOCAL"):
         integrations=[AwsLambdaIntegration()],
     )
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logger.setLevel(logging.DEBUG)
+
+configure_lambda_logging()
+
 s3 = boto3.client("s3")
 
 
@@ -249,6 +247,7 @@ def offer_feed_sns(event, context):
         logging.error(e)
         log_traceback(e)
         result.append({"message": str(e)})
+    return result
 
     try:
         offers_list = get_offers_list_for_gtins(provenance)
@@ -296,6 +295,9 @@ def offer_feed_meta_sns(event, context):
     aws_config.lambda_context = context
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
     provenance = sns_message["provenance"]
+    logging.info("Not handling meta fields")
+    return {"message": "Not handling meta fields"}
+
     try:
         offers_list = get_scraped_offers(provenance)
         if len(offers_list) > 0:

@@ -8,6 +8,7 @@ from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
 from config.mongo import get_collection
 from scraper_feed.handle_config import fetch_single_handle_config
+from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
 import botostubs
@@ -21,16 +22,7 @@ import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
 
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-if os.getenv("IS_LOCAL"):
-    logging.basicConfig(level=logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-    logger.setLevel(logging.INFO)
+configure_lambda_logging()
 
 
 def analyze_pricing(event, config):

@@ -7,6 +7,7 @@ import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
 from book_feed.process_books import process_books, merge_similar_books
+from util.logging import configure_lambda_logging
 
 
 if not os.getenv("IS_LOCAL"):
@@ -14,16 +15,8 @@ if not os.getenv("IS_LOCAL"):
         integrations=[AwsLambdaIntegration()],
     )
 
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-if os.getenv("IS_LOCAL"):
-    logging.basicConfig(level=logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-    logger.setLevel(logging.INFO)
+
+configure_lambda_logging()
 
 
 def handle_book_offers_trigger(event, context):

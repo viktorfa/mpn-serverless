@@ -12,22 +12,15 @@ from scraper_feed.google_anal.utils import (
 )
 
 from storage.db import get_collection
+from util.logging import configure_lambda_logging
 
 if not os.getenv("IS_LOCAL"):
     sentry_sdk.init(
         integrations=[AwsLambdaIntegration()],
     )
 
-logger = logging.getLogger()
-logging.getLogger("botocore").setLevel(logging.WARNING)
-logging.getLogger("boto3").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-if os.getenv("IS_LOCAL"):
-    logging.basicConfig(level=logging.DEBUG)
-    logger.setLevel(logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-    logger.setLevel(logging.INFO)
+
+configure_lambda_logging()
 
 
 def get_report(analytics, view_id, offer_string, page_size=6000):
