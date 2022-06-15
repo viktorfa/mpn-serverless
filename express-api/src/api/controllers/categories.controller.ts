@@ -115,12 +115,24 @@ export const getDealersForContext: Route<
 > = route.get("/dealers/:siteCollection").handler(async (request) => {
   const collection = await getCollection(offerCollectionName);
 
-  const result = await collection.distinct("dealer", {
-    validThrough: { $gt: new Date() },
-    siteCollection: request.routeParams.siteCollection,
+  const offers = await collection
+    .find({
+      validThrough: { $gt: new Date() },
+      siteCollection: request.routeParams.siteCollection,
+    })
+    .project({ dealer: 1 })
+    .limit(100000)
+    .toArray();
+
+  console.log(`products: ${offers.length}`);
+
+  const result = new Set([]);
+
+  offers.forEach((x) => {
+    result.add(x.dealer);
   });
 
-  return Response.ok(result);
+  return Response.ok(Array.from(result));
 });
 
 export const getByKey: Route<
