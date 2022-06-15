@@ -65,6 +65,19 @@ interface MpnOffer {
   mpnStock: string;
   market: string;
 }
+interface CustomOffer {
+  title: string;
+
+  imageUrl: string;
+  uri: string;
+
+  validFrom: Date;
+  validThrough: Date;
+
+  pricing: Pricing;
+
+  market: string;
+}
 interface MpnMongoOffer extends MpnOffer {
   readonly _id: { toString(): string };
 }
@@ -234,6 +247,7 @@ type UriOfferGroup = {
 };
 
 interface PricingHistoryObject {
+  price?: number;
   pricing: Pricing;
   date: string;
   uri: string;
@@ -250,4 +264,36 @@ interface MpnMongoSearchResponseMeta {
 }
 interface MpnMongoSearchResponseFacets {
   [key: string]: { buckets: any[] };
+}
+
+interface PromotionBanner {
+  url: string;
+  image: string;
+  type: "horizontal" | "square" | "offer";
+  text?: string;
+}
+
+interface AdTractionCampaign {
+  logoURL: string;
+  market: string;
+  offerDescription: string;
+  offerPage: string;
+  programUrl: string;
+  trackingURL: string;
+  programId: number;
+}
+
+interface MpnDealer {
+  logoUrl: string;
+  market: string;
+  productCollection: string;
+  url: string;
+  type: "horizontal" | "square";
+}
+
+interface OfferPricingHistory {
+  uri: string;
+  updatedAt: Date;
+  siteCollection: string;
+  hisotry: PricingHistoryObject[];
 }
