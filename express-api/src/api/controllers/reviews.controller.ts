@@ -16,18 +16,16 @@ const productCollectionQueryParams = t.type({
 });
 
 const addOfferReviewBody = t.type({
-  review: t.type({
-    body: t.string,
-    author: t.string,
-    uri: t.string,
-    rating: t.union([
-      t.literal(1),
-      t.literal(2),
-      t.literal(3),
-      t.literal(4),
-      t.literal(5),
-    ]),
-  }),
+  body: t.string,
+  author: t.string,
+  uri: t.string,
+  rating: t.union([
+    t.literal(1),
+    t.literal(2),
+    t.literal(3),
+    t.literal(4),
+    t.literal(5),
+  ]),
 });
 
 export const add: Route<
@@ -38,14 +36,12 @@ export const add: Route<
   .post("/")
   .use(Parser.body(addOfferReviewBody))
   .handler(async (request) => {
-    const offer = await findOne(request.body.review.uri);
+    const offer = await findOne(request.body.uri);
     if (!offer) {
-      return Response.notFound(
-        `Offer with uri ${request.body.review.uri} not found.`,
-      );
+      return Response.notFound(`Offer with uri ${request.body.uri} not found.`);
     }
     const createReviewResult = await addReview(
-      request.body.review,
+      request.body,
       get(request, ["user", "role"]) === "admin" ? "enabled" : "pending",
     );
 

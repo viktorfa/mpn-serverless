@@ -10,9 +10,9 @@ import {
 } from "@/api/controllers/reviews.controller";
 
 const routes: Router = router(
+  add,
   listReviewsWithOffers,
   getReviews,
-  add,
   remove,
   approve,
 ).handler();

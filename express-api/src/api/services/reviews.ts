@@ -12,7 +12,7 @@ export const addReview = async (
     status: reviewStatus,
     ...review,
   });
-  return mongoResult.insertedId;
+  return { _id: mongoResult.insertedId };
 };
 
 export const removeReview = async (reviewId: string) => {
