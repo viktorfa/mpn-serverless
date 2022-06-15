@@ -1,9 +1,8 @@
 service: node-express-read-api
-variablesResolutionMode: 20210326
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
@@ -25,7 +24,7 @@ provider:
 functions:
   api:
     handler: dist/server.handler
-    timeout: 16
+    timeout: 30
     events:
       - http:
           method: ANY
@@ -35,6 +34,12 @@ functions:
           method: ANY
           path: /{proxy+}
           cors: true
+  api-url:
+    handler: dist/server.handler
+    timeout: 30
+    disableLogs: true
+    url:
+      cors: true
 
 package:
   artifact: artifact.zip
