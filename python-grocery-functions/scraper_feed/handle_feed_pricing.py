@@ -9,6 +9,7 @@ from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
 from pymongo import InsertOne, UpdateOne
 from config.mongo import get_collection
+from scraper_feed.filters import transform_and_filter_offers
 from scraper_feed.handle_config import fetch_single_handle_config
 from scraper_feed.pricing_history import get_price_difference_update_set
 from util.logging import configure_lambda_logging
@@ -56,6 +57,7 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         key = event["feed_key"]
         s3_object = get_s3_object(bucket, key)
         scrape_time = s3_object["LastModified"]
+        handle_config: HandleConfig = {**event, "scrape_time": scrape_time}
         file_content = s3_object["Body"].read().decode()
     except Exception as e:
         logging.error(e)
@@ -67,11 +69,12 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     try:
         # Limit the number of offers to avoid too much database load
         offers = json.loads(file_content)[:20000]
+        filtered_offers = transform_and_filter_offers(offers, handle_config)
         if os.getenv("STAGE") == "dev":
-            offers = offers[:512]
+            filtered_offers = filtered_offers[:512]
 
         result = handle_feed_with_config_for_pricing_series(
-            offers, {**event, "scrape_time": scrape_time}
+            filtered_offers, handle_config
         )
 
         return {

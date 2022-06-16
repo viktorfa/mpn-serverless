@@ -140,3 +140,13 @@ class EventHandleConfig(DbHandleConfig):
 
 class HandleConfig(EventHandleConfig):
     scrape_time: datetime
+
+
+class PriceHistoryRecord(TypedDict):
+    date: str
+    price: float
+
+
+class PriceHistoryForOffer(TypedDict):
+    uri: str
+    history: List[PriceHistoryRecord]

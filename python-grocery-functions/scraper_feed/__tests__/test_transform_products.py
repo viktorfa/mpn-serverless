@@ -1,7 +1,7 @@
 from unittest import TestCase
 import json
 
-from scraper_feed.handle_products import transform_product, get_categories
+from scraper_feed.filters import transform_product, get_categories
 from scraper_feed.scraper_configs import get_field_mapping
 
 
