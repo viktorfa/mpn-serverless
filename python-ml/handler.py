@@ -1,3 +1,5 @@
+import logging
+
 from util.helpers import get_sns_message
 from lib import create_models, add_similar_offers, add_identical_offers
 
@@ -66,6 +68,8 @@ def add_identical_offers_trigger(event, context):
 
 
 def add_identical_offers_sns(event, context):
+    logging.debug("Not adding identical offers")
+    return {"event": event}
     try:
         event_message = get_sns_message(event)
     except TypeError:
