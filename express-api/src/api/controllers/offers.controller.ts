@@ -5,6 +5,7 @@ import {
   addDealerToOffers,
   addPricingToOffers,
   addTagToOffers,
+  filterIdenticalOffers,
   findOne,
   findOneFull,
   findSimilarPromoted,
@@ -13,7 +14,11 @@ import {
   getTagsForOffer,
   removeTagFromOffers,
 } from "@/api/services/offers";
-import { searchWithElastic, searchWithMongo } from "@/api/services/search";
+import {
+  searchWithElastic,
+  searchWithMongo,
+  MongoSearchParams,
+} from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getDaysAhead, getNowDate } from "../utils/helpers";
 import { getEngineName } from "@/api/controllers/search.controller";
@@ -368,16 +373,30 @@ export const extra: Route<
       );
     }
 
-    const query = offer.title.substring(0, 127);
+    let query = offer.title;
+    if (offer.categories && Array.isArray(offer.categories)) {
+      query += ` ${offer.categories.join(" ")}`;
+    }
 
-    const searchResults = await searchWithMongo({
+    query = query.substring(0, 127);
+
+    const searchParams: MongoSearchParams = {
       query,
       markets: [market],
       limit: _limit,
+      isExtraOffers: true,
+    };
+
+    if (productCollection) {
+      searchParams.productCollections = [productCollection];
+    }
+
+    const searchResults = await searchWithMongo(searchParams);
+    searchResults.items = searchResults.items.filter((x) => x.score > 1);
+    searchResults.items = filterIdenticalOffers({
+      offers: searchResults.items,
+      excludeUris: [offer.uri],
     });
-    searchResults.items = searchResults.items.filter(
-      (offer) => offer.score > 1,
-    );
     searchResults.items = await addDealerToOffers({
       offers: searchResults.items,
     });

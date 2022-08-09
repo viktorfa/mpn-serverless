@@ -1,5 +1,5 @@
 import { getCollection } from "@/config/mongo";
-import { flatten } from "lodash";
+import { flatten, uniqBy } from "lodash";
 import { ObjectId, Filter } from "mongodb";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import {
@@ -350,4 +350,22 @@ export const findSimilarPromoted = async ({
     offers: mongoSearchResponse.items,
   });
   return resultWithDealer;
+};
+
+export const filterIdenticalOffers = ({
+  offers,
+  excludeUris = [],
+}: {
+  offers: MpnResultOffer[];
+  excludeUris?: string[];
+}): MpnResultOffer[] => {
+  const uniqueOffers = uniqBy(
+    offers,
+    (offer) => offer.title + offer.dealer + offer.pricing.price,
+  );
+  if (excludeUris.length > 0) {
+    return uniqueOffers.filter((offer) => !excludeUris.includes(offer.uri));
+  } else {
+    return uniqueOffers;
+  }
 };

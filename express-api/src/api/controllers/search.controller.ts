@@ -1,3 +1,4 @@
+import { filterIdenticalOffers } from "./../services/offers";
 import _ from "lodash";
 import { Parser, Response, Route, route } from "typera-express";
 import * as t from "io-ts";
@@ -180,6 +181,10 @@ export const search: Route<
         ...offer,
         dealerObject: dealerMap[offer.dealer] || { key: offer.dealer },
       };
+    });
+
+    searchResults.items = filterIdenticalOffers({
+      offers: searchResults.items,
     });
 
     return Response.ok(searchResults);
