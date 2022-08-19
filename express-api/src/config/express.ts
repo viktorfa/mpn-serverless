@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 import firebaseAuth from "@/api/auth/firebase";
 import routesV1 from "@/api/routes/v1";
@@ -15,6 +16,11 @@ app.use((req, _res, next) => {
   console.info(req.url);
   next();
 });
+
+if (!process.env.LAMBDA_TASK_ROOT) {
+  app.use(cors());
+}
+
 app.use((req, _res, next) => {
   Sentry.AWSLambda.getCurrentHub().setTag(
     "path",
