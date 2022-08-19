@@ -87,6 +87,7 @@ interface MpnResultOffer extends MpnOffer {
 }
 interface FullMpnOffer extends MpnMongoOffer {
   similarOffers: { uri: string; score: number }[];
+  siteCollection: string;
 }
 
 interface ElasticMpnOffer {

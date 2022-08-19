@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
+    "resolveJsonModule": true,
     "target": "ESNext",
     "module": "CommonJS",   
     "esModuleInterop": true,

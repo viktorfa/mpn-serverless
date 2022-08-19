@@ -12,13 +12,14 @@ import {
   removeTagFromBiRelation,
 } from "../services/offer-relations";
 import { flatten } from "lodash";
-import { marketQueryParams } from "./typera-types";
+import { marketQueryParams, getLimitFromQueryParam } from "./typera-types";
 import { ObjectId } from "bson";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 
 const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
+  offset: t.union([t.string, t.undefined]),
   market: t.union([t.string, t.undefined]),
   dealer: t.union([t.string, t.undefined]),
 });
@@ -29,11 +30,13 @@ export const getOfferGroups: Route<
   .get("/")
   .use(Parser.query(offerGroupsQueryParams))
   .handler(async (request) => {
-    const { tags, limit, market, dealer } = request.query;
+    const { tags, limit, market, dealer, offset } = request.query;
 
     let biRelationIds: string[] = [];
     let biRelations = [];
     const biRelationCollection = await getOfferBiRelationsCollection();
+
+    const _offset = getLimitFromQueryParam(offset, 0, 2 ** 10);
 
     const offerFilter: { market?: string } = {};
     const biRelationFilter: { offerSet?: object } = {};
@@ -53,11 +56,13 @@ export const getOfferGroups: Route<
           ...biRelationFilter,
           _id: { $in: biRelationIds.map((x) => new ObjectId(x)) },
         })
+        .skip(_offset)
         .limit(32)
         .toArray();
     } else {
       biRelations = await biRelationCollection
         .find({ ...biRelationFilter })
+        .skip(_offset)
         .limit(32)
         .toArray();
     }
@@ -103,7 +108,8 @@ export const getOfferGroup: Route<
     const offers = await getOffersByUris(
       biRelation.offerSet,
       offerFilter,
-      null,
+      undefined,
+      false,
     );
 
     return Response.ok(

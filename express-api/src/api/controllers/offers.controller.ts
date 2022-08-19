@@ -676,6 +676,8 @@ export const relatedOffers: Route<
   .handler(async (request) => {
     const offerCollection = await getCollection(offerCollectionName);
 
+    const now = new Date();
+
     try {
       const relationResults = await getOfferBiRelations(request.routeParams.id);
       const identicalUris = _.get(
@@ -690,6 +692,7 @@ export const relatedOffers: Route<
       ).filter((x) => x !== request.routeParams.id);
       const offerFilter: Filter<OfferInstance> = {
         uri: { $in: [...identicalUris, ...interchangeableUris] },
+        validThrough: { $gt: now },
       };
       if (request.query.market) {
         offerFilter.market = request.query.market;

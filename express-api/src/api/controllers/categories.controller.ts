@@ -124,8 +124,6 @@ export const getDealersForContext: Route<
     .limit(100000)
     .toArray();
 
-  console.log(`products: ${offers.length}`);
-
   const result = new Set([]);
 
   offers.forEach((x) => {

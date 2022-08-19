@@ -36,8 +36,9 @@ export const findOne = async (id: string): Promise<MpnMongoOffer> => {
   if (!offer) {
     return null;
   }
-  const offerWithDealer = await addDealerToOffers({ offers: [offer] });
-  return offerWithDealer[0];
+  const offerWithDealer = (await addDealerToOffers({ offers: [offer] }))[0];
+
+  return offerWithDealer as MpnMongoOffer;
 };
 export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
   const offersCollection = await getCollection(offerCollectionName);
@@ -46,8 +47,9 @@ export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
   if (!offer) {
     return null;
   }
-  const offerWithDealer = await addDealerToOffers({ offers: [offer] });
-  return offerWithDealer[0] as FullMpnOffer;
+  const offerWithDealer = (await addDealerToOffers({ offers: [offer] }))[0];
+
+  return offerWithDealer as FullMpnOffer;
 };
 
 export const getOffersForSiteCollection = async (
