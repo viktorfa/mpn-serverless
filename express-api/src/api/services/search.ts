@@ -6,6 +6,21 @@ import APIError from "../utils/APIError";
 import { getCollection } from "@/config/mongo";
 import { offerCollectionName } from "../utils/constants";
 import { getOffersByUris } from "./offers";
+import { get } from "lodash";
+
+export type MongoSearchParams = {
+  query: string;
+  productCollections?: string[];
+  markets?: string[];
+  limit?: number;
+  page?: number;
+  dealers?: string[];
+  categories?: string[];
+  price?: { from?: number; to?: number };
+  sort?: { [key: string]: 1 | -1 };
+  isPartner?: boolean;
+  isExtraOffers?: boolean;
+};
 
 export const searchWithMongo = async ({
   query,
@@ -17,21 +32,9 @@ export const searchWithMongo = async ({
   categories,
   price,
   sort,
-  boosts,
-  precision = 4,
-}: {
-  query: string;
-  productCollections?: string[];
-  markets?: string[];
-  limit?: number;
-  page?: number;
-  dealers?: string[];
-  categories?: string[];
-  price?: { from?: number; to?: number };
-  sort?: { [key: string]: 1 | -1 };
-  boosts?: AppSearchOfferBoosts;
-  precision?: number;
-}): Promise<MpnMongoSearchResponse> => {
+  isPartner = false,
+  isExtraOffers = false,
+}: MongoSearchParams): Promise<MpnMongoSearchResponse> => {
   if (query.length > 127) {
     const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
     console.error(message);
@@ -73,11 +76,17 @@ export const searchWithMongo = async ({
     },
   };
 
+  if (isPartner) {
+    operator.compound.filter.push({
+      equals: { value: true, path: "isPartner" },
+    });
+  }
+
   operator.compound.filter.push({ range: { gte: now, path: "validThrough" } });
   if (markets) {
     operator.compound.filter.push({ text: { query: markets, path: "market" } });
   }
-  if (productCollections) {
+  if (productCollections && !isExtraOffers) {
     operator.compound.filter.push({
       text: { query: productCollections, path: "siteCollection" },
     });
@@ -88,7 +97,7 @@ export const searchWithMongo = async ({
     });
   }
 
-  if (query) {
+  if (query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
@@ -104,11 +113,43 @@ export const searchWithMongo = async ({
     });
     operator.compound.should.push({
       text: {
-        path: ["subtitle", "brand"],
+        path: ["subtitle", "brand", "categories", "mpnCategories"],
         query,
-        score: { boost: { value: 1 } },
+        score: { boost: { value: 1.5 } },
       },
     });
+    if (isExtraOffers) {
+      const siteCollection = get(productCollections, [0]);
+      if (siteCollection) {
+        operator.compound.should.push({
+          text: {
+            path: "siteCollection",
+            query: siteCollection,
+            score: { boost: { value: 1.5 } },
+          },
+        });
+      }
+      operator.compound.should.push({
+        equals: {
+          path: "isPartner",
+          value: true,
+          score: { boost: { value: 1.5 } },
+        },
+      });
+    }
+    // Attempt to make search more restrictive (AND) after selecting sort
+  } else if (query && sort) {
+    query
+      .split(" ")
+      .map((x) => x.trim())
+      .forEach((x) => {
+        operator.compound.must.push({
+          text: {
+            path: ["title", "subtitle", "brand", "categories", "mpnCategories"],
+            query: x,
+          },
+        });
+      });
   }
 
   if (sort) {
