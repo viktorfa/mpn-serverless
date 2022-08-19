@@ -8,7 +8,7 @@ from pymongo.results import BulkWriteResult
 
 import aws_config
 from scraper_feed.handle_products import handle_products
-from storage.db import save_scraped_products, store_handle_run, save_book_offers
+from storage.db import save_scraped_offers, store_handle_run, save_book_offers
 from util.helpers import json_handler
 from util.utils import log_traceback
 from amp_types.amp_product import HandleConfig
@@ -74,9 +74,9 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
         try:
             # Only 512 offers when in dev to avoid filling up Elastic Search storage
             if os.getenv("STAGE") == "dev":
-                result = save_scraped_products(products[:512])
+                result = save_scraped_offers(products[:512])
             else:
-                result = save_scraped_products(products)
+                result = save_scraped_offers(products)
         except Exception as e:
             log_traceback(e)
             raise e
