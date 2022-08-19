@@ -3,7 +3,7 @@ import pydash
 import logging
 from datetime import datetime, timedelta
 
-from parsing.ingredients_extraction import extract_ingredients
+from parsing.ingredients_extraction import get_ingredients_data
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.category_extraction import extract_categories
 from parsing.property_extraction import (
@@ -207,7 +207,7 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["isPartner"] = config.get("is_partner", False)
 
     result["mpnProperties"] = standardize_additional_properties(offer, config)
-    result["mpnIngredients"] = extract_ingredients(offer, config)
+    result["mpnIngredients"] = get_ingredients_data(offer, config)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
     if config["provenance"] == "meny_api_spider":
         result["mpnCategories"] = extract_categories({**offer, **result}, config)

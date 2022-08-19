@@ -520,5 +520,7 @@ class TestWithConfig(TestCase):
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         logging.debug("kolonial product:")
         logging.debug(json.dumps(result, default=str))
-        self.assertEqual(result[0]["mpnIngredients"]["vinegar"]["key"], "vinegar")
+        self.assertEqual(
+            result[0]["mpnIngredients"]["ingredients"]["vinegar"]["key"], "vinegar"
+        )
         self.assertEqual(16, result[0]["mpnNutrition"]["carbohydrates"]["value"])
