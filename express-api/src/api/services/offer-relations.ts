@@ -1,4 +1,4 @@
-import { get } from "lodash";
+import { flatten, get, sortBy } from "lodash";
 import { getCollection } from "@/config/mongo";
 import { Collection, ObjectId } from "mongodb";
 import {
@@ -40,6 +40,10 @@ export const updateOfferBiRelation = async (
   return offerRelation;
 };
 
+const getMongoSafeUri = (uri: string): string => {
+  return uri.replaceAll(".", "\uff0E");
+};
+
 export const addBiRelationalOffers = async (
   offers: MpnMongoOffer[],
   relationType: OfferRelationType,
@@ -49,28 +53,88 @@ export const addBiRelationalOffers = async (
   );
 
   const offerUris = Array.from(new Set(offers.map((x) => x.uri)));
+  const now = new Date();
 
-  const existingRelation = await biRelationsOffersCollection.findOne({
-    offerSet: { $in: offerUris },
-    relationType: relationType,
-  });
+  const existingRelations: IdenticalOfferRelation[] =
+    await biRelationsOffersCollection
+      .find({
+        offerSet: { $in: offerUris },
+        relationType,
+      })
+      .toArray();
   let mongoResult = null;
+
+  const existingRelation = sortBy(
+    existingRelations,
+    (x) => x.offerSet.length,
+  )[0];
+
   if (existingRelation) {
-    mongoResult = await biRelationsOffersCollection.updateOne(
-      {
-        _id: new ObjectId(existingRelation._id),
-      },
-      {
-        $addToSet: {
-          offerSet: { $each: [...offerUris, ...existingRelation.offerSet] },
+    const newUris = flatten(
+      existingRelations
+        .filter((x) => x._id !== existingRelation._id)
+        .map((x) => x.offerSet),
+    );
+
+    const updateSet = {};
+
+    newUris.forEach((uri) => {
+      updateSet[`offerSetMeta.${getMongoSafeUri(uri)}.auto`] = {
+        method: "auto",
+        reason: "merged_together_with_manual",
+        updatedAt: now,
+      };
+    });
+    offerUris.forEach((uri) => {
+      updateSet[`offerSetMeta.${getMongoSafeUri(uri)}.manual`] = {
+        method: "manual",
+        reason: "manual_add",
+        updatedAt: now,
+      };
+    });
+
+    const operations = [];
+
+    // Delete offer relations with overlapping offers
+    existingRelations
+      .filter((x) => x._id !== existingRelation._id)
+      .forEach((x) => {
+        operations.push({ deleteOne: { filter: { _id: ObjectId(x._id) } } });
+      });
+
+    operations.push({
+      updateOne: {
+        filter: { _id: new ObjectId(existingRelation._id) },
+        update: {
+          $addToSet: {
+            offerSet: { $each: [...offerUris, ...newUris] },
+          },
+          $set: { ...updateSet, updatedAt: now },
         },
       },
-    );
-  } else {
-    mongoResult = await biRelationsOffersCollection.insertOne({
-      offerSet: offerUris,
-      relationType: relationType,
     });
+
+    mongoResult = await biRelationsOffersCollection.bulkWrite(operations);
+  } else {
+    const updateSet = {};
+    offerUris.forEach((uri) => {
+      updateSet[`offerSetMeta.${getMongoSafeUri(uri)}.manual`] = {
+        method: "manual",
+        reason: "initial_add",
+        updatedAt: now,
+      };
+    });
+    mongoResult = await biRelationsOffersCollection.updateOne(
+      { offerSet: offerUris, relationType: relationType },
+      {
+        $setOnInsert: {
+          ...updateSet,
+          createdAt: now,
+          updatedAt: now,
+        },
+      },
+      { upsert: true },
+    );
   }
   return mongoResult.result;
 };
@@ -96,11 +160,18 @@ export const removeBiRelationalOffer = async (
         _id: new ObjectId(existingRelation._id),
       });
     } else {
+      const updateSet = {
+        [`offerSetMeta.${getMongoSafeUri(offer.uri)}.manual`]: {
+          method: "manual",
+          reason: "manual_remove",
+          updatedAt: new Date(),
+        },
+      };
       mongoResult = await biRelationsOffersCollection.updateOne(
         {
           _id: new ObjectId(existingRelation._id),
         },
-        { $pull: { offerSet: offer.uri } },
+        { $pull: { offerSet: offer.uri }, $set: { ...updateSet } },
       );
     }
   } else {
