@@ -126,6 +126,30 @@ def add_au_amazon_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": ahref}
 
 
+def add_es_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn05c-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn05c-21'
+        )
+
+    return {**product, "ahref": ahref}
+
+
+def add_it_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn023-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn023-21'
+        )
+
+    return {**product, "ahref": ahref}
+
+
 def add_elimport_affiliate_link(product: dict) -> dict:
     if "tradedoubler" in product["href"]:
         return product
@@ -180,6 +204,7 @@ def add_se_mat_se_affiliate_link(product: dict) -> dict:
         return product
     escaped_original_href = product["href"]
     new_href = f"https://on.mat.se/t/t?a=1123786747&as=1573089692&t=2&tk=1&url={escaped_original_href}"
+    return {**product, "ahref": new_href}
 
 
 def add_mathem_se_affiliate_link(product: dict) -> dict:
@@ -248,6 +273,10 @@ def get_affiliate_handler(product: dict):
     #    return add_byggmax_affiliate_link
     elif "amazon.se" in product["href"]:
         return add_se_amazon_affiliate_link
+    elif "amazon.es" in product["href"]:
+        return add_es_amazon_affiliate_link
+    elif "amazon.it" in product["href"]:
+        return add_it_amazon_affiliate_link
     elif "amazon.de" in product["href"]:
         return add_de_amazon_affiliate_link
     elif "amazon.com" in product["href"]:
