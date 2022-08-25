@@ -768,6 +768,7 @@ export const putOfferQuantity: Route<
   .use(Parser.body(putQuantityPutBody))
   .handler(async (request) => {
     const offerCollection = await getCollection(offerCollectionName);
+    const offerMetaCollection = await getCollection("offermeta");
     const offer: MpnMongoOffer = await offerCollection.findOne<MpnMongoOffer>({
       uri: request.body.uri,
     });
@@ -787,16 +788,24 @@ export const putOfferQuantity: Route<
       pieces: offer.quantity.pieces,
     };
     const valueObject = { size: sizeValue, pieces: offer.value.pieces };
-    const mongoResponse = await offerCollection.updateOne(
+    const offerMongoResponse = await offerCollection.updateOne(
       { uri: request.body.uri },
       {
         $set: {
-          "meta.quantity.manual": {
-            value: quantityObject,
-            updated: getNowDate(),
-          },
           quantity: quantityObject,
           value: valueObject,
+        },
+      },
+    );
+    const offerMetaMongoResponse = await offerMetaCollection.updateOne(
+      { uri: request.body.uri },
+      {
+        $set: {
+          "manual.quantityString": {
+            value: `${request.body.quantityValue}${request.body.quantityUnit}`,
+            key: "quantityString",
+            updatedAt: getNowDate(),
+          },
         },
       },
     );
