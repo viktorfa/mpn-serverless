@@ -11,6 +11,7 @@ import handlerunsRoute from "@/api/routes/v1/handleruns.route";
 import promotionsRoute from "@/api/routes/v1/promotions.route";
 import customOffersRoute from "@/api/routes/v1/custom-offers.route";
 import productGameRoute from "@/api/routes/v1/product-game.route";
+import partnerRoutes from "@/api/routes/v1/partner.route";
 
 const router = express.Router();
 
@@ -32,5 +33,6 @@ router.use("/spiderruns", spiderrunsRoute);
 router.use("/handleruns", handlerunsRoute);
 router.use("/plakater", promotionsRoute);
 router.use("/product-game", productGameRoute);
+router.use("/partner", partnerRoutes);
 
 export default router;

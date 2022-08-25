@@ -6,6 +6,7 @@ import cors from "cors";
 import firebaseAuth from "@/api/auth/firebase";
 import routesV1 from "@/api/routes/v1";
 import routesV2 from "@/api/routes/v2";
+import partnerRoutesV1 from "@/api/routes/partner-routes-v1";
 import * as Sentry from "@sentry/serverless";
 
 const app = express();
@@ -35,6 +36,7 @@ app.use(bodyParser.json());
 
 app.use("/v1", routesV1);
 app.use("/v2", routesV2);
+app.use("/partnerV1", partnerRoutesV1);
 
 /*app.use((_req, res, next) => {
   Sentry.AWSLambda.getCurrentHub().setTag("statusCode", res.statusCode);
