@@ -571,17 +571,19 @@ export const promoted: Route<
 
     const now = getNowDate();
     const selection: Record<string, any> = {
-      validThrough: { $gte: now },
       uri: { $in: promotedOfferUris },
+      validThrough: { $gte: now },
       siteCollection: productCollection,
-      isPromotionRestricted: { $ne: true },
     };
 
     const offerCollection = await getCollection(offerCollectionName);
 
     const promotedOffers = await offerCollection
       .find(selection)
-      .project<MpnOffer>(defaultOfferProjection)
+      .project<MpnOffer>({
+        ...defaultOfferProjection,
+        isPromotionRestricted: 1,
+      })
       .limit(_limit)
       .toArray();
 
@@ -592,16 +594,21 @@ export const promoted: Route<
         .find({
           validThrough: { $gte: now },
           siteCollection: productCollection,
-          isPromotionRestricted: { $ne: true },
         })
-        .project<MpnOffer>(defaultOfferProjection)
-        .sort({ pageviews: -1 })
+        .project<MpnOffer>({
+          ...defaultOfferProjection,
+          isPromotionRestricted: 1,
+        })
+        //.sort({ pageviews: -1 })
         .limit(_limit - promotedOffers.length)
         .toArray();
       result.push(...extraOffers);
     }
 
-    const limitedResult = _.take(result, _limit);
+    const limitedResult = _.take(result, _limit).filter(
+      // Filter this on server to avoid creating index
+      (x) => x.isPromotionRestricted !== true,
+    );
     const dealerResult = await addDealerToOffers({ offers: limitedResult });
     return Response.ok(dealerResult);
   });
