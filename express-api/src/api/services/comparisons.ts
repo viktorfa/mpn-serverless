@@ -8,24 +8,62 @@ import { getCollection } from "@/config/mongo";
 import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
 import { addDealerToOffers } from "@/api/services/offers";
 
-export const getComparisonConfig = async (
-  categories?: string[],
-): Promise<ComparisonConfig[]> => {
+export const getComparisonConfig = async ({
+  categories,
+  dealers,
+  market,
+  productCollection,
+}: ComparisonInstanceParams): Promise<ComparisonConfig[]> => {
   const borsCollection = await getCollection(categoryComparisonsCollectionName);
+
+  const projection: Record<string, number | boolean | Record<number, boolean>> =
+    {
+      title: 1,
+      category: 1,
+      dealers: 1,
+      name: 1,
+      quantityValue: 1,
+      useUnitPrice: 1,
+      quantityUnit: 1,
+    };
+
+  if (dealers) {
+    let dealerProjection = {};
+    dealers.forEach((dealerKey) => {
+      dealerProjection[dealerKey] = 1;
+    });
+    projection.dealers = dealerProjection;
+  }
+
   if (categories) {
     return borsCollection
       .find<ComparisonConfig>({ category: { $in: categories } })
+      .project<ComparisonConfig>(projection)
       .toArray();
   } else {
-    return borsCollection.find<ComparisonConfig>({}).toArray();
+    return borsCollection
+      .find<ComparisonConfig>({})
+      .project<ComparisonConfig>(projection)
+      .toArray();
   }
 };
-export const getComparisonInstance = async (
-  categories: string[],
-): Promise<ComparisonInstance[]> => {
+
+type ComparisonInstanceParams = {
+  categories: string[];
+  dealers?: string[];
+  market?: string;
+  productCollection?: string;
+};
+
+export const getComparisonInstance = async ({
+  categories,
+  dealers,
+  productCollection,
+  market,
+}: ComparisonInstanceParams): Promise<ComparisonInstance[]> => {
   const now = new Date();
 
-  const comparisonConfig = await getComparisonConfig(categories);
+  const comparisonConfig = await getComparisonConfig({ categories, dealers });
 
   const uris = _.flattenDeep(
     comparisonConfig.map((productConfig) => {

@@ -12,6 +12,9 @@ const comparisonDataQueryParams = t.type({
 });
 const comparisonQueryParams = t.type({
   categories: t.string,
+  dealers: t.union([t.string, t.undefined]),
+  productCollection: t.union([t.string, t.undefined]),
+  market: t.union([t.string, t.undefined]),
 });
 
 export const getData: Route<
@@ -23,7 +26,7 @@ export const getData: Route<
     const categories = request.query.categories
       ? request.query.categories.split(",").filter((x) => !!x)
       : null;
-    return Response.ok(await getComparisonConfig(categories));
+    return Response.ok(await getComparisonConfig({ categories }));
   });
 
 export const getBors: Route<
@@ -32,14 +35,27 @@ export const getBors: Route<
   .get("/")
   .use(Parser.query(comparisonQueryParams))
   .handler(async (request) => {
-    const { categories } = request.query;
+    const { categories, dealers, productCollection, market } = request.query;
     const categoriesList = categories
       ? categories
           .toString()
           .split(",")
           .filter((x) => !!x)
       : null;
-    return Response.ok(await getComparisonInstance(categoriesList));
+    const dealersList = dealers
+      ? dealers
+          .toString()
+          .split(",")
+          .filter((x) => !!x)
+      : null;
+    return Response.ok(
+      await getComparisonInstance({
+        categories: categoriesList,
+        dealers: dealersList,
+        productCollection,
+        market,
+      }),
+    );
   });
 
 const putComparisonRequestBody = t.type({
