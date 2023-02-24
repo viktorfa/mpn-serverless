@@ -91,6 +91,16 @@ def get_report(analytics, view_id, offer_string, page_size=6000):
                                         "operator": "PARTIAL",
                                         "expressions": ["/oferty/"],
                                     },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/ofertas/"],
+                                    },
+                                    {
+                                        "dimensionName": "ga:pagepath",
+                                        "operator": "PARTIAL",
+                                        "expressions": ["/offerte/"],
+                                    },
                                 ]
                             }
                         ],
