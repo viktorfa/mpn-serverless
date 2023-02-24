@@ -2,17 +2,10 @@ import { Collection, MongoClient } from "mongodb";
 
 import { mongoUri, mongoDatabase } from "./vars";
 
-let client: MongoClient = new MongoClient();
+const clientPromise: MongoClient = MongoClient.connect(mongoUri, {});
 
 const connectToMongo = async (): Promise<MongoClient> => {
-  if (!client || !client.isConnected()) {
-    client = await MongoClient.connect(mongoUri, {
-      keepAlive: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  } else {
-  }
+  const client = await clientPromise;
   return client;
 };
 
