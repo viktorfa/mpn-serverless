@@ -10,7 +10,7 @@ Sentry.AWSLambda.init({
   tracesSampleRate: process.env.STAGE === "prod" ? 0.001 : 1.0,
 });
 
-if (process.env.NODE_ENV === "test") {
+if (process.env.NODE_ENV === "test" || process.env.MPN_NOT_LAMBDA) {
   app.listen(port, () => {
     console.log(`⚡️[server]: Server is running at ${port}`);
   });
