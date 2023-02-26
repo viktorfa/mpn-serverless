@@ -13,7 +13,7 @@ import {
 } from "../services/offer-relations";
 import { flatten } from "lodash";
 import { marketQueryParams, getLimitFromQueryParam } from "./typera-types";
-import { ObjectId } from "bson";
+import { ObjectId } from "mongodb";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 
 const offerGroupsQueryParams = t.type({

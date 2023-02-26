@@ -1,4 +1,4 @@
-import _, { sortBy, take } from "lodash";
+import _, { take } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
@@ -566,26 +566,28 @@ export const promoted: Route<
     const { limit, productCollection } = request.query;
 
     let _limit = getLimitFromQueryParam(limit, 32);
-
-    const promotedOfferUris = await getOfferUrisForTags(["promoted"]);
-
+    const offerCollection = await getCollection(offerCollectionName);
     const now = getNowDate();
+
+    /*const promotedOfferUris = await getOfferUrisForTags(["promoted"]);
+
     const selection: Record<string, any> = {
       uri: { $in: promotedOfferUris },
       validThrough: { $gte: now },
       siteCollection: productCollection,
     };
 
-    const offerCollection = await getCollection(offerCollectionName);
-
+    
     const promotedOffers = await offerCollection
-      .find(selection)
-      .project<MpnOffer>({
-        ...defaultOfferProjection,
+    .find(selection)
+    .project<MpnOffer>({
+      ...defaultOfferProjection,
         isPromotionRestricted: 1,
       })
       .limit(_limit)
-      .toArray();
+      .toArray();*/
+
+    const promotedOffers = [];
 
     const result = [...promotedOffers];
 
@@ -599,7 +601,7 @@ export const promoted: Route<
           ...defaultOfferProjection,
           isPromotionRestricted: 1,
         })
-        //.sort({ pageviews: -1 })
+        .sort({ pageviews: -1 })
         .limit(_limit - promotedOffers.length)
         .toArray();
       result.push(...extraOffers);
