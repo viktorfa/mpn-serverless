@@ -99,7 +99,9 @@ export const addBiRelationalOffers = async (
     existingRelations
       .filter((x) => x._id !== existingRelation._id)
       .forEach((x) => {
-        operations.push({ deleteOne: { filter: { _id: ObjectId(x._id) } } });
+        operations.push({
+          deleteOne: { filter: { _id: new ObjectId(x._id) } },
+        });
       });
 
     operations.push({

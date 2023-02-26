@@ -11,7 +11,9 @@ export const findOne = async ({
 }): Promise<MpnCategory> => {
   const categoriesCollection = await getCollection(mpnCategoriesCollectionName);
   if (id) {
-    return categoriesCollection.findOne<MpnCategory>({ _id: new ObjectId(id) });
+    return categoriesCollection.findOne<MpnCategory>({
+      _id: new ObjectId(id),
+    });
   } else if (key) {
     return categoriesCollection.findOne<MpnCategory>({ key });
   } else {

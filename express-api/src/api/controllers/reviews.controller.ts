@@ -64,9 +64,9 @@ export const remove: Route<
 export const approve: Route<
   Response.NoContent<any> | Response.BadRequest<string> | NotFound<string>
 > = route.put("/:id/approve").handler(async (request) => {
-  const createReviewResult = await approveReview(request.routeParams.id);
+  const approveReviewResult = await approveReview(request.routeParams.id);
 
-  if (createReviewResult > 0) {
+  if (approveReviewResult > 0) {
     return Response.noContent();
   } else {
     return Response.notFound(

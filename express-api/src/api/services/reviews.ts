@@ -1,5 +1,5 @@
+import { ObjectId } from "mongodb";
 import { getCollection } from "@/config/mongo";
-import { ObjectID } from "bson";
 import { offerReviewsCollectionName } from "../utils/constants";
 
 export const addReview = async (
@@ -18,7 +18,7 @@ export const addReview = async (
 export const removeReview = async (reviewId: string) => {
   const reviewCollection = await getCollection(offerReviewsCollectionName);
   const mongoResult = await reviewCollection.updateOne(
-    { _id: new ObjectID(reviewId) },
+    { _id: new ObjectId(reviewId) },
     {
       $set: {
         updatedAt: new Date(),
@@ -33,7 +33,7 @@ export const removeReview = async (reviewId: string) => {
 export const approveReview = async (reviewId: string) => {
   const reviewCollection = await getCollection(offerReviewsCollectionName);
   const mongoResult = await reviewCollection.updateOne(
-    { _id: new ObjectID(reviewId) },
+    { _id: new ObjectId(reviewId) },
     {
       $set: {
         updatedAt: new Date(),
