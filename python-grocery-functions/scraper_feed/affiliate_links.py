@@ -130,9 +130,21 @@ def add_es_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn05c-21'
+            f'{product["href"]}&tag=mpn00-21'
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn05c-21'
+            else f'{product["href"]}?tag=mpn00-21'
+        )
+
+    return {**product, "ahref": ahref}
+
+
+def add_pl_amazon_affiliate_link(product: dict) -> dict:
+    ahref = product["href"]
+    if "tag=mpn0a-21" not in product["href"]:
+        ahref = (
+            f'{product["href"]}&tag=mpn0a-21'
+            if "?" in product["href"]
+            else f'{product["href"]}?tag=mpn0a-21'
         )
 
     return {**product, "ahref": ahref}
@@ -266,6 +278,14 @@ def add_locamo_de_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": new_href}
 
 
+def add_urtesenteret_no_affiliate_link(product: dict) -> dict:
+    if "promo_id" in product["href"]:
+        return product
+    original_href = product["href"]
+    new_href = f"{original_href}?promo_id=36861"
+    return {**product, "ahref": new_href}
+
+
 def get_affiliate_handler(product: dict):
     if "byggmax.no" in product["href"]:
         return
@@ -289,6 +309,8 @@ def get_affiliate_handler(product: dict):
         return add_fr_amazon_affiliate_link
     elif "amazon.nl" in product["href"]:
         return add_nl_amazon_affiliate_link
+    elif "amazon.pl" in product["href"]:
+        return add_pl_amazon_affiliate_link
     elif "grontfokus.no" in product["href"]:
         return add_grontfokus_affiliate_link
     elif "lampegiganten.no" in product["href"]:
@@ -321,6 +343,8 @@ def get_affiliate_handler(product: dict):
         return add_davidsen_affiliate_link
     elif "www.locamo.de" in product["href"]:
         return add_locamo_de_affiliate_link
+    elif "urtesenteret.no" in product["href"]:
+        return add_urtesenteret_no_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
