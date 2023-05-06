@@ -45,6 +45,7 @@ export const getRandomOffer: Route<
     const similarOffers = await searchWithMongo({
       query: offer.title,
       markets: [market],
+      includeOutdated: true,
     });
 
     const eligibleSimilarOffers = similarOffers.items.filter(

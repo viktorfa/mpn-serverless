@@ -20,6 +20,7 @@ export type MongoSearchParams = {
   sort?: { [key: string]: 1 | -1 };
   isPartner?: boolean;
   isExtraOffers?: boolean;
+  includeOutdated?: boolean;
 };
 
 export const searchWithMongo = async ({
@@ -34,6 +35,7 @@ export const searchWithMongo = async ({
   sort,
   isPartner = false,
   isExtraOffers = false,
+  includeOutdated = false,
 }: MongoSearchParams): Promise<MpnMongoSearchResponse> => {
   if (query.length > 127) {
     const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
@@ -81,8 +83,11 @@ export const searchWithMongo = async ({
       equals: { value: true, path: "isPartner" },
     });
   }
-
-  operator.compound.filter.push({ range: { gte: now, path: "validThrough" } });
+  if (!includeOutdated) {
+    operator.compound.filter.push({
+      range: { gte: now, path: "validThrough" },
+    });
+  }
   if (markets) {
     operator.compound.filter.push({ text: { query: markets, path: "market" } });
   }
