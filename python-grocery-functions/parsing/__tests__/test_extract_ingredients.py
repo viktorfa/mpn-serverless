@@ -1,3 +1,6 @@
+import os
+import json
+
 from parsing.ingredients_extraction import (
     extract_e_number,
     get_ingredients_data,
@@ -5,6 +8,14 @@ from parsing.ingredients_extraction import (
     get_extracted_ingredients,
 )
 from unittest import TestCase
+
+
+with open(
+    os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "..", "ingredients-data.json"
+    )
+) as ingredients_data_file:
+    ingredients_data = json.load(ingredients_data_file)
 
 
 class TestExtractIngredientsMethods(TestCase):
@@ -46,7 +57,7 @@ class TestExtractIngredientsFromOffer(TestCase):
             "extractIngredientsFields": ["Ingredienser"],
         }
 
-        actual = get_ingredients_data(offer, config)
+        actual = get_ingredients_data(offer, config, ingredients_data)
         self.assertEqual(actual["ingredients"]["sugar"]["key"], "sugar")
         self.assertIsNotNone(actual["processedScore"])
 
@@ -64,7 +75,7 @@ class TestExtractIngredientsFromOffer(TestCase):
             "extractIngredientsFields": ["Ingredienser"],
         }
 
-        actual = get_ingredients_data(offer, config)
+        actual = get_ingredients_data(offer, config, ingredients_data)
         self.assertEqual(actual["ingredients"]["seaSalt"]["key"], "seaSalt")
         self.assertEqual(actual["ingredients"]["e160a"]["key"], "e160a")
         self.assertEqual(

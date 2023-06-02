@@ -140,6 +140,7 @@ class EventHandleConfig(DbHandleConfig):
 
 class HandleConfig(EventHandleConfig):
     scrape_time: datetime
+    scrapeBatchId: str
 
 
 class PriceHistoryRecord(TypedDict):

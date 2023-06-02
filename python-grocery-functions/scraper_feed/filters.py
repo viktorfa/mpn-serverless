@@ -3,6 +3,7 @@ import pydash
 import logging
 from datetime import datetime, timedelta
 
+from storage.db import get_collection
 from parsing.ingredients_extraction import get_ingredients_data
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.category_extraction import extract_categories
@@ -111,7 +112,17 @@ def filter_product(product: MpnOffer, filters: List[OfferFilterConfig]):
     return False
 
 
-def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
+def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
+    for key, value in offer_meta.get("auto", {}).items():
+        offer[key] = value["value"]
+    for key, value in offer_meta.get("manual", {}).items():
+        offer[key] = value["value"]
+    return offer
+
+
+def transform_product(
+    offer: ScraperOffer, config: HandleConfig, ingredients_data, offer_meta_map
+) -> MpnOffer:
     time.set_time(config.get("scrape_time", datetime.utcnow()))
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
@@ -119,16 +130,23 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
         result = transform_shopgun_product(offer, config)
     else:
         # Start here for everything not Shopgun offer.
-        offer = transform_fields(offer, config["fieldMapping"])
         result: MpnOffer = {}
 
+        offer = transform_fields(offer, config["fieldMapping"])
+
         namespace = config["namespace"]
-        provenanceId = get_provenance_id(offer)
-        result["provenanceId"] = provenanceId
+        provenance_id = get_provenance_id(offer)
+
+        offer["uri"] = get_product_uri(namespace, provenance_id)
+
+        if offer["uri"] in offer_meta_map.keys():
+            offer = replace_offer_fields_with_meta(offer, offer_meta_map[offer["uri"]])
+
+        result["provenanceId"] = provenance_id
         result["href"] = offer["url"]
         result["ahref"] = offer.get("trackingUrl")
 
-        result["uri"] = get_product_uri(namespace, provenanceId)
+        result["uri"] = get_product_uri(namespace, provenance_id)
         result["pricing"] = get_product_pricing({**offer, **result})
         try:
             result["validThrough"] = json_time_to_datetime(offer["validThrough"])
@@ -207,7 +225,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     result["isPartner"] = config.get("is_partner", False)
 
     result["mpnProperties"] = standardize_additional_properties(offer, config)
-    result["mpnIngredients"] = get_ingredients_data(offer, config)
+    if config["collection_name"] in ["groceryoffers"]:
+        result["mpnIngredients"] = get_ingredients_data(offer, config, ingredients_data)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
     if config["provenance"] == "meny_api_spider":
         result["mpnCategories"] = extract_categories({**offer, **result}, config)
@@ -229,7 +248,38 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 def transform_and_filter_offers(
     offers: List[ScraperOffer], config: HandleConfig
 ) -> List[MpnOffer]:
-    transformed_offers = (transform_product(x, config) for x in offers)
+    ingredients_data = {}
+    if (
+        config["collection_name"] in ["groceryoffers"]
+        and len(config.get("extractIngredientsFields", [])) > 0
+    ):
+        ingredients_collection = get_collection("ingredients")
+        db_ingredients = ingredients_collection.find({})
+        for x in db_ingredients:
+            ingredients_data[x["key"]] = x
+
+    uris = []
+    for offer in offers:
+        provenance_id = get_provenance_id(offer)
+        uris.append(get_product_uri(config["namespace"], provenance_id))
+
+    meta_collection = get_collection("offermeta")
+
+    meta_objects = meta_collection.find({"uri": {"$in": uris}})
+    meta_objects_map = {}
+
+    for meta in meta_objects:
+        meta_objects_map[meta["uri"]] = meta
+
+    transformed_offers = (
+        transform_product(
+            x,
+            config,
+            ingredients_data=ingredients_data,
+            offer_meta_map=meta_objects_map,
+        )
+        for x in offers
+    )
     filters = pydash.get(config, ["filters"], [])
 
     if len(filters) == 0:

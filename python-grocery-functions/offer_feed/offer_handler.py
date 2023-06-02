@@ -1,10 +1,8 @@
-from bleach import ALLOWED_TAGS
+from amp_types.amp_product import MpnOffer
 from offer_feed.categories import handle_offers_for_categories
-from parsing.quantity_extraction import get_value_from_quantity, standardize_quantity
 
 import json
 import pydash
-from bson import json_util
 import logging
 import os
 from pymongo import UpdateOne
@@ -13,16 +11,14 @@ from util.utils import log_traceback
 
 import aws_config
 import boto3
-from typing import Iterable, Mapping, TypedDict, List
+from typing import Iterable, TypedDict
 from datetime import datetime
-from pprint import pprint
 
 
 from storage.db import get_collection
 
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
-from offer_feed.gtins import get_lists_of_offers_with_same_gtins
 
 
 if not os.getenv("IS_LOCAL"):
@@ -75,36 +71,40 @@ def offer_feed_trigger_for_categories(event, context):
     return result
 
 
-def handle_offer_feed_for_gtins(provenance: str):
+def handle_gtins_for_offers(offers: Iterable[MpnOffer]):
+    operations = []
     result = []
+    now = datetime.now()
     try:
-        now = datetime.now()
-        offers_collection = get_collection("mpnoffers")
-        offers = offers_collection.find(
-            {
-                "$and": [
-                    {"provenance": provenance},
-                    {"validThrough": {"$gt": now}},
-                    {
-                        "$or": [
-                            {"gtins.ean": {"$ne": None}},
-                            {"gtins.gtin13": {"$ne": None}},
-                            {"gtins.gtin12": {"$ne": None}},
-                            {"gtins.nobb": {"$ne": None}},
-                        ]
-                    },
-                ],
-            },
-            {"uri": 1, "gtins": 1},
-        )
-        operations = []
+        relations_collection = get_collection("offerbirelations")
 
         count = 0
 
         for offer in offers:
             count += 1
-            if count % 100000 == 0:
-                logging.debug(f"On offer number {count}")
+            if count % 50000 == 0:
+                logging.info(f"On offer number {count}")
+                logging.info(f"Running {len(operations)} operations")
+                try:
+                    mongo_result = relations_collection.bulk_write(
+                        operations,
+                        ordered=False,
+                    )
+                    operations = []
+                    result.append(
+                        dict(
+                            deleted_count=mongo_result.deleted_count,
+                            inserted_count=mongo_result.inserted_count,
+                            matched_count=mongo_result.matched_count,
+                            modified_count=mongo_result.modified_count,
+                            upserted_count=mongo_result.upserted_count,
+                        )
+                    )
+                except Exception as e:
+                    logging.error(e)
+                    log_traceback(e)
+                    result.append({"message": str(e)})
+
             gtins = []
             uri = offer["uri"]
             mongo_safe_uri = uri.replace(".", "\uff0E")
@@ -175,8 +175,10 @@ def handle_offer_feed_for_gtins(provenance: str):
             )
         logging.info(f"Running {len(operations)} operations")
         if len(operations) > 0:
-            relations_collection = get_collection("offerbirelations")
-            mongo_result = relations_collection.bulk_write(operations)
+            mongo_result = relations_collection.bulk_write(
+                operations,
+                ordered=False,
+            )
             result.append(
                 dict(
                     deleted_count=mongo_result.deleted_count,
@@ -188,7 +190,7 @@ def handle_offer_feed_for_gtins(provenance: str):
             )
 
         else:
-            result.append({"message": f"No offers with gtins for {provenance}"})
+            result.append({"message": "No offers with gtins"})
     except Exception as e:
         logging.error(e)
         log_traceback(e)
@@ -197,28 +199,112 @@ def handle_offer_feed_for_gtins(provenance: str):
     return result
 
 
+def handle_offer_feed_for_gtins_with_provenance(provenance: str):
+    now = datetime.now()
+    offers_collection = get_collection("mpnoffers")
+    offers = offers_collection.find(
+        {"provenance": provenance, "validThrough": {"$gt": now}},
+        {"uri": 1, "gtins": 1},
+    )
+
+    offers = (
+        offer
+        for offer in offers
+        if pydash.get(offer, "gtins.nobb")
+        or pydash.get(offer, "gtins.gtin12")
+        or pydash.get(offer, "gtins.gtin13")
+    )
+
+    return handle_gtins_for_offers(offers)
+
+
+def handle_offer_feed_for_gtins_with_scrape_batch(scrape_batch_id: str):
+    now = datetime.now()
+    offers_collection = get_collection("mpnoffers")
+    offers = offers_collection.find(
+        {"scrapeBatchId": scrape_batch_id},
+        {"uri": 1, "gtins": 1},
+    )
+
+    offers = (
+        offer
+        for offer in offers
+        if pydash.get(offer, "gtins.nobb")
+        or pydash.get(offer, "gtins.gtin12")
+        or pydash.get(offer, "gtins.gtin13")
+    )
+
+    return handle_gtins_for_offers(offers)
+
+
 def offer_feed_sns_for_gtins(event, context):
     logging.info("event")
     logging.info(event)
     aws_config.lambda_context = context
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
-    provenance = sns_message["provenance"]
+    provenance = sns_message.get("provenance")
+    scrape_batch_id = sns_message.get("scrapeBatchId")
 
-    return handle_offer_feed_for_gtins(provenance)
+    if scrape_batch_id:
+        return handle_offer_feed_for_gtins_with_scrape_batch(scrape_batch_id)
+    elif provenance:
+        return handle_offer_feed_for_gtins_with_provenance(provenance)
+    else:
+        logging.error(f"Need scrapeBatchId or provenance")
+        return
 
 
 def offer_feed_trigger_for_gtins(event, context):
     logging.info("event")
     logging.info(event)
     aws_config.lambda_context = context
-    provenance = event["provenance"]
+    provenance = event.get("provenance")
+    scrape_batch_id = event.get("scrapeBatchId")
 
-    return handle_offer_feed_for_gtins(provenance)
+    if scrape_batch_id:
+        return handle_offer_feed_for_gtins_with_scrape_batch(scrape_batch_id)
+    elif provenance:
+        return handle_offer_feed_for_gtins_with_provenance(provenance)
+    else:
+        logging.error(f"Need scrapeBatchId or provenance")
+        return
 
 
 def handle_offer_feed_for_meta(provenance: str):
     logging.info("Not handling meta fields")
-    return {"message": "Not handling meta fields"}
+    if provenance != "NEVER":
+        return {"message": "Not handling meta fields"}
+
+    offer_meta_collection = get_collection("offermeta")
+    offer_collection = get_collection("mpnoffers")
+
+    now = datetime.now()
+
+    offers = offer_collection.find(
+        {"provenance": provenance, "validThrough": {"$gt": now}}, {"uri": 1}
+    )
+
+    offer_metas = offer_meta_collection.find(
+        {"uri": {"$in": list(x["uri"] for x in offers)}}
+    )
+
+    operations = []
+
+    for offer_meta in offer_metas:
+        update_set = {}
+        for key, meta_field in offer_meta.get("auto", {}).items():
+            update_set[key] = meta_field["value"]
+        for key, meta_field in offer_meta.get("manual", {}).items():
+            update_set[key] = meta_field["value"]
+        if len(update_set.keys()) > 0:
+            operations.append(
+                UpdateOne({"uri": offer_meta["uri"]}, {"$set": update_set})
+            )
+
+    if len(operations) == 0:
+        return {"message": "No offer metas"}
+    else:
+        return offer_collection.bulk_write(operations).bulk_api_result
 
 
 def offer_feed_meta_sns(event, context):

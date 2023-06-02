@@ -424,6 +424,50 @@ class TestWithConfig(TestCase):
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 39.9)
 
+    # The db will have unit_price_raw as 25 in meta fields
+    def test_single_meny_product_with_meta(self):
+        config = generate_handle_config(
+            {
+                "provenance": "meny",
+                "namespace": "meny",
+                "market": "no",
+                "collection_name": "groceryoffers",
+                "categoriesLimits": [],
+                "extractQuantityFields": ["unit_price_raw", "unit_raw", "title"],
+                "extractPropertiesFields": [],
+                "extractIngredientsFields": [],
+                "extractNutritionFields": [],
+                "fieldMapping": [
+                    {"source": "sku", "destination": "ean", "replace_type": "key"},
+                    {
+                        "source": "product_variant",
+                        "destination": "description",
+                        "replace_type": "key",
+                    },
+                ],
+            }
+        )
+        scraper_offer = {
+            "price": 3.0,
+            "title": "Tomat stykk",
+            "unit_price_raw": "kr\u00a039,90/kg",
+            "image_url": "https://res.cloudinary.com/norgesgruppen/image/upload/c_pad,b_white,f_auto,h_320,q_50,w_320/v1558839429/Product/2000406400006.png",
+            "product_url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "meny_id": "test_sku",
+            "provenance": "meny",
+            "url_fingerprint": "460cae747c054fc03fac9a0a88d8a9ef172c279d",
+            "url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "canonical_url": "https://meny.no/varer/frukt-gront/gronnsaker/tomater/tomat-stykk-2000406400006",
+            "sku": "test_sku",
+            "gtin13": "2000406400006",
+            "provenanceId": "test_sku",
+            "priceCurrency": "NOK",
+            "collection_name": "groceryoffers",
+        }
+        result = handle_products([scraper_offer], config)
+        # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
+        self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 25.0)
+
     def test_single_jemogfix_product(self):
         config = generate_handle_config(
             {
@@ -478,10 +522,10 @@ class TestWithConfig(TestCase):
     def test_single_kolonial_product(self):
         config = generate_handle_config(
             {
-                "provenance": "jemogfix",
-                "namespace": "jemogfix",
+                "provenance": "kolonial",
+                "namespace": "kolonial",
                 "market": "no",
-                "collection_name": "byggoffers",
+                "collection_name": "groceryoffers",
                 "categoriesLimits": [],
                 "extractQuantityFields": [],
                 "extractPropertiesFields": [],

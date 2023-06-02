@@ -1,6 +1,7 @@
 import logging
 import json
-from typing import Optional
+import pydash
+from typing import Iterable, Optional
 from datetime import datetime
 from copy import deepcopy
 from pymongo import UpdateOne
@@ -71,6 +72,7 @@ def handle_offers_for_categories(config: HandleConfig):
     logging.info("handle_offers_for_categories")
     now = datetime.now()
     provenance = config["provenance"]
+    scrape_batch_id = config.get("scrapeBatchId")
     logging.info(f"Trying to find categories for offers with provenance {provenance}")
     offer_context = get_offer_context_from_site_collection(config["collection_name"])
     if not offer_context:
@@ -87,13 +89,29 @@ def handle_offers_for_categories(config: HandleConfig):
         return None
 
     offer_collection = get_collection("mpnoffers")
-    offers = offer_collection.find(
-        {
-            "provenance": provenance,
-            "validThrough": {"$gt": now},
-            "categories.0": {"$exists": 1},
-        },
-        {"categories": 1, "slugCategories": 1},
+
+    offers: Iterable = []
+
+    if scrape_batch_id:
+        offers = offer_collection.find(
+            {
+                "scrapeBatchId": scrape_batch_id,
+            },
+            {"categories": 1, "slugCategories": 1},
+        )
+    else:
+        offers = offer_collection.find(
+            {
+                "provenance": provenance,
+                "validThrough": {"$gt": now},
+            },
+            {"categories": 1, "slugCategories": 1},
+        )
+
+    offers = (
+        offer
+        for offer in offers
+        if pydash.get(offer, "categories.0") or pydash.get(offer, "slugCategories.0")
     )
     category_mappings_map = {}
     for x in category_mappings:

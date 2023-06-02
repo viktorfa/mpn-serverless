@@ -5,6 +5,7 @@ import boto3
 import botostubs
 import json
 from pymongo.results import BulkWriteResult
+import uuid
 
 import aws_config
 from scraper_feed.handle_products import handle_products
@@ -30,12 +31,21 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
     sns_client = boto3.client("sns")  # type: botostubs.SNS
 
     products = handle_products(feed, config)
+    scrape_batch_id = str(uuid.uuid4())
     products = (
-        {**product, "siteCollection": config["collection_name"]} for product in products
+        {
+            **product,
+            "siteCollection": config["collection_name"],
+            "scrapeBatchId": scrape_batch_id,
+        }
+        for product in products
     )
 
     products = add_affiliate_links(products)
     products = list(products)
+
+    if len(products) == 0:
+        return {"message": "No offers to save"}
 
     result = {}
 
@@ -58,6 +68,7 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
                 result = save_book_offers(products)
             sns_message_data = {
                 "namespace": config["namespace"],
+                "scrapeBatchId": scrape_batch_id,
             }
             sns_message = json.dumps(
                 {"default": json.dumps(sns_message_data, default=json_handler)}
@@ -85,6 +96,7 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
         sns_message_data = {
             **config,
             "collection_name": config["collection_name"],
+            "scrapeBatchId": scrape_batch_id,
         }
         sns_message = json.dumps(
             {"default": json.dumps(sns_message_data, default=json_handler)}
@@ -105,13 +117,11 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
         "createdAt": end_time,
         "updatedAt": end_time,
         "logs": aws_config.get_log_group_url(),
+        "scrapeBatchId": scrape_batch_id,
     }
     if os.getenv("IS_LOCAL"):
         logging.info({**handle_run, "example_items": products[:1]})
     else:
         store_handle_run(handle_run)
-
-    if len(products) == 0:
-        return {"message": "No offers to save"}
 
     return result

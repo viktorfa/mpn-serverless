@@ -28,7 +28,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "byggoffers",
         }
 
-        actual = transform_product(product, config)
+        actual = transform_product(product, config, {}, {})
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -47,7 +47,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config)
+        actual = transform_product(product, config, {}, {})
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -67,7 +67,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config)
+        actual = transform_product(product, config, {}, {})
         self.assertIn("HALLA", actual["uri"])
 
     def test_transform_product_with_ignore_none_fields(self):
@@ -86,7 +86,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config)
+        actual = transform_product(product, config, {}, {})
         self.assertIsNone(actual.get("quantity"))
         self.assertIn("obsbygg", actual["uri"])
 

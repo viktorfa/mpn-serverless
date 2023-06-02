@@ -9,10 +9,12 @@ from transform.offer import get_field_from_scraper_offer
 from amp_types.amp_product import HandleConfig, ScraperOffer
 
 
+"""
 with open(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), "ingredients-data.json")
 ) as ingredients_data_file:
     ingredients_data = json.load(ingredients_data_file)
+"""
 
 ingredients_config = [
     {"patterns": [r"sukker"], "property": "sugar"},
@@ -154,7 +156,7 @@ def get_extracted_ingredients(raw_ingredients: Iterable[str]):
     return result
 
 
-def get_ingredients_data(offer: ScraperOffer, config: HandleConfig):
+def get_ingredients_data(offer: ScraperOffer, config: HandleConfig, ingredients_data):
     raw_ingredients_fields: List[str] = []
     for key in config["extractIngredientsFields"]:
         raw_ingredients = get_field_from_scraper_offer(offer, key)
