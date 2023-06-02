@@ -17,7 +17,7 @@ service: python-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: python3.8
+  runtime: python3.9
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
@@ -112,19 +112,29 @@ functions:
     handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_with_config
   scraperFeedPricingHistory:
     handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
+    timeout: 900
   productFeedSns:
-    handler: offer_feed.offer_handler.offer_feed_sns
+    handler: offer_feed.offer_handler.offer_feed_sns_for_categories
     events:
       - sns:
           topicName: ScraperFeedHandled
           arn:
             Ref: ScraperFeedHandledTopic
   offerFeedTrigger:
-    handler: offer_feed.offer_handler.offer_feed_trigger
+    handler: offer_feed.offer_handler.offer_feed_trigger_for_categories
   offerFeedMetaTrigger:
     handler: offer_feed.offer_handler.offer_feed_meta_trigger
   offerFeedMetaSns:
     handler: offer_feed.offer_handler.offer_feed_meta_sns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Ref: ScraperFeedHandledTopic
+  offerFeedGtinsTrigger:
+    handler: offer_feed.offer_handler.offer_feed_trigger_for_gtins
+  offerFeedGtinsSns:
+    handler: offer_feed.offer_handler.offer_feed_sns_for_gtins
     events:
       - sns:
           topicName: ScraperFeedHandled
