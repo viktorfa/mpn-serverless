@@ -36,6 +36,8 @@ const searchQueryParams = t.type({
   page: t.union([t.string, t.undefined]),
   dealers: t.union([t.string, t.undefined]),
   categories: t.union([t.string, t.undefined]),
+  brands: t.union([t.string, t.undefined]),
+  vendors: t.union([t.string, t.undefined]),
   price: t.union([t.string, t.undefined]),
   sort: t.union([t.string, t.undefined]),
 });
@@ -105,6 +107,8 @@ export const search: Route<
       dealers,
       price,
       categories,
+      brands,
+      vendors,
       sort,
       market,
     } = request.query;
@@ -124,6 +128,8 @@ export const search: Route<
     const searchArgs = {
       dealers: dealers ? dealers.split(",") : null,
       categories: categories ? categories.split(",") : null,
+      brands: brands ? brands.split(",") : null,
+      vendors: vendors ? vendors.split(",") : null,
       sort: sortConfig,
       price: null,
       page: Number.parseInt(page || "1"),

@@ -16,6 +16,8 @@ export type MongoSearchParams = {
   page?: number;
   dealers?: string[];
   categories?: string[];
+  brands?: string[];
+  vendors?: string[];
   price?: { from?: number; to?: number };
   sort?: { [key: string]: 1 | -1 };
   isPartner?: boolean;
@@ -31,6 +33,8 @@ export const searchWithMongo = async ({
   page = 1,
   dealers,
   categories,
+  brands,
+  vendors,
   price,
   sort,
   isPartner = false,
@@ -50,6 +54,12 @@ export const searchWithMongo = async ({
 
   if (dealers) {
     filters.dealer = { $in: dealers };
+  }
+  if (brands) {
+    filters.brandKey = { $in: brands };
+  }
+  if (vendors) {
+    filters.vendorKey = { $in: vendors };
   }
   if (price) {
     filters.price = {};
