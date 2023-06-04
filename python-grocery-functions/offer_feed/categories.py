@@ -21,6 +21,20 @@ def get_offer_context_from_site_collection(site_collection: str) -> Optional[str
         return "amp-dk"
     elif site_collection == "segroceryoffers":
         return "amp-se"
+    elif site_collection == "figroceryoffers":
+        return "amp-fi"
+    elif site_collection == "plgroceryoffers":
+        return "amp-pl"
+    elif site_collection == "nlgroceryoffers":
+        return "amp-nl"
+    elif site_collection == "frgroceryoffers":
+        return "amp-fr"
+    elif site_collection == "esgroceryoffers":
+        return "amp-es"
+    elif site_collection == "ukgroceryoffers":
+        return "amp-uk"
+    elif site_collection == "itgroceryoffers":
+        return "amp-it"
     elif site_collection == "byggoffers":
         return "bygg-no"
     elif site_collection == "debyggoffers":
