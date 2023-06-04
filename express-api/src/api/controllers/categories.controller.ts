@@ -13,7 +13,7 @@ const categoriesQueryParams = t.type({
   level: t.union([t.string, t.undefined]),
   parent: t.union([t.string, t.undefined]),
   context: t.union([t.string, t.undefined]),
-  includeInactive: t.union([t.boolean, t.undefined]),
+  includeInactive: t.union([t.string, t.undefined]),
 });
 
 export const list: Route<
@@ -22,7 +22,13 @@ export const list: Route<
   .get("/")
   .use(Parser.query(categoriesQueryParams))
   .handler(async (request) => {
-    const { level, parent, context, includeInactive = false } = request.query;
+    const {
+      level,
+      parent,
+      context,
+      includeInactive: includeInactiveString = "false",
+    } = request.query;
+    const includeInactive = includeInactiveString === "true";
 
     const categoriesCollection = await getCollection(
       mpnCategoriesCollectionName,
