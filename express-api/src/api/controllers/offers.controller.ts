@@ -79,13 +79,14 @@ export const list: Route<
 
     const now = getNowDate();
     selection.validThrough = { $gte: now };
+    selection.isRecent = true;
 
     const offerCollection = await getCollection(offerCollectionName);
 
     const offers = await offerCollection
       .find(selection)
       .project<MpnOffer>(defaultOfferProjection)
-      .sort({ pageviews: -1, url_fingerprint: 1 })
+      .sort({ pageviews: -1 })
       .limit(_limit)
       .toArray();
 
@@ -594,6 +595,7 @@ export const promoted: Route<
     if (promotedOffers.length < _limit) {
       const extraOffers = await offerCollection
         .find({
+          isRecent: true,
           validThrough: { $gte: now },
           siteCollection: productCollection,
         })

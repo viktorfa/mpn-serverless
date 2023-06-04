@@ -61,6 +61,7 @@ export const getOffersForSiteCollection = async (
   const now = getNowDate();
   selection.validThrough = { $gte: now };
   selection.siteCollection = siteCollection;
+  selection.isRecent = true;
   return getOffers(selection, projection, limit);
 };
 
@@ -74,6 +75,7 @@ export const getOffers = async (
   if (!includeExpired) {
     const now = getNowDate();
     selection.validThrough = { $gte: now };
+    selection.isRecent = true;
   }
 
   return offersCollection

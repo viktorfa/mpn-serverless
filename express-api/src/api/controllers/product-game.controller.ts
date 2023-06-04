@@ -31,6 +31,7 @@ export const getRandomOffer: Route<
       "gtins.ean": { $exists: false },
       "gtins.gtin13": { $exists: false },
       validThrough: { $gt: now },
+      isRecent: true,
       uri: { $nin: allProductGameData.map((x) => x.uri) },
     };
     const nDocs = await offerCollection.count(findOneFilter);

@@ -13,6 +13,7 @@ const categoriesQueryParams = t.type({
   level: t.union([t.string, t.undefined]),
   parent: t.union([t.string, t.undefined]),
   context: t.union([t.string, t.undefined]),
+  includeInactive: t.union([t.boolean, t.undefined]),
 });
 
 export const list: Route<
@@ -21,12 +22,15 @@ export const list: Route<
   .get("/")
   .use(Parser.query(categoriesQueryParams))
   .handler(async (request) => {
-    const { level, parent, context } = request.query;
+    const { level, parent, context, includeInactive = false } = request.query;
 
     const categoriesCollection = await getCollection(
       mpnCategoriesCollectionName,
     );
     const filter: Filter<MpnCategory> = { active: { $ne: false } };
+    if (includeInactive) {
+      delete filter.active;
+    }
     if (level) {
       filter.level = Number.parseInt(level);
     }
@@ -63,6 +67,7 @@ export const getAllCategoriesForDealer: Route<
     const offers = await offerCollection
       .find({
         validThrough: { $gt: now },
+        isRecent: true,
         dealer: request.routeParams.dealer,
       })
       .project({ categories: 1 })
@@ -118,6 +123,7 @@ export const getDealersForContext: Route<
   const offers = await collection
     .find({
       validThrough: { $gt: new Date() },
+      isRecent: true,
       siteCollection: request.routeParams.siteCollection,
     })
     .project({ dealer: 1 })
