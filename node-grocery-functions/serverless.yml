@@ -1,3 +1,5 @@
+org: matpanett
+app: node-mpn-functions
 # Welcome to Serverless!
 #
 # This file is the main config file for your service.
@@ -15,13 +17,13 @@ service: node-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
   timeout: 900
-  memorySize: 1024
+  memorySize: 2048
   versionFunctions: false
 
   environment:
@@ -34,6 +36,9 @@ provider:
     ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
     SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
+    NHOST_ADMIN_SECRET: ${env:NHOST_ADMIN_SECRET}
+    NHOST_SUBDOMAIN: ${env:NHOST_SUBDOMAIN}
+    NHOST_REGION: ${env:NHOST_REGION}
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -50,6 +55,18 @@ provider:
         - AccountId: !Ref "AWS::AccountId"
           DistributionId: !ImportValue StaticAssetsDistribution
 functions:
+  runKavallProducts:
+    handler: kavall_ean.matchKavallProducts
+    #events:
+    #  - schedule:
+    #      rate: cron(0 7 ? * * *) # Every day 07:00 AM
+    #      input:
+    #        market: "no"
+  getKavallProducts:
+    handler: kavall_ean.getKavallCsv
+    events:
+      - httpApi: "GET /kavall.csv"
+
   processGroceryOffers:
     handler: tokens/handler.processGroceryOffers
     events:
@@ -58,93 +75,109 @@ functions:
           input:
             mongoCollection: "byggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(1 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "sebyggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(2 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "segroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(3 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "herbvuoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(4 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "groceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(5 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "beautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(6 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "sebeautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(7 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "degroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(8 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "debyggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(9 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "debeautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(10 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "dkgroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(11 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "dkbyggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(12 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "dkbeautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(13 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "ukbyggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(14 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "ukgroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(15 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "ukbeautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(16 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "usbyggoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(17 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "usgroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(18 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "usbeautyoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(19 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "sggroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(20 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "thgroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(21 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "nlgroceryoffers"
       - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
+          rate: cron(22 7 ? * MON *) # Every Monday 07:00 AM
           input:
             mongoCollection: "frgroceryoffers"
+      - schedule:
+          rate: cron(23 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "figroceryoffers"
+      - schedule:
+          rate: cron(24 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "plgroceryoffers"
+      - schedule:
+          rate: cron(25 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "esgroceryoffers"
+      - schedule:
+          rate: cron(26 7 ? * MON *) # Every Monday 07:00 AM
+          input:
+            mongoCollection: "itgroceryoffers"
 
   # deleteOffersFromElastic:
   #   handler: elastic/handler.handleTriggerDeleteEvent
@@ -259,13 +292,18 @@ functions:
     #          - "#{Stage}-ScraperFeedHandledTopicArn"
     #          - Stage: ${self:provider.stage}
 
-  handlePageViewsFeed:
-    handler: stats/handler.handleFeed
-    events:
-      - http: PUT pageviews
-
   processGroceryOffersSns:
     handler: tokens/handler.processGroceryOffersSns
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Fn::ImportValue: !Sub
+    #          - "#{Stage}-ScraperFeedHandledTopicArn"
+    #          - Stage: ${self:provider.stage}
+
+  processOffersKeysSns:
+    handler: offer-feed/handle-offers-fields.handlerSns
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -273,9 +311,17 @@ functions:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
               - Stage: ${self:provider.stage}
+  processOffersKeysTrigger:
+    handler: offer-feed/handle-offers-fields.handlerTrigger
+  flagInactiveOffers:
+    handler: crons/filter-active.flagInactiveOffers
+    events:
+      - schedule:
+          rate: cron(0 2 ? * * *) # Every night 2 am
 
 plugins:
   - serverless-cloudformation-sub-variables
+  - serverless-offline
 
 custom:
   vars: ${file(./sls-config.js)}

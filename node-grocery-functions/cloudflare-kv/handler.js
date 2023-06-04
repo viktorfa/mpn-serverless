@@ -103,6 +103,7 @@ const migrateOffersToCloudflare = async (
   mongoFilter = {},
   chunkSize = UPLOAD_TO_ELASTIC_OFFERS_CHUNK_SIZE,
 ) => {
+  return;
   const mongoCollection = await getCollection(defaultOfferCollection);
 
   const now = new Date();
@@ -112,7 +113,8 @@ const migrateOffersToCloudflare = async (
     .find({
       validThrough: { $gte: now },
       siteCollection,
-      pageviews: { $gt: 100 },
+      isRecent: true,
+      pageviews: { $gt: 100 }, // Avoid making too many writes to Cloudflare with pageviews filter
       ...mongoFilter,
     })
     .project(

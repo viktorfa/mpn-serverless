@@ -104,6 +104,30 @@ const getEngineName = (engineName) => {
     result = "usbeautyoffers";
   } else if (engineName.startsWith("usextra")) {
     result = "usextraoffers";
+  } else if (engineName.startsWith("figrocery")) {
+    result = "figroceryoffers";
+  } else if (engineName.startsWith("fibygg")) {
+    result = "fibyggoffers";
+  } else if (engineName.startsWith("fibeauty")) {
+    result = "fibeautyoffers";
+  } else if (engineName.startsWith("fiextra")) {
+    result = "fiextraoffers";
+  } else if (engineName.startsWith("sggrocery")) {
+    result = "sggroceryoffers";
+  } else if (engineName.startsWith("sgbygg")) {
+    result = "sgbyggoffers";
+  } else if (engineName.startsWith("sgbeauty")) {
+    result = "sgbeautyoffers";
+  } else if (engineName.startsWith("sgextra")) {
+    result = "sgextraoffers";
+  } else if (engineName.startsWith("thgrocery")) {
+    result = "thgroceryoffers";
+  } else if (engineName.startsWith("thbygg")) {
+    result = "thbyggoffers";
+  } else if (engineName.startsWith("thbeauty")) {
+    result = "thbeautyoffers";
+  } else if (engineName.startsWith("thextra")) {
+    result = "thextraoffers";
   } else {
     return "";
   }
@@ -251,27 +275,18 @@ const migrateOffersToElastic = async (
     .value();
 
   const elasticResult = [];
-  const elasticResponsePromises = [];
 
   for (const chunk of elasticPromises) {
-    const elasticChunkResponse = indexElasticDocuments(
+    const elasticChunkResult = await indexElasticDocuments(
       chunk,
       engineName,
       elasticClient,
     );
-    elasticResponsePromises.push(elasticChunkResponse);
-    console.log(`Indexing ${chunkSize} documents`);
+    elasticResult.push(...elasticChunkResult);
+    console.log(
+      `Indexed ${elasticChunkResult.length} objects to elastic in engine ${engineName}.`,
+    );
   }
-
-  const elasticResponses = await Promise.all(elasticResponsePromises);
-
-  elasticResponses.forEach((x) => {
-    elasticResult.push(...x);
-  });
-
-  console.log(
-    `Indexed ${elasticResult.length} objects to elastic in engine ${engineName}.`,
-  );
 
   const errors = _.flatten(elasticResult.map(({ errors }) => errors));
   console.info(`Errors from elastic indexing: ${errors.length}`);

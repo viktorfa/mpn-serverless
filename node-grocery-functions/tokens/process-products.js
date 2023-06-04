@@ -92,7 +92,7 @@ const processProducts = async (
   siteCollectionName,
   prefix,
   storeInS3 = false,
-  limit = 2 ** 20,
+  limit = 10000,
 ) => {
   console.info(`Processing ${siteCollectionName} with prefix ${prefix}`);
   if (storeInS3 !== true) {
@@ -106,7 +106,9 @@ const processProducts = async (
       validThrough: {
         $gt: new Date(),
       },
+      isRecent: true,
     })
+    .project({ title: 1 })
     .limit(limit)
     .toArray();
 

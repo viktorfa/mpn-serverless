@@ -27,3 +27,14 @@ export interface SnsEvent<Message> {
 export interface CollectionWithClose extends Collection {
   close(): Promise<void>;
 }
+
+export type OfferFeedHandledMessage = {
+  provenance: string;
+  namespace: string;
+  collection_name: string;
+  market: string;
+  is_partner: string;
+  feed_key: string;
+  scrape_time: string;
+  scrapeBatchId: string;
+};

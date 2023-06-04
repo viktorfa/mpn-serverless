@@ -15,7 +15,7 @@ Sentry.AWSLambda.init({
  */
 const processGroceryOffers = async (event) => {
   try {
-    const { mongoCollection, storeInS3 = true, limit = 2 ** 20 } = event;
+    const { mongoCollection, storeInS3 = true, limit = 10000 } = event;
     if (!mongoCollection || typeof mongoCollection !== "string") {
       throw new Error(
         `mongoCollection argument has to be a string. Was ${mongoCollection}`,
