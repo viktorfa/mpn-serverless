@@ -593,7 +593,15 @@ export const promoted: Route<
     const result = [...promotedOffers];
 
     if (promotedOffers.length < _limit) {
-      const extraOffers = await offerCollection
+      const extraOffers = await searchWithMongo({
+        query: "",
+        productCollections: [productCollection],
+        limit: _limit - promotedOffers.length,
+        sort: { pageviews: -1 },
+        projection: { ...defaultOfferProjection, isPromotionRestricted: 1 },
+      });
+
+      /*const extraOffers = await offerCollection
         .find({
           isRecent: true,
           validThrough: { $gte: now },
@@ -605,8 +613,9 @@ export const promoted: Route<
         })
         .sort({ pageviews: -1 })
         .limit(_limit - promotedOffers.length)
-        .toArray();
-      result.push(...extraOffers);
+        .toArray();*/
+
+      result.push(...extraOffers.items);
     }
 
     const limitedResult = _.take(result, _limit).filter(
