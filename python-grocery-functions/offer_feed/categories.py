@@ -101,10 +101,7 @@ def handle_offers_for_categories(config: HandleConfig):
         )
     else:
         offers = offer_collection.find(
-            {
-                "provenance": provenance,
-                "validThrough": {"$gt": now},
-            },
+            {"provenance": provenance, "validThrough": {"$gt": now}, "isRecent": True},
             {"categories": 1, "slugCategories": 1},
         )
 

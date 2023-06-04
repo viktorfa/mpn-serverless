@@ -33,7 +33,11 @@ def analyze_pricing(event, config):
     pricing_mongo_collection = get_collection("offerpricings")
 
     products = product_mongo_collection.find(
-        {"dealer": "kolonial", "validThrough": {"$gt": datetime.now()}},
+        {
+            "dealer": "kolonial",
+            "validThrough": {"$gt": datetime.now()},
+            "isRecent": True,
+        },
         {"uri": 1},
         limit=128,
     )

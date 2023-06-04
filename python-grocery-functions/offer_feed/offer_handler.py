@@ -203,7 +203,7 @@ def handle_offer_feed_for_gtins_with_provenance(provenance: str):
     now = datetime.now()
     offers_collection = get_collection("mpnoffers")
     offers = offers_collection.find(
-        {"provenance": provenance, "validThrough": {"$gt": now}},
+        {"provenance": provenance, "validThrough": {"$gt": now}, "isRecent": True},
         {"uri": 1, "gtins": 1},
     )
 
@@ -281,7 +281,8 @@ def handle_offer_feed_for_meta(provenance: str):
     now = datetime.now()
 
     offers = offer_collection.find(
-        {"provenance": provenance, "validThrough": {"$gt": now}}, {"uri": 1}
+        {"provenance": provenance, "validThrough": {"$gt": now}, "isRecent": True},
+        {"uri": 1},
     )
 
     offer_metas = offer_meta_collection.find(

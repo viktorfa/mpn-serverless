@@ -2,6 +2,7 @@ from typing import List
 import pydash
 import logging
 from datetime import datetime, timedelta
+from slugify import slugify
 
 from storage.db import get_collection
 from parsing.ingredients_extraction import get_ingredients_data
@@ -121,11 +122,14 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
 
 
 def transform_product(
-    offer: ScraperOffer, config: HandleConfig, ingredients_data, offer_meta_map
+    offer: ScraperOffer,
+    config: HandleConfig,
+    ingredients_data,
 ) -> MpnOffer:
     time.set_time(config.get("scrape_time", datetime.utcnow()))
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
+    namespace = config["namespace"]
     if "shopgun" in config["provenance"]:
         result = transform_shopgun_product(offer, config)
     else:
@@ -134,13 +138,9 @@ def transform_product(
 
         offer = transform_fields(offer, config["fieldMapping"])
 
-        namespace = config["namespace"]
         provenance_id = get_provenance_id(offer)
 
         offer["uri"] = get_product_uri(namespace, provenance_id)
-
-        if offer["uri"] in offer_meta_map.keys():
-            offer = replace_offer_fields_with_meta(offer, offer_meta_map[offer["uri"]])
 
         result["provenanceId"] = provenance_id
         result["href"] = offer["url"]
@@ -221,8 +221,21 @@ def transform_product(
         )
         result = {**result, **parsed_quantity}
 
+    if result["validThrough"] > time.time:
+        result["isRecent"] = True
+    else:
+        result["isRecent"] = False
     result["market"] = config["market"]
     result["isPartner"] = config.get("is_partner", False)
+    dealer_key = slugify(offer.get("dealer", namespace), separator="_")
+    vendor_key = slugify(offer.get("vendor", "") or "", separator="_")
+    brand_key = slugify(offer.get("brand", "") or "", separator="_")
+
+    result["dealerKey"] = dealer_key
+    if vendor_key:
+        result["vendorKey"] = vendor_key
+    if brand_key:
+        result["brandKey"] = brand_key
 
     result["mpnProperties"] = standardize_additional_properties(offer, config)
     if config["collection_name"] in ["groceryoffers"]:
@@ -258,25 +271,11 @@ def transform_and_filter_offers(
         for x in db_ingredients:
             ingredients_data[x["key"]] = x
 
-    uris = []
-    for offer in offers:
-        provenance_id = get_provenance_id(offer)
-        uris.append(get_product_uri(config["namespace"], provenance_id))
-
-    meta_collection = get_collection("offermeta")
-
-    meta_objects = meta_collection.find({"uri": {"$in": uris}})
-    meta_objects_map = {}
-
-    for meta in meta_objects:
-        meta_objects_map[meta["uri"]] = meta
-
     transformed_offers = (
         transform_product(
             x,
             config,
             ingredients_data=ingredients_data,
-            offer_meta_map=meta_objects_map,
         )
         for x in offers
     )
