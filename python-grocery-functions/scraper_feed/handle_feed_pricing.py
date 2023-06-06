@@ -1,5 +1,6 @@
 from datetime import timedelta
 import json
+import pydash
 from json.decoder import JSONDecodeError
 import logging
 import os
@@ -37,6 +38,21 @@ if not os.getenv("IS_LOCAL"):
 
 configure_lambda_logging()
 
+import time
+
+
+class Timer:
+    def __init__(self, name):
+        self.name = name
+        self.start = time.time()
+
+    def time_log(self, message=None):
+        elapsed = time.time() - self.start
+        if message:
+            print(f"{self.name}: {message} - {elapsed} seconds since timer started")
+        else:
+            print(f"{self.name}: {elapsed} seconds since timer started")
+
 
 def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     logging.info("event")
@@ -52,6 +68,8 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     if "cdon" in event["namespace"]:
         return
 
+    trigger_timer = Timer("trigger_scraper_feed_with_config")
+
     try:
         bucket = os.environ["SCRAPER_FEED_BUCKET"]
         key = event["feed_key"]
@@ -66,16 +84,17 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     if not file_content:
         logging.warn("No items in scraper feed")
         return {"message": "No items in scraped feed"}
+
+    trigger_timer.time_log("read s3 file")
     try:
         # Limit the number of offers to avoid too much database load
-        offers = json.loads(file_content)[:20000]
-        filtered_offers = transform_and_filter_offers(offers, handle_config)
-        if os.getenv("STAGE") == "dev":
-            filtered_offers = filtered_offers[:512]
-
-        result = handle_feed_with_config_for_pricing_series(
-            filtered_offers, handle_config
-        )
+        result = []
+        for chunk in pydash.chunk(
+            json.loads(file_content)[: 512 if os.getenv("STAGE") == "dev" else 200000],
+            1000,
+        ):
+            result.append(handle_offer_chunk(chunk, handle_config))
+        trigger_timer.time_log("finished handle_feed_with_config_for_pricing_series")
 
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",
@@ -86,6 +105,18 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         logging.error(e)
         log_traceback(e)
         return {"message": str(e)}
+
+
+def handle_offer_chunk(offers: list, handle_config: HandleConfig, use_history=True):
+    chunk_timer = Timer("chunk timer")
+    filtered_offers = transform_and_filter_offers(offers, handle_config)
+    chunk_timer.time_log("transform_and_filter_offers")
+    result = handle_feed_with_config_for_pricing_series(
+        filtered_offers, handle_config, use_history=use_history
+    )
+    logging.info(f"Finished chunk of {len(offers)} offers")
+    chunk_timer.time_log("finished chunk")
+    return result
 
 
 def trigger_scraper_feed_pricing_with_history(event, context):
@@ -158,6 +189,8 @@ def handle_feed_with_config_for_pricing_series(
     scrape_time = config["scrape_time"]
     scrape_time_string = scrape_time.strftime("%Y-%m-%d")
 
+    handle_timer = Timer("handle_feed_with_config_for_pricing_series")
+
     for offer in feed:
         sku = next(
             (
@@ -182,6 +215,8 @@ def handle_feed_with_config_for_pricing_series(
             "date": scrape_time_string,
         }
 
+    handle_timer.time_log("created pricing_object_map")
+
     pricing_collection = get_collection("offerpricinghistories")
     price_history_map: Dict[str, PriceHistoryForOffer] = {}
     if use_history:
@@ -192,6 +227,7 @@ def handle_feed_with_config_for_pricing_series(
             price_history_map[price_history["uri"]] = price_history
     else:
         pass
+    handle_timer.time_log("got existing price histories")
 
     updates = []
 
@@ -225,11 +261,13 @@ def handle_feed_with_config_for_pricing_series(
                     upsert=True,
                 )
             )
+    handle_timer.time_log("created updates")
 
     if os.getenv("STAGE") == "dev":
         result = pricing_collection.bulk_write(updates[:512])
     else:
         result = pricing_collection.bulk_write(updates)
+    handle_timer.time_log("wrote updates to db")
 
     logging.debug(result)
 
