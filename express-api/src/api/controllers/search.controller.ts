@@ -30,7 +30,7 @@ const filterDuplicateOffers = (offers: MpnResultOffer[]): MpnResultOffer[] =>
 
 const searchQueryParams = t.type({
   query: t.string,
-  productCollection: t.string,
+  productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
   market: t.union([t.string, t.undefined]),
   page: t.union([t.string, t.undefined]),
@@ -112,9 +112,7 @@ export const search: Route<
       sort,
       market,
     } = request.query;
-    if (query.length > 128) {
-      return Response.badRequest("Query longer than 128 characters");
-    }
+    const _query = query.substring(0, 127) || "";
 
     const _limit = getLimitFromQueryParam(limit, 256);
 
@@ -147,8 +145,8 @@ export const search: Route<
     }
 
     const searchResults = await searchWithMongo({
-      query,
-      productCollections: [productCollection],
+      query: _query,
+      productCollections: productCollection ? [productCollection] : null,
       markets: [market],
       limit: _limit,
       ...searchArgs,

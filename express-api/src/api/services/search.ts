@@ -23,6 +23,7 @@ export type MongoSearchParams = {
   isPartner?: boolean;
   isExtraOffers?: boolean;
   includeOutdated?: boolean;
+  projection?: Record<string, number | boolean | Record<number, boolean>>;
 };
 
 export const searchWithMongo = async ({
@@ -40,6 +41,7 @@ export const searchWithMongo = async ({
   isPartner = false,
   isExtraOffers = false,
   includeOutdated = false,
+  projection = defaultOfferProjection,
 }: MongoSearchParams): Promise<MpnMongoSearchResponse> => {
   if (query.length > 127) {
     const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
@@ -51,25 +53,6 @@ export const searchWithMongo = async ({
   }
   const now = getNowDate();
   const filters: Record<string, any> = {};
-
-  if (dealers) {
-    filters.dealer = { $in: dealers };
-  }
-  if (brands) {
-    filters.brandKey = { $in: brands };
-  }
-  if (vendors) {
-    filters.vendorKey = { $in: vendors };
-  }
-  if (price) {
-    filters.price = {};
-    if (price.from) {
-      filters.price.$gte = price.from;
-    }
-    if (price.to) {
-      filters.price.$lte = price.to;
-    }
-  }
 
   const offerCollection = await getCollection(offerCollectionName);
 
@@ -88,6 +71,19 @@ export const searchWithMongo = async ({
     },
   };
 
+  if (price) {
+    if (price.from) {
+      operator.compound.filter.push({
+        range: { gte: price.from, path: "pricing.price" },
+      });
+    }
+    if (price.to) {
+      operator.compound.filter.push({
+        range: { lte: price.to, path: "pricing.price" },
+      });
+    }
+  }
+
   if (isPartner) {
     operator.compound.filter.push({
       equals: { value: true, path: "isPartner" },
@@ -100,6 +96,21 @@ export const searchWithMongo = async ({
   }
   if (markets) {
     operator.compound.filter.push({ text: { query: markets, path: "market" } });
+  }
+  if (dealers) {
+    operator.compound.filter.push({
+      text: { query: dealers, path: "dealer" },
+    });
+  }
+  if (brands) {
+    operator.compound.filter.push({
+      text: { query: brands, path: "brandKey" },
+    });
+  }
+  if (vendors) {
+    operator.compound.filter.push({
+      text: { query: vendors, path: "vendorKey" },
+    });
   }
   if (productCollections && !isExtraOffers) {
     operator.compound.filter.push({
@@ -187,12 +198,12 @@ export const searchWithMongo = async ({
         },
       },
     },
-    { $match: filters },
+    //{ $match: filters },
     { $limit: Math.min(limit, 1000) }, // Will be incredibly slow when sorting if the results are many
     { $skip: (Math.max(page - 1, 0) || 0) * limit },
     {
       $project: {
-        ...defaultOfferProjection,
+        ...projection,
         score: { $meta: "searchScore" },
       },
     },

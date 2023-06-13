@@ -375,11 +375,14 @@ export const extra: Route<
     }
 
     let query = offer.title;
-    if (offer.categories && Array.isArray(offer.categories)) {
+    if (false && offer.categories && Array.isArray(offer.categories)) {
       query += ` ${offer.categories.join(" ")}`;
     }
 
     query = query.substring(0, 127);
+
+    console.log(query);
+    console.log("query");
 
     const searchParams: MongoSearchParams = {
       query,
