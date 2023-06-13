@@ -1,7 +1,10 @@
 import { getCollection } from "@/config/mongo";
 import { flatten, uniqBy } from "lodash";
 import { ObjectId, Filter } from "mongodb";
-import { defaultOfferProjection } from "@/api/models/mpnOffer.model";
+import {
+  defaultDealerProjection,
+  defaultOfferProjection,
+} from "@/api/models/mpnOffer.model";
 import {
   offerCollectionName,
   offerTagsCollectionName,
@@ -28,28 +31,26 @@ const getFindOneFilter = (
 };
 
 export const findOne = async (id: string): Promise<MpnMongoOffer> => {
-  const offersCollection = await getCollection(offerCollectionName);
+  const offersCollection = await getCollection("mpnoffers_with_context");
   let filter = getFindOneFilter(id);
   const offer = await offersCollection.findOne<MpnMongoOffer>(filter, {
     projection: defaultOfferProjection,
   });
+
   if (!offer) {
     return null;
   }
-  const offerWithDealer = (await addDealerToOffers({ offers: [offer] }))[0];
-
-  return offerWithDealer as MpnMongoOffer;
+  return offer as MpnMongoOffer;
 };
 export const findOneFull = async (id: string): Promise<FullMpnOffer> => {
-  const offersCollection = await getCollection(offerCollectionName);
+  const offersCollection = await getCollection("mpnoffers_with_context");
   let filter = getFindOneFilter(id);
   const offer = await offersCollection.findOne<FullMpnOffer>(filter);
   if (!offer) {
     return null;
   }
-  const offerWithDealer = (await addDealerToOffers({ offers: [offer] }))[0];
 
-  return offerWithDealer as FullMpnOffer;
+  return offer as FullMpnOffer;
 };
 
 export const getOffersForSiteCollection = async (
@@ -71,7 +72,7 @@ export const getOffers = async (
   limit = 30,
   includeExpired = false,
 ): Promise<MpnOffer[]> => {
-  const offersCollection = await getCollection(offerCollectionName);
+  const offersCollection = await getCollection("mpnoffers_with_context");
   if (!includeExpired) {
     const now = getNowDate();
     selection.validThrough = { $gte: now };
@@ -200,9 +201,7 @@ export const getOffersInUriGroups = async (
 
   const offers = await getOffersByUris(uris, filter, defaultOfferProjection);
 
-  const offersWithDealer = await addDealerToOffers({ offers });
-
-  const uriToOfferMap = offersWithDealer.reduce((acc, offer) => {
+  const uriToOfferMap = offers.reduce((acc, offer) => {
     return { ...acc, [offer.uri]: offer };
   }, {});
 
@@ -244,8 +243,6 @@ export const getSimilarGroupedOffersFromOfferUris = async (
 
   return getOffersInUriGroups(offerGroups, filter);
 };
-
-export const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
 
 export const getOffersWithDealer = async ({
   selection,

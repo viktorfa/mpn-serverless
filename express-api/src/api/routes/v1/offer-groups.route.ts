@@ -8,6 +8,7 @@ import {
   getTagsForOfferGroupHandler,
   putRemoveTagFromOfferGroup,
   getOfferGroupsForOffer,
+  getOfferGroupsForOfferWithOffer,
 } from "@/api/controllers/offer-groups.controller";
 
 const routes: Router = router(
@@ -17,6 +18,7 @@ const routes: Router = router(
   getTagsForOfferGroupHandler,
   putRemoveTagFromOfferGroup,
   getOfferGroupsForOffer,
+  getOfferGroupsForOfferWithOffer,
 ).handler();
 
 export default routes;

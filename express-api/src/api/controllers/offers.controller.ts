@@ -81,7 +81,7 @@ export const list: Route<
     selection.validThrough = { $gte: now };
     selection.isRecent = true;
 
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
 
     const offers = await offerCollection
       .find(selection)
@@ -90,9 +90,7 @@ export const list: Route<
       .limit(_limit)
       .toArray();
 
-    const result = await addDealerToOffers({ offers });
-
-    return Response.ok({ items: result });
+    return Response.ok({ items: offers });
   });
 
 export const addToElastic: Route<
@@ -570,8 +568,6 @@ export const promoted: Route<
     const { limit, productCollection } = request.query;
 
     let _limit = getLimitFromQueryParam(limit, 32);
-    const offerCollection = await getCollection(offerCollectionName);
-    const now = getNowDate();
 
     /*const promotedOfferUris = await getOfferUrisForTags(["promoted"]);
 
@@ -653,7 +649,7 @@ export const findByGtin: Route<
   .get("/gtin/:gtin")
   .use(Parser.query(marketQueryParams))
   .handler(async (request) => {
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
     const offers = await offerCollection
       .find({
         $or: [
@@ -666,9 +662,8 @@ export const findByGtin: Route<
       })
       .project<MpnOffer>(defaultOfferProjection)
       .toArray();
-    const offersWithDealer = await addDealerToOffers({ offers });
     const responseData = {
-      items: offersWithDealer,
+      items: offers,
       market: "",
       title: "",
       description: "",
@@ -680,8 +675,8 @@ export const findByGtin: Route<
       responseData.market = request.query.market;
     }
     const mainOffer =
-      offersWithDealer.find((x) => x.market === request.query.market) ||
-      offersWithDealer.find(() => true);
+      offers.find((x) => x.market === request.query.market) ||
+      offers.find(() => true);
     responseData.title = mainOffer.title;
     responseData.description = mainOffer.description;
     responseData.subtitle = mainOffer.subtitle;
@@ -725,13 +720,9 @@ export const relatedOffers: Route<
         .project<MpnOffer>(defaultOfferProjection)
         .toArray();
 
-      const offersWithDealer = await addDealerToOffers({ offers });
-
       return Response.ok({
-        identical: offersWithDealer.filter((offer) =>
-          identicalUris.includes(offer.uri),
-        ),
-        interchangeable: offersWithDealer.filter((offer) =>
+        identical: offers.filter((offer) => identicalUris.includes(offer.uri)),
+        interchangeable: offers.filter((offer) =>
           interchangeableUris.includes(offer.uri),
         ),
       });
@@ -1010,7 +1001,7 @@ export const offersWithPriceDifference: Route<
     });
 
     const offerLimit = pricingObjects.length;
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
     const offerSelection = {
       uri: { $in: take(pricingObjects, offerLimit).map((x) => x.uri) },
     };
@@ -1028,10 +1019,8 @@ export const offersWithPriceDifference: Route<
       return Response.ok([]);
     }
 
-    const offersWithDealer = await addDealerToOffers({ offers });
-
     const offersMap = {};
-    offersWithDealer.map((x) => {
+    offers.map((x) => {
       offersMap[x.uri] = x;
     });
 
@@ -1061,16 +1050,15 @@ export const getDetailedOffers: Route<
     const now = getNowDate();
     selection.validThrough = { $gte: now };
 
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
 
     const offers = await offerCollection
       .find(selection)
       .project<MpnOffer>(defaultOfferProjection)
       .toArray();
 
-    const offersWithDealer = await addDealerToOffers({ offers });
     const offersWithPricing = await addPricingToOffers({
-      offers: offersWithDealer,
+      offers,
     });
 
     return Response.ok({ items: offersWithPricing });

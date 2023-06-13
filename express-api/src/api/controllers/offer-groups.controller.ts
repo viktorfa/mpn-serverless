@@ -1,6 +1,6 @@
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
-import { addDealerToOffers, getOffersByUris } from "@/api/services/offers";
+import { getOffersByUris } from "@/api/services/offers";
 import {
   addTagToBiRelation,
   getBiRelationById,
@@ -11,10 +11,13 @@ import {
   getTagsForBiRelation,
   removeTagFromBiRelation,
 } from "../services/offer-relations";
-import { flatten } from "lodash";
+import { flatten, get } from "lodash";
 import { marketQueryParams, getLimitFromQueryParam } from "./typera-types";
 import { ObjectId } from "mongodb";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
+import { Filter } from "mongodb";
+import { getCollection } from "@/config/mongo";
+import { offerCollectionName } from "../utils/constants";
 
 const offerGroupsQueryParams = t.type({
   tags: t.union([t.string, t.undefined]),
@@ -72,9 +75,8 @@ export const getOfferGroups: Route<
       offerFilter,
       defaultOfferProjection,
     );
-    const offersWithDealer = await addDealerToOffers({ offers });
     const offerMap = {};
-    offersWithDealer.forEach((x) => {
+    offers.forEach((x) => {
       offerMap[x.uri] = x;
     });
     const result = [];
@@ -129,6 +131,84 @@ export const getOfferGroupsForOffer: Route<
   .handler(async (request) => {
     const biRelations = await getOfferBiRelations(request.routeParams.uri);
     return Response.ok(biRelations);
+  });
+
+export const getOfferGroupsForOfferWithOffer: Route<
+  | Response.Ok<{
+      identical: MpnOffer[];
+      interchangeable: MpnOffer[];
+      offer: MpnOffer;
+    }>
+  | Response.NotFound
+  | Response.BadRequest<string>
+> = route
+  .get("/offer/:uri/with-offer")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const offerCollection = await getCollection(offerCollectionName);
+
+    const now = new Date();
+
+    try {
+      const relationResults = await getOfferBiRelations(
+        request.routeParams.uri,
+      );
+      const identicalUris = get(
+        relationResults,
+        ["identical", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.uri);
+      const interchangeableUris = get(
+        relationResults,
+        ["interchangeable", "offerSet"],
+        [],
+      ).filter((x) => x !== request.routeParams.uri);
+      const offerFilter: Filter<OfferInstance> = {
+        uri: {
+          $in: [
+            ...identicalUris,
+            ...interchangeableUris,
+            request.routeParams.uri,
+          ],
+        },
+        $or: [{ uri: request.routeParams.uri }, { validThrough: { $gt: now } }],
+      };
+      if (request.query.market) {
+        offerFilter.market = request.query.market;
+      }
+      const offers = await offerCollection
+        .find(offerFilter)
+        .project<MpnOffer>(defaultOfferProjection)
+        .toArray();
+
+      if (offers.length === 1) {
+        return Response.ok({
+          offer: offers[0],
+          identical: [],
+          interchangeable: [],
+        });
+      }
+
+      const identical = offers.filter(
+        (offer) =>
+          identicalUris.includes(offer.uri) &&
+          offer.uri !== request.routeParams.uri,
+      );
+      const interchangeable = offers.filter(
+        (offer) =>
+          interchangeableUris.includes(offer.uri) &&
+          offer.uri !== request.routeParams.uri,
+      );
+      const offer = offers.find((x) => x.uri === request.routeParams.uri);
+
+      return Response.ok({
+        offer,
+        identical,
+        interchangeable,
+      });
+    } catch (e) {
+      return Response.notFound();
+    }
   });
 
 const addTagToOffersBody = t.type({

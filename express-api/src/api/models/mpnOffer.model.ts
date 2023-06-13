@@ -1,5 +1,5 @@
 import { last, get } from "lodash";
-
+export const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
 const requriedElasticOfferFields = [
   "title",
   "valid_from",
@@ -41,7 +41,7 @@ const defaultOfferFields = [
 
 export const defaultOfferProjection = defaultOfferFields.reduce(
   (acc, current) => ({ ...acc, [current]: true }),
-  {},
+  { dealerObject: defaultDealerProjection },
 );
 
 export const getJsonFromRaw = <T = Record<string, any> | Array<any>>(
