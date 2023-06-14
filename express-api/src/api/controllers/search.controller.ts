@@ -14,7 +14,7 @@ import {
   productCollectionQueryParams,
 } from "./typera-types";
 import { findByKeys } from "../services/categories";
-import { defaultDealerProjection } from "../services/offers";
+import { defaultDealerProjection } from "@/api/models/mpnOffer.model";
 import { getCollection } from "@/config/mongo";
 
 export const getEngineName = (productCollectionName: string): string => {
@@ -150,41 +150,6 @@ export const search: Route<
       markets: [market],
       limit: _limit,
       ...searchArgs,
-    });
-
-    const dealerKeys = Array.from(
-      new Set(
-        searchResults.facets.dealersFacet.buckets.map(
-          (dealerBucket) => dealerBucket._id,
-        ),
-      ),
-    );
-    const dealerCollection = await getCollection("dealers");
-    const dealerObjects = await dealerCollection
-      .find({ key: { $in: dealerKeys } })
-      .project(defaultDealerProjection)
-      .toArray();
-    const dealerMap = {};
-    dealerObjects.forEach((dealer) => {
-      dealerMap[dealer.key] = dealer;
-    });
-
-    const newDealerFacet = { buckets: [] };
-
-    searchResults.facets.dealersFacet.buckets.forEach((dealerBucket) => {
-      newDealerFacet.buckets.push({
-        ...dealerBucket,
-        key: dealerBucket._id,
-        ...dealerMap[dealerBucket._id],
-      });
-    });
-    searchResults.facets.dealersFacet = newDealerFacet;
-
-    searchResults.items = searchResults.items.map((offer) => {
-      return {
-        ...offer,
-        dealerObject: dealerMap[offer.dealer] || { key: offer.dealer },
-      };
     });
 
     searchResults.items = filterIdenticalOffers({

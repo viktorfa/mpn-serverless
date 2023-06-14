@@ -1,8 +1,7 @@
+import { searchWithMongoNoFacets } from "./../services/search";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
-import { offerCollectionName } from "../utils/constants";
 import { getCollection } from "@/config/mongo";
-import { searchWithMongo } from "../services/search";
 import { addDays } from "date-fns";
 
 export const productGameRandomQueryParams = t.type({
@@ -18,7 +17,7 @@ export const getRandomOffer: Route<
   .handler(async (request) => {
     const now = new Date();
     const { provenance, market } = request.query;
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
     const productGameData = await getCollection("productgamedata");
 
     const allProductGameData = await productGameData
@@ -43,7 +42,7 @@ export const getRandomOffer: Route<
         .toArray()
     )[0];
 
-    const similarOffers = await searchWithMongo({
+    const similarOffers = await searchWithMongoNoFacets({
       query: offer.title,
       markets: [market],
       includeOutdated: true,

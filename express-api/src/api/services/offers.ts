@@ -5,13 +5,10 @@ import {
   defaultDealerProjection,
   defaultOfferProjection,
 } from "@/api/models/mpnOffer.model";
-import {
-  offerCollectionName,
-  offerTagsCollectionName,
-} from "@/api/utils/constants";
+import { offerTagsCollectionName } from "@/api/utils/constants";
 import { getDaysAhead, getNowDate, isMongoUri } from "@/api/utils/helpers";
 import { getBiRelationsForOfferUris } from "@/api/services/offer-relations";
-import { searchWithMongo } from "./search";
+import { searchWithMongoNoFacets } from "./search";
 
 const getFindOneFilter = (
   id: string,
@@ -244,38 +241,6 @@ export const getSimilarGroupedOffersFromOfferUris = async (
   return getOffersInUriGroups(offerGroups, filter);
 };
 
-export const getOffersWithDealer = async ({
-  selection,
-  projection = defaultOfferProjection,
-  sort = {},
-  limit = 30,
-}) => {
-  const offersCollection = await getCollection(offerCollectionName);
-  const offers = await offersCollection
-    .find(selection)
-    .project(projection)
-    .sort(sort)
-    .limit(limit)
-    .toArray();
-
-  const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
-  const dealerCollection = await getCollection("dealers");
-  const dealers = await dealerCollection
-    .find({ key: { $in: dealerKeys } })
-    .project(defaultDealerProjection)
-    .toArray();
-  const dealerMap = {};
-  dealers.forEach((dealer) => {
-    dealerMap[dealer.key] = dealer;
-  });
-
-  const result = offers.map((offer) => {
-    return { ...offer, dealerObject: dealerMap[offer.dealer] };
-  });
-
-  return result;
-};
-
 export const addDealerToOffers = async <T = MpnOffer>({ offers }) => {
   const dealerKeys = Array.from(new Set(offers.map((offer) => offer.dealer)));
   const dealerCollection = await getCollection("dealers");
@@ -338,7 +303,7 @@ export const findSimilarPromoted = async ({
   } catch (e) {
     return null;
   }
-  const mongoSearchResponse = await searchWithMongo({
+  const mongoSearchResponse = await searchWithMongoNoFacets({
     query: offer.title.substring(0, 127),
     markets: [market],
     limit,
@@ -347,10 +312,8 @@ export const findSimilarPromoted = async ({
   mongoSearchResponse.items = mongoSearchResponse.items.filter(
     (x) => x.uri !== uri,
   );
-  const resultWithDealer = await addDealerToOffers({
-    offers: mongoSearchResponse.items,
-  });
-  return resultWithDealer;
+
+  return mongoSearchResponse.items;
 };
 
 export const filterIdenticalOffers = ({

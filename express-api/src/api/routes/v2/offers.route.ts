@@ -9,6 +9,7 @@ import {
   similarPromoted,
   offerPricingHistoryV2,
   getDetailedOffers,
+  findV2,
 } from "@/api/controllers/offers.controller";
 
 const routes: Router = router(
@@ -20,6 +21,7 @@ const routes: Router = router(
   similarPromoted,
   offerPricingHistoryV2,
   getDetailedOffers,
+  findV2,
 ).handler();
 
 export default routes;

@@ -2,7 +2,6 @@ import _, { take } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
-  addDealerToOffers,
   addPricingToOffers,
   addTagToOffers,
   filterIdenticalOffers,
@@ -15,9 +14,8 @@ import {
   removeTagFromOffers,
 } from "@/api/services/offers";
 import {
-  searchWithElastic,
-  searchWithMongo,
   MongoSearchParams,
+  searchWithMongoNoFacets,
 } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getDaysAhead, getNowDate } from "../utils/helpers";
@@ -30,7 +28,6 @@ import { Filter } from "mongodb";
 import { offerCollectionName } from "../utils/constants";
 import {
   getLimitFromQueryParam,
-  limitQueryParams,
   marketQueryParams,
   productCollectionAndLimitQueryParams,
   productCollectionQueryParams,
@@ -123,8 +120,6 @@ const similarHandler = async (request) => {
   const { productCollection, market } = request.query;
   const useSearch = getBoolean(request.query.useSearch);
 
-  const offersCollection = await getCollection(offerCollectionName);
-
   let offer: FullMpnOffer;
   try {
     offer = await findOneFull(request.routeParams.id);
@@ -141,16 +136,14 @@ const similarHandler = async (request) => {
     offer.similarOffers && offer.similarOffers.length > 0;
 
   if (!offerHasSimilarOffers) {
-    const mongoSearchResponse = await searchWithMongo({
+    const mongoSearchResponse = await searchWithMongoNoFacets({
       query: offer.title.substring(0, 127),
       productCollections: [productCollection],
       markets: [market],
       limit: 32,
     });
-    const resultWithDealer = await addDealerToOffers({
-      offers: mongoSearchResponse.items,
-    });
-    return Response.ok(resultWithDealer);
+
+    return Response.ok(mongoSearchResponse.items);
   }
 
   const now = getNowDate();
@@ -171,6 +164,7 @@ const similarHandler = async (request) => {
       $project: defaultOfferProjection,
     },
   ];
+  const offersCollection = await getCollection("mpnoffers_with_context");
   const similarOffers = await offersCollection
     .aggregate<MpnOffer>(pipeline)
     .toArray();
@@ -179,105 +173,20 @@ const similarHandler = async (request) => {
     console.warn(
       `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
     );
-    const mongoSearchResponse = await searchWithMongo({
+    const mongoSearchResponse = await searchWithMongoNoFacets({
       query: offer.title.substring(0, 127),
       productCollections: [productCollection],
       markets: [market],
       limit: 32,
     });
-    const resultWithDealer = await addDealerToOffers({
-      offers: mongoSearchResponse.items,
-    });
-    return Response.ok(resultWithDealer);
+
+    return Response.ok(mongoSearchResponse.items);
   }
   const result = similarOffers.map((x, i) => ({
     ...x,
     score: offer.similarOffers[i].score,
   }));
-  const resultWithDealer = await addDealerToOffers({ offers: result });
-  return Response.ok(resultWithDealer);
-};
-
-const similarHandlerV1 = async (request) => {
-  const { productCollection } = request.query;
-  const useSearch = getBoolean(request.query.useSearch);
-
-  const offersCollection = await getCollection(offerCollectionName);
-
-  let offer: FullMpnOffer;
-  try {
-    offer = await findOneFull(request.routeParams.id);
-    if (!offer) {
-      throw new Error();
-    }
-  } catch (e) {
-    return Response.notFound(
-      `Could not find offer with id ${request.routeParams.id}`,
-    );
-  }
-
-  const offerHasSimilarOffers =
-    offer.similarOffers && offer.similarOffers.length > 0;
-
-  if (!offerHasSimilarOffers) {
-    console.warn(
-      `Offer ${request.routeParams.id} did not have any similar offers.`,
-    );
-  }
-
-  //if (useSearch === true || !offerHasSimilarOffers) {
-  if (!offerHasSimilarOffers) {
-    const elasticResponse = await searchWithElastic({
-      query: offer.title.substring(0, 127),
-      engineName: getEngineName(productCollection),
-      limit: 32,
-    });
-    const resultWithDealer = await addDealerToOffers({
-      offers: elasticResponse.items,
-    });
-    return Response.ok(resultWithDealer);
-  }
-
-  const now = getNowDate();
-  const similarOffersUris = offer.similarOffers.map((x) => x.uri);
-  const pipeline = [
-    {
-      $match: {
-        _id: { $ne: offer._id },
-        uri: { $in: similarOffersUris },
-        validThrough: { $gte: now },
-      },
-    },
-    {
-      $addFields: { __order: { $indexOfArray: [similarOffersUris, "$uri"] } },
-    },
-    { $sort: { __order: 1 } },
-    {
-      $project: defaultOfferProjection,
-    },
-  ];
-  const similarOffers = await offersCollection
-    .aggregate<MpnOffer>(pipeline)
-    .toArray();
-
-  if (similarOffers.length === 0) {
-    console.warn(
-      `Offer ${request.routeParams.id} did not have any time valid similar offers.`,
-    );
-    const result = await searchWithElastic({
-      query: offer.title.substring(0, 127),
-      engineName: getEngineName(productCollection),
-      limit: 32,
-    });
-    const resultWithDealer = await addDealerToOffers({ offers: result });
-    return Response.ok(resultWithDealer);
-  }
-  const result = similarOffers.map((x, i) => ({
-    ...x,
-    score: offer.similarOffers[i].score,
-  }));
-  const resultWithDealer = await addDealerToOffers({ offers: result });
-  return Response.ok(resultWithDealer);
+  return Response.ok(result);
 };
 
 const similarOffersQueryParams = t.type({
@@ -326,22 +235,6 @@ export const similarEnd: Route<
   .get("/:id/similar")
   .use(Parser.query(similarOffersQueryParams))
   .handler(similarHandler);
-export const similarV1: Route<
-  | Response.Ok<MpnOffer[]>
-  | Response.BadRequest<string>
-  | Response.NotFound<string>
-> = route
-  .get("/similar/:id")
-  .use(Parser.query(similarOffersQueryParams))
-  .handler(similarHandlerV1);
-export const similarEndV1: Route<
-  | Response.Ok<MpnOffer[]>
-  | Response.BadRequest<string>
-  | Response.NotFound<string>
-> = route
-  .get("/:id/similar")
-  .use(Parser.query(similarOffersQueryParams))
-  .handler(similarHandlerV1);
 
 const extraOffersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
@@ -379,9 +272,6 @@ export const extra: Route<
 
     query = query.substring(0, 127);
 
-    console.log(query);
-    console.log("query");
-
     const searchParams: MongoSearchParams = {
       query,
       markets: [market],
@@ -393,170 +283,14 @@ export const extra: Route<
       searchParams.productCollections = [productCollection];
     }
 
-    const searchResults = await searchWithMongo(searchParams);
+    const searchResults = await searchWithMongoNoFacets(searchParams);
     searchResults.items = searchResults.items.filter((x) => x.score > 1);
     searchResults.items = filterIdenticalOffers({
       offers: searchResults.items,
       excludeUris: [offer.uri],
     });
-    searchResults.items = await addDealerToOffers({
-      offers: searchResults.items,
-    });
 
     return Response.ok(searchResults.items);
-  });
-export const extraV1: Route<
-  | Response.Ok<MpnResultOffer[]>
-  | Response.BadRequest<string>
-  | Response.NotFound<string>
-> = route
-  .get("/extra/:id")
-  .use(Parser.query(extraOffersQueryParams))
-  .handler(async (request) => {
-    const { limit, productCollection, market } = request.query;
-    let _limit = getLimitFromQueryParam(limit, 5);
-
-    const engineName = getEngineName(`${market}-mpn-offers`);
-
-    let offer: FullMpnOffer;
-    try {
-      offer = await findOneFull(request.routeParams.id);
-      if (!offer) {
-        throw new Error();
-      }
-    } catch (e) {
-      return Response.notFound(
-        `Could not find offer with id ${request.routeParams.id}`,
-      );
-    }
-
-    const query = offer.title.substring(0, 127);
-
-    const boosts: AppSearchOfferBoosts = {
-      is_partner: [
-        {
-          type: "value",
-          value: "true",
-          operation: "multiply",
-          factor: 1.6,
-        },
-      ],
-    };
-
-    if (productCollection) {
-      boosts.site_collection = [
-        {
-          type: "value",
-          value: productCollection,
-          operation: "multiply",
-          factor: 1.4,
-        },
-      ];
-    }
-
-    const searchResults = await searchWithElastic({
-      query,
-      engineName,
-      limit: _limit,
-      boosts,
-      precision: 2,
-    });
-    searchResults.items = searchResults.items.filter(
-      (offer) => offer.score > 1,
-    );
-    searchResults.items = await addDealerToOffers({
-      offers: searchResults.items,
-    });
-
-    return Response.ok(searchResults.items);
-  });
-
-export const similarExtra: Route<
-  | Response.Ok<MpnResultOffer[]>
-  | Response.BadRequest<string>
-  | Response.NotFound<string>
-> = route
-  .get("/similarextra/:id")
-  .use(Parser.query(limitQueryParams))
-  .handler(async (request) => {
-    const { limit } = request.query;
-
-    let _limit = getLimitFromQueryParam(limit, 5);
-
-    let offer: FullMpnOffer;
-    try {
-      offer = await findOneFull(request.routeParams.id);
-      if (!offer) {
-        throw new Error();
-      }
-    } catch (e) {
-      return Response.notFound(
-        `Could not find offer with id ${request.routeParams.id}`,
-      );
-    }
-
-    const query = offer.title.substring(0, 127);
-
-    const searchResults = await searchWithElastic({
-      query,
-      engineName: "extraoffers",
-      limit: _limit,
-    });
-
-    const filteredOffers = searchResults.items.filter(
-      (offer) => offer.score > 20,
-    );
-    const offersWithDealer = await addDealerToOffers({
-      offers: filteredOffers,
-    });
-
-    return Response.ok(offersWithDealer);
-  });
-
-const similarFromExtraOffersQueryParams = t.type({
-  limit: t.union([t.string, t.undefined]),
-  productCollection: t.string,
-});
-
-export const similarFromExtra: Route<
-  | Response.Ok<MpnResultOffer[]>
-  | Response.BadRequest<string>
-  | Response.NotFound<string>
-> = route
-  .get("/similarfromextra/:id")
-  .use(Parser.query(similarFromExtraOffersQueryParams))
-  .handler(async (request) => {
-    const { limit, productCollection } = request.query;
-    const _limit = getLimitFromQueryParam(limit, 5);
-
-    let offer: FullMpnOffer;
-    try {
-      offer = await findOneFull(request.routeParams.id);
-      if (!offer) {
-        throw new Error();
-      }
-    } catch (e) {
-      return Response.notFound(
-        `Could not find offer with id ${request.routeParams.id}`,
-      );
-    }
-
-    const query = offer.title.substring(0, 127);
-
-    const searchResults = await searchWithElastic({
-      query,
-      engineName: getEngineName(productCollection),
-      limit: _limit,
-    });
-
-    const filteredOffers = searchResults.items.filter(
-      (offer) => offer.score > 10,
-    );
-    const offersWithDealer = await addDealerToOffers({
-      offers: filteredOffers,
-    });
-
-    return Response.ok(offersWithDealer);
   });
 
 export const promoted: Route<
@@ -592,7 +326,7 @@ export const promoted: Route<
     const result = [...promotedOffers];
 
     if (promotedOffers.length < _limit) {
-      const extraOffers = await searchWithMongo({
+      const extraOffers = await searchWithMongoNoFacets({
         query: "",
         productCollections: [productCollection],
         limit: _limit - promotedOffers.length,
@@ -621,8 +355,8 @@ export const promoted: Route<
       // Filter this on server to avoid creating index
       (x) => x.isPromotionRestricted !== true,
     );
-    const dealerResult = await addDealerToOffers({ offers: limitedResult });
-    return Response.ok(dealerResult);
+
+    return Response.ok(limitedResult);
   });
 
 export const find: Route<
@@ -636,6 +370,109 @@ export const find: Route<
       throw new Error(`Could not find offer with id ${request.routeParams.id}`);
     }
     return Response.ok(offer);
+  } catch (e) {
+    return Response.notFound(
+      `Could not find offer with id ${request.routeParams.id}`,
+    );
+  }
+});
+export const findV2: Route<
+  | Response.Ok<MpnOffer>
+  | Response.NotFound<string>
+  | Response.BadRequest<string>
+> = route.get("/:id").handler(async (request) => {
+  try {
+    const offerCollection = await getCollection("mpnoffers_with_context");
+    const offerRelations = await offerCollection
+      .aggregate([
+        { $match: { uri: request.routeParams.id } },
+        { $limit: 1 },
+        { $project: defaultOfferProjection },
+        {
+          $lookup: {
+            from: "offerbirelations",
+            localField: "uri",
+            foreignField: "offerSet",
+            as: "identical",
+            pipeline: [
+              { $match: { relationType: "identical" } },
+              {
+                $lookup: {
+                  from: "mpnoffers_with_context",
+                  localField: "offerSet",
+                  foreignField: "uri",
+                  as: "offers",
+                  pipeline: [
+                    {
+                      $match: {
+                        isRecent: true,
+                        validThrough: { $gt: new Date() },
+                        market: "no",
+                      },
+                    },
+                    { $project: defaultOfferProjection },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          $lookup: {
+            from: "offerbirelations",
+            localField: "uri",
+            foreignField: "offerSet",
+            as: "interchangeable",
+            pipeline: [
+              { $match: { relationType: "interchangeable" } },
+              {
+                $lookup: {
+                  from: "mpnoffers_with_context",
+                  localField: "offerSet",
+                  foreignField: "uri",
+                  as: "offers",
+                  pipeline: [
+                    {
+                      $match: {
+                        isRecent: true,
+                        validThrough: { $gt: new Date() },
+                        market: "no",
+                      },
+                    },
+                    { $project: defaultOfferProjection },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          $unwind: {
+            path: "$identical",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: "$interchangeable",
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      ])
+      .toArray();
+
+    const offer = offerRelations[0];
+
+    if (!offer) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+    const identical = offer.identical?.offers || [];
+    const interchangeable = offer.interchangeable?.offers || [];
+    delete offer.identical;
+    delete offer.interchangeable;
+    return Response.ok({ offer, identical, interchangeable });
   } catch (e) {
     return Response.notFound(
       `Could not find offer with id ${request.routeParams.id}`,
@@ -692,7 +529,7 @@ export const relatedOffers: Route<
   .get("/:id/related")
   .use(Parser.query(marketQueryParams))
   .handler(async (request) => {
-    const offerCollection = await getCollection(offerCollectionName);
+    const offerCollection = await getCollection("mpnoffers_with_context");
 
     const now = new Date();
 
