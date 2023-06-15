@@ -127,7 +127,10 @@ def handle_offers_for_categories(config: HandleConfig):
     category_mappings_map = {}
     for x in category_mappings:
         category_mappings_map[json.dumps(x["source"])] = x
-    mpn_categories = get_collection("mpncategories").find({"context": offer_context})
+    mpn_categories = get_collection("mpncategories").find(
+        {"context": offer_context},
+        {"_id": 1, "name": 1, "key": 1, "parent": 1, "level": 1},
+    )
     mpn_categories_map = {}
     for x in mpn_categories:
         mpn_categories_map[x["key"]] = x
