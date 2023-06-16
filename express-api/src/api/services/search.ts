@@ -270,7 +270,10 @@ export const searchWithMongo = async ({
   });
   result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets.map(
     (x) => {
-      return { ...(dealerMap[x._id] || { key: x.dealer }), ...x };
+      return {
+        ...(dealerMap[x._id] || { key: x.dealer, _id: x.dealer }),
+        ...x,
+      };
     },
   );
 
