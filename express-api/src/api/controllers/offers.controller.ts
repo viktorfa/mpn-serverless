@@ -380,105 +380,111 @@ export const findV2: Route<
   | Response.Ok<MpnOffer>
   | Response.NotFound<string>
   | Response.BadRequest<string>
-> = route.get("/:id").handler(async (request) => {
-  try {
-    const offerCollection = await getCollection("mpnoffers_with_context");
-    const offerRelations = await offerCollection
-      .aggregate([
-        { $match: { uri: request.routeParams.id } },
-        { $limit: 1 },
-        { $project: defaultOfferProjection },
-        {
-          $lookup: {
-            from: "offerbirelations",
-            localField: "uri",
-            foreignField: "offerSet",
-            as: "identical",
-            pipeline: [
-              { $match: { relationType: "identical" } },
-              {
-                $lookup: {
-                  from: "mpnoffers_with_context",
-                  localField: "offerSet",
-                  foreignField: "uri",
-                  as: "offers",
-                  pipeline: [
-                    {
-                      $match: {
-                        isRecent: true,
-                        validThrough: { $gt: new Date() },
-                        market: "no",
+> = route
+  .get("/:id")
+  .use(Parser.query(marketQueryParams))
+  .handler(async (request) => {
+    const { market } = request.query;
+    try {
+      const offerCollection = await getCollection("mpnoffers_with_context");
+      const offerRelations = await offerCollection
+        .aggregate([
+          { $match: { uri: request.routeParams.id } },
+          { $limit: 1 },
+          { $project: defaultOfferProjection },
+          {
+            $lookup: {
+              from: "offerbirelations",
+              localField: "uri",
+              foreignField: "offerSet",
+              as: "identical",
+              pipeline: [
+                { $match: { relationType: "identical" } },
+                {
+                  $lookup: {
+                    from: "mpnoffers_with_context",
+                    localField: "offerSet",
+                    foreignField: "uri",
+                    as: "offers",
+                    pipeline: [
+                      {
+                        $match: {
+                          isRecent: true,
+                          validThrough: { $gt: new Date() },
+                          market,
+                          uri: { $ne: request.routeParams.id },
+                        },
                       },
-                    },
-                    { $project: defaultOfferProjection },
-                  ],
+                      { $project: defaultOfferProjection },
+                    ],
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "offerbirelations",
-            localField: "uri",
-            foreignField: "offerSet",
-            as: "interchangeable",
-            pipeline: [
-              { $match: { relationType: "interchangeable" } },
-              {
-                $lookup: {
-                  from: "mpnoffers_with_context",
-                  localField: "offerSet",
-                  foreignField: "uri",
-                  as: "offers",
-                  pipeline: [
-                    {
-                      $match: {
-                        isRecent: true,
-                        validThrough: { $gt: new Date() },
-                        market: "no",
+          {
+            $lookup: {
+              from: "offerbirelations",
+              localField: "uri",
+              foreignField: "offerSet",
+              as: "interchangeable",
+              pipeline: [
+                { $match: { relationType: "interchangeable" } },
+                {
+                  $lookup: {
+                    from: "mpnoffers_with_context",
+                    localField: "offerSet",
+                    foreignField: "uri",
+                    as: "offers",
+                    pipeline: [
+                      {
+                        $match: {
+                          isRecent: true,
+                          validThrough: { $gt: new Date() },
+                          market: "no",
+                          uri: { $ne: request.routeParams.id },
+                        },
                       },
-                    },
-                    { $project: defaultOfferProjection },
-                  ],
+                      { $project: defaultOfferProjection },
+                    ],
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
-        },
-        {
-          $unwind: {
-            path: "$identical",
-            preserveNullAndEmptyArrays: true,
+          {
+            $unwind: {
+              path: "$identical",
+              preserveNullAndEmptyArrays: true,
+            },
           },
-        },
-        {
-          $unwind: {
-            path: "$interchangeable",
-            preserveNullAndEmptyArrays: true,
+          {
+            $unwind: {
+              path: "$interchangeable",
+              preserveNullAndEmptyArrays: true,
+            },
           },
-        },
-      ])
-      .toArray();
+        ])
+        .toArray();
 
-    const offer = offerRelations[0];
+      const offer = offerRelations[0];
 
-    if (!offer) {
+      if (!offer) {
+        return Response.notFound(
+          `Could not find offer with id ${request.routeParams.id}`,
+        );
+      }
+      const identical = offer.identical?.offers || [];
+      const interchangeable = offer.interchangeable?.offers || [];
+      delete offer.identical;
+      delete offer.interchangeable;
+      return Response.ok({ offer, identical, interchangeable });
+    } catch (e) {
       return Response.notFound(
         `Could not find offer with id ${request.routeParams.id}`,
       );
     }
-    const identical = offer.identical?.offers || [];
-    const interchangeable = offer.interchangeable?.offers || [];
-    delete offer.identical;
-    delete offer.interchangeable;
-    return Response.ok({ offer, identical, interchangeable });
-  } catch (e) {
-    return Response.notFound(
-      `Could not find offer with id ${request.routeParams.id}`,
-    );
-  }
-});
+  });
 
 export const findByGtin: Route<
   Response.Ok<{ items: MpnOffer[] }> | Response.BadRequest<string>
@@ -744,7 +750,7 @@ export const offerPricingHistoryV2: Route<
 
 const priceDifferencesQueryParams = t.type({
   direction: t.union([t.string, t.undefined]),
-  namespaces: t.union([t.string, t.undefined]),
+  dealers: t.union([t.string, t.undefined]),
   categories: t.union([t.string, t.undefined]),
   productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
@@ -759,11 +765,13 @@ export const offersWithPriceDifference: Route<
   .handler(async (request) => {
     const direction = request.query.direction || "desc";
     const categories = request.query.categories || "";
+    const dealers = request.query.dealers || "";
     const limit = request.query.limit;
     let _limit = getLimitFromQueryParam(limit, 32, 128);
 
     const sortDirection = direction === "desc" ? -1 : 1;
     const categoriesArray = categories.split(",").filter((x) => !!x);
+    const dealersArray = dealers.split(",").filter((x) => !!x);
 
     const before7Days = getDaysAhead(-7);
 
@@ -773,6 +781,10 @@ export const offersWithPriceDifference: Route<
       updatedAt: { $gt: before7Days },
       siteCollection: request.query.productCollection || "groceryoffers",
     };
+
+    if (dealersArray.length > 0) {
+      filter.uri = { $regex: new RegExp(`^(${dealersArray.join("|")})`) };
+    }
 
     let differenceField = "difference";
     let differencePercentageField = "differencePercentage";
