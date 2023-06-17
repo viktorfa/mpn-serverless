@@ -11,6 +11,8 @@ class TestHandleProducts(TestCase):
             self.obsbygg_products = json.load(obsbygg_products_json)
         with open("assets/swecandy-scraper-feed.json") as swecandy_products_json:
             self.swecandy_products = json.load(swecandy_products_json)
+        with open("assets/shopgun-scraper-feed-new.json") as shopgun_products_json:
+            self.shopgun_products = json.load(shopgun_products_json)
 
     def test_transform_product(self):
         product = self.obsbygg_products[0]
@@ -28,7 +30,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "byggoffers",
         }
 
-        actual = transform_product(product, config, {}, {})
+        actual = transform_product(product, config, {})
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -47,7 +49,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config, {}, {})
+        actual = transform_product(product, config, {})
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -67,7 +69,7 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config, {}, {})
+        actual = transform_product(product, config, {})
         self.assertIn("HALLA", actual["uri"])
 
     def test_transform_product_with_ignore_none_fields(self):
@@ -86,9 +88,29 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config, {}, {})
+        actual = transform_product(product, config, {})
         self.assertIsNone(actual.get("quantity"))
         self.assertIn("obsbygg", actual["uri"])
+
+    def test_transform_product_shopgun(self):
+        product = self.shopgun_products[0]
+        config = {
+            "provenance": "shopgun",
+            "namespace": "shopgun",
+            "market": "no",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": [],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
+            "ignore_none": True,
+            "collection_name": "groceryoffers",
+        }
+
+        actual = transform_product(product, config, {})
+        self.assertIsNotNone(actual.get("validThrough"))
+        self.assertIn("shopgun", actual["uri"])
 
 
 class TestGetCategories(TestCase):

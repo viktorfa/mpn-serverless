@@ -35,7 +35,10 @@ def transform_shopgun_product(product: dict, config: HandleConfig) -> MpnOffer:
                 "priceCurrency": product.get("pricing").get("currency"),
             }
         ),
-        **{**analyzed_product, **quantity,},
+        **{
+            **analyzed_product,
+            **quantity,
+        },
     )
 
 
@@ -44,7 +47,10 @@ def get_amount_from_shopgun_quantity(quantity: dict) -> dict:
 
 
 def shopgun_amount_to_amount(shopgun_amount: dict) -> dict:
-    return dict(min=shopgun_amount.get("from"), max=shopgun_amount.get("to"),)
+    return dict(
+        min=shopgun_amount.get("from"),
+        max=shopgun_amount.get("to"),
+    )
 
 
 def get_shopgun_quantity(quantity: dict) -> dict:

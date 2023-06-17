@@ -227,7 +227,7 @@ def transform_product(
         result["isRecent"] = False
     result["market"] = config["market"]
     result["isPartner"] = config.get("is_partner", False)
-    dealer_key = slugify(offer.get("dealer", namespace), separator="_")
+    dealer_key = slugify(result["dealer"], separator="_")
     vendor_key = slugify(offer.get("vendor", "") or "", separator="_")
     brand_key = slugify(offer.get("brand", "") or "", separator="_")
 
