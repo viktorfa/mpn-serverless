@@ -4,19 +4,19 @@ import pydash
 from json.decoder import JSONDecodeError
 import logging
 import os
-from typing import Dict, List, Mapping
+from typing import Dict, List, Iterable
 
 from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
-from pymongo import InsertOne, UpdateOne
+from pymongo import UpdateOne
 from config.mongo import get_collection
-from scraper_feed.filters import transform_and_filter_offers
 from scraper_feed.handle_config import fetch_single_handle_config
 from scraper_feed.pricing_history import get_price_difference_update_set
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
 import botostubs
+from scraper_feed.helpers import get_provenance_id
 
 import aws_config
 from util.helpers import get_product_uri
@@ -109,10 +109,8 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
 
 def handle_offer_chunk(offers: list, handle_config: HandleConfig, use_history=True):
     chunk_timer = Timer("chunk timer")
-    filtered_offers = transform_and_filter_offers(offers, handle_config)
-    chunk_timer.time_log("transform_and_filter_offers")
     result = handle_feed_with_config_for_pricing_series(
-        filtered_offers, handle_config, use_history=use_history
+        offers, handle_config, use_history=use_history
     )
     logging.info(f"Finished chunk of {len(offers)} offers")
     chunk_timer.time_log("finished chunk")
@@ -175,7 +173,7 @@ def trigger_scraper_feed_pricing_with_history(event, context):
 
 
 def handle_feed_with_config_for_pricing_series(
-    feed: list, config: HandleConfig, use_history=True
+    feed: Iterable, config: HandleConfig, use_history=True
 ):
     if not config["namespace"]:
         raise Exception("Config needs namespace")
@@ -192,18 +190,7 @@ def handle_feed_with_config_for_pricing_series(
     handle_timer = Timer("handle_feed_with_config_for_pricing_series")
 
     for offer in feed:
-        sku = next(
-            (
-                x
-                for x in (
-                    offer.get("provenanceId"),
-                    offer.get("provenance_id"),
-                    offer.get("sku"),
-                )
-                if x
-            ),
-            None,
-        )
+        sku = get_provenance_id(offer)
         if not sku:
             continue
         uri = get_product_uri(config["namespace"], sku)
@@ -230,6 +217,7 @@ def handle_feed_with_config_for_pricing_series(
     handle_timer.time_log("got existing price histories")
 
     updates = []
+    offer_updates = []
 
     for uri, pricing_object in pricing_object_map.items():
         price_history = price_history_map.get(uri, None)
@@ -243,6 +231,32 @@ def handle_feed_with_config_for_pricing_series(
                     {
                         "$set": update_set,
                         "$addToSet": {"history": pricing_object},
+                    },
+                )
+            )
+            offer_updates.append(
+                UpdateOne(
+                    {"uri": uri},
+                    {
+                        "$set": pydash.pick(
+                            update_set,
+                            [
+                                "difference",
+                                "differencePercentage",
+                                "price7DaysMean",
+                                "difference7DaysMean",
+                                "difference7DaysMeanPercentage",
+                                "price30DaysMean",
+                                "difference30DaysMean",
+                                "difference30DaysMeanPercentage",
+                                "price90DaysMean",
+                                "difference90DaysMean",
+                                "difference90DaysMeanPercentage",
+                                "price365DaysMean",
+                                "difference365DaysMean",
+                                "difference365DaysMeanPercentage",
+                            ],
+                        ),
                     },
                 )
             )
@@ -263,9 +277,13 @@ def handle_feed_with_config_for_pricing_series(
             )
     handle_timer.time_log("created updates")
 
+    offer_collection = get_collection("mpnoffers")
+
     if os.getenv("STAGE") == "dev":
+        offer_collection.bulk_write(offer_updates[:512])
         result = pricing_collection.bulk_write(updates[:512])
     else:
+        offer_collection.bulk_write(offer_updates)
         result = pricing_collection.bulk_write(updates)
     handle_timer.time_log("wrote updates to db")
 
