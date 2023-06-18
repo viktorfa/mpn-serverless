@@ -220,8 +220,7 @@ def transform_product(
             config["categoriesLimits"],
         )
         result = {**result, **parsed_quantity}
-
-    if result["validThrough"] > time.time:
+    if result["validThrough"].timestamp() > time.time.timestamp():
         result["isRecent"] = True
     else:
         result["isRecent"] = False

@@ -93,7 +93,6 @@ class TestHandleProducts(TestCase):
         self.assertIn("obsbygg", actual["uri"])
 
     def test_transform_product_shopgun(self):
-        product = self.shopgun_products[0]
         config = {
             "provenance": "shopgun",
             "namespace": "shopgun",
@@ -108,9 +107,14 @@ class TestHandleProducts(TestCase):
             "collection_name": "groceryoffers",
         }
 
-        actual = transform_product(product, config, {})
-        self.assertIsNotNone(actual.get("validThrough"))
-        self.assertIn("shopgun", actual["uri"])
+        actual = list(
+            [
+                transform_product(product, config, {})
+                for product in self.shopgun_products[:100]
+            ]
+        )
+        self.assertIsNotNone(actual[0].get("validThrough"))
+        self.assertIn("shopgun", actual[0]["uri"])
 
 
 class TestGetCategories(TestCase):
