@@ -1,4 +1,4 @@
-import _, { take } from "lodash";
+import _, { take, get, pick } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
@@ -25,7 +25,10 @@ import { getCollection } from "@/config/mongo";
 import { getOfferBiRelations } from "../services/offer-relations";
 import { getBoolean, getStringList } from "./request-param-parsing";
 import { Filter } from "mongodb";
-import { offerCollectionName } from "../utils/constants";
+import {
+  offerBiRelationsCollectionName,
+  offerCollectionName,
+} from "../utils/constants";
 import {
   getLimitFromQueryParam,
   marketQueryParams,
@@ -382,7 +385,7 @@ export const findV2: Route<
   | Response.BadRequest<string>
 > = route
   .get("/:id")
-  .use(Parser.query(marketQueryParams))
+  .use(Parser.query(t.type({ market: t.string })))
   .handler(async (request) => {
     const { market } = request.query;
     try {
@@ -394,12 +397,17 @@ export const findV2: Route<
           { $project: defaultOfferProjection },
           {
             $lookup: {
-              from: "offerbirelations",
+              from: offerBiRelationsCollectionName,
               localField: "uri",
               foreignField: "offerSet",
               as: "identical",
               pipeline: [
-                { $match: { relationType: "identical" } },
+                {
+                  $match: {
+                    relationType: "identical",
+                    isMerged: { $ne: true },
+                  },
+                },
                 {
                   $lookup: {
                     from: "mpnoffers_with_context",
@@ -429,7 +437,12 @@ export const findV2: Route<
               foreignField: "offerSet",
               as: "interchangeable",
               pipeline: [
-                { $match: { relationType: "interchangeable" } },
+                {
+                  $match: {
+                    relationType: "interchangeable",
+                    isMerged: { $ne: true },
+                  },
+                },
                 {
                   $lookup: {
                     from: "mpnoffers_with_context",
@@ -441,7 +454,7 @@ export const findV2: Route<
                         $match: {
                           isRecent: true,
                           validThrough: { $gt: new Date() },
-                          market: "no",
+                          market,
                           uri: { $ne: request.routeParams.id },
                         },
                       },
@@ -467,19 +480,36 @@ export const findV2: Route<
         ])
         .toArray();
 
-      const offer = offerRelations[0];
+      const offerRelation = offerRelations[0];
 
-      if (!offer) {
+      if (!offerRelation) {
         return Response.notFound(
           `Could not find offer with id ${request.routeParams.id}`,
         );
       }
-      const identical = offer.identical?.offers || [];
-      const interchangeable = offer.interchangeable?.offers || [];
-      delete offer.identical;
-      delete offer.interchangeable;
-      return Response.ok({ offer, identical, interchangeable });
+
+      const identical = offerRelation.identical?.offers || [];
+      const interchangeable = offerRelation.interchangeable?.offers || [];
+
+      const marketData = get(offerRelation, ["identical", `m:${market}`]);
+      const relCategories = get(marketData, ["mpnCategories"]);
+      const relNutrition = get(offerRelation, ["identical", "mpnNutrition"]);
+      const relIngredients = get(offerRelation, [
+        "identical",
+        "mpnIngredients",
+      ]);
+      const relProperties = get(offerRelation, ["identical", "mpnProperties"]);
+
+      offerRelation.mpnCategories = relCategories;
+      offerRelation.mpnNutrition = relNutrition;
+      offerRelation.mpnIngredients = relIngredients;
+      offerRelation.mpnProperties = relProperties;
+
+      delete offerRelation.identical;
+      delete offerRelation.interchangeable;
+      return Response.ok({ offer: offerRelation, identical, interchangeable });
     } catch (e) {
+      console.error(e);
       return Response.notFound(
         `Could not find offer with id ${request.routeParams.id}`,
       );
@@ -755,6 +785,7 @@ const priceDifferencesQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
   daysPast: t.union([t.string, t.undefined]),
+  market: t.string,
 });
 
 export const offersWithPriceDifference: Route<
@@ -773,6 +804,62 @@ export const offersWithPriceDifference: Route<
     const categoriesArray = categories.split(",").filter((x) => !!x);
     const dealersArray = dealers.split(",").filter((x) => !!x);
 
+    let differenceField = "difference7DaysMean";
+    let differencePercentageField = "difference7DaysMeanPercentage";
+
+    // Only index 7 and 90 days
+    switch (request.query.daysPast) {
+      case "7":
+        differenceField = "difference7DaysMean";
+        differencePercentageField = "difference7DaysMeanPercentage";
+        break;
+      //case "30":
+      //  differenceField = "difference30DaysMean";
+      //  differencePercentageField = "difference30DaysMeanPercentage";
+      //  break;
+      case "90":
+        differenceField = "difference90DaysMean";
+        differencePercentageField = "difference90DaysMeanPercentage";
+        break;
+      //case "365":
+      //  differenceField = "difference365DaysMean";
+      //  differencePercentageField = "difference365DaysMeanPercentage";
+      //  break;
+      default:
+        break;
+    }
+
+    const searchResponse = await searchWithMongoNoFacets({
+      query: "",
+      markets: [request.query.market],
+      productCollections: [request.query.productCollection],
+      sort: { [differencePercentageField]: sortDirection },
+      limit: _limit,
+      categories: categories ? categoriesArray : undefined,
+      dealers: dealers ? dealersArray : undefined,
+      projection: {
+        ...defaultOfferProjection,
+        difference7DaysMeanPercentage: 1,
+        difference7DaysMean: 1,
+        difference90DaysMeanPercentage: 1,
+        difference90DaysMean: 1,
+      },
+    });
+
+    return Response.ok(
+      searchResponse.items
+        .filter((x) => !!x[differencePercentageField])
+        .map((x) => ({
+          ...x,
+          pricingHistoryObject: pick(x, [
+            "difference7DaysMeanPercentage",
+            "difference7DaysMean",
+            "difference90DaysMeanPercentage",
+            "difference90DaysMean",
+          ]),
+        })),
+    );
+
     const before7Days = getDaysAhead(-7);
 
     const offerPricingCollection = await getCollection("offerpricinghistories");
@@ -784,30 +871,6 @@ export const offersWithPriceDifference: Route<
 
     if (dealersArray.length > 0) {
       filter.uri = { $regex: new RegExp(`^(${dealersArray.join("|")})`) };
-    }
-
-    let differenceField = "difference";
-    let differencePercentageField = "differencePercentage";
-
-    switch (request.query.daysPast) {
-      case "7":
-        differenceField = "difference7DaysMean";
-        differencePercentageField = "difference7DaysMeanPercentage";
-        break;
-      case "30":
-        differenceField = "difference30DaysMean";
-        differencePercentageField = "difference30DaysMeanPercentage";
-        break;
-      case "90":
-        differenceField = "difference90DaysMean";
-        differencePercentageField = "difference90DaysMeanPercentage";
-        break;
-      case "365":
-        differenceField = "difference365DaysMean";
-        differencePercentageField = "difference365DaysMeanPercentage";
-        break;
-      default:
-        break;
     }
 
     if (direction === "desc") {

@@ -1,5 +1,11 @@
 import { last, get } from "lodash";
-export const defaultDealerProjection = { key: 1, text: 1, logoUrl: 1, url: 1 };
+export const defaultDealerProjection = {
+  key: 1,
+  text: 1,
+  logoUrl: 1,
+  url: 1,
+  market: 1,
+};
 const requriedElasticOfferFields = [
   "title",
   "valid_from",

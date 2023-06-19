@@ -7,6 +7,7 @@ import {
   registerClick as registerClickElastic,
   searchWithMongo,
   searchWithElastic,
+  searchWithMongoRelations,
 } from "@/api/services/search";
 import { stage } from "@/config/vars";
 import {
@@ -155,6 +156,71 @@ export const search: Route<
     searchResults.items = filterIdenticalOffers({
       offers: searchResults.items,
     });
+
+    return Response.ok(searchResults);
+  });
+export const searchRelations: Route<
+  Response.Ok<MpnMongoSearchResponse> | Response.BadRequest<string>
+> = route
+  .get("/searchrelations")
+  .use(Parser.query(searchQueryParams))
+  .handler(async (request) => {
+    const {
+      query,
+      productCollection,
+      limit,
+      page,
+      dealers,
+      price,
+      categories,
+      brands,
+      vendors,
+      sort,
+      market,
+    } = request.query;
+    const _query = query.substring(0, 127) || "";
+
+    const _limit = getLimitFromQueryParam(limit, 256);
+
+    const _sort = sort ? sort.split(":") : null;
+    const sortField = _.get(_sort, [0], "");
+    const sortDirection = _.get(_sort, [1]) === "desc" ? -1 : 1;
+    const sortConfig: { [x: string]: 1 | -1 } = sortField
+      ? { [sortField]: sortDirection }
+      : null;
+
+    const searchArgs = {
+      dealers: dealers ? dealers.split(",") : null,
+      categories: categories ? categories.split(",") : null,
+      brands: brands ? brands.split(",") : null,
+      vendors: vendors ? vendors.split(",") : null,
+      sort: sortConfig,
+      price: null,
+      page: Number.parseInt(page || "1"),
+    };
+    const [priceMin, priceMax] = (price || "").split(",");
+    const _price: { from?: number; to?: number } = {};
+    if (priceMin) {
+      _price.from = priceMin ? Number.parseInt(priceMin) : null;
+    }
+    if (priceMax) {
+      _price.to = priceMax ? Number.parseInt(priceMax) : null;
+    }
+    if (_price.from || _price.to) {
+      searchArgs.price = _price;
+    }
+
+    const searchResults = await searchWithMongoRelations({
+      query: _query,
+      productCollections: productCollection ? [productCollection] : null,
+      market,
+      limit: _limit,
+      ...searchArgs,
+    });
+
+    //searchResults.items = filterIdenticalOffers({
+    //  offers: searchResults.items,
+    //});
 
     return Response.ok(searchResults);
   });

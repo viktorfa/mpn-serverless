@@ -184,7 +184,7 @@ export const searchWithMongo = async ({
     operator.compound.should.push({
       near: {
         path: Object.keys(sort)[0],
-        origin: Object.values(sort)[0] === 1 ? 0.0 : 1e7 * 1.0,
+        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e7 * 1,
         pivot: 2,
         score: { boost: { value: Number.MAX_SAFE_INTEGER } },
       },
@@ -271,7 +271,7 @@ export const searchWithMongo = async ({
   result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets.map(
     (x) => {
       return {
-        ...(dealerMap[x._id] || { key: x.dealer, _id: x.dealer }),
+        ...(dealerMap[x._id] || { key: x._id, _id: x._id }),
         ...x,
       };
     },
@@ -426,7 +426,7 @@ export const searchWithMongoNoFacets = async ({
     operator.compound.should.push({
       near: {
         path: Object.keys(sort)[0],
-        origin: Object.values(sort)[0] === 1 ? 0.0 : 1e7 * 1.0,
+        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
         pivot: 2,
         score: { boost: { value: Number.MAX_SAFE_INTEGER } },
       },
@@ -648,4 +648,301 @@ export const registerClick = async (
     registerClickArgs,
   );
   return;
+};
+
+export type MongoSearchParamsRelations = {
+  query: string;
+  productCollections?: string[];
+  market: string;
+  limit?: number;
+  page?: number;
+  dealers?: string[];
+  categories?: string[];
+  brands?: string[];
+  vendors?: string[];
+  price?: { from?: number; to?: number };
+  sort?: { [key: string]: 1 | -1 };
+  isPartner?: boolean;
+  isExtraOffers?: boolean;
+  includeOutdated?: boolean;
+  projection?: Record<string, number | boolean | Record<number, boolean>>;
+};
+
+export const searchWithMongoRelations = async ({
+  query,
+  productCollections,
+  market,
+  limit = 32,
+  page = 1,
+  dealers,
+  categories,
+  brands,
+  vendors,
+  price,
+  sort,
+  isPartner = false,
+  isExtraOffers = false,
+  includeOutdated = false,
+  projection = defaultOfferProjection,
+}: MongoSearchParamsRelations): Promise<MpnMongoSearchResponse> => {
+  if (query.length > 127) {
+    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
+    console.error(message);
+    throw new APIError({
+      status: 500,
+      message,
+    });
+  }
+  const now = getNowDate();
+  const _limit = Math.min(limit, 64);
+
+  const searchCollection = await getCollection(
+    `relations_with_offers_${market}`,
+  );
+
+  const facets: Record<string, { type: string; path: string }> = {
+    dealersFacet: {
+      type: "string",
+      path: "offers.dealerKey",
+    },
+  };
+
+  const operator = {
+    compound: {
+      filter: [{ text: { path: "relationType", query: "identical" } }],
+      must: [],
+      should: [],
+    },
+  };
+
+  if (price) {
+    if (price.from) {
+      operator.compound.filter.push({
+        range: { gte: price.from, path: "priceMin" },
+      });
+    }
+    if (price.to) {
+      operator.compound.filter.push({
+        range: { lte: price.to, path: "priceMin" },
+      });
+    }
+  }
+
+  if (isPartner) {
+    operator.compound.filter.push({
+      equals: { value: true, path: "offers.isPartner" },
+    });
+  }
+  if (!includeOutdated && false) {
+    operator.compound.filter.push({
+      range: { gte: now, path: "offers.validThrough" },
+    });
+  }
+  /*if (market) {
+    operator.compound.filter.push({
+      text: { query: market, path: "offers.market" },
+    });
+  }*/
+  if (dealers) {
+    operator.compound.filter.push({
+      text: { query: dealers, path: "offers.dealerKey" },
+    });
+  }
+  if (brands) {
+    operator.compound.filter.push({
+      text: { query: brands, path: "brandKey" },
+    });
+  }
+  if (vendors) {
+    operator.compound.filter.push({
+      text: { query: vendors, path: "offers.vendorKey" },
+    });
+  }
+  if (productCollections && !isExtraOffers) {
+    operator.compound.filter.push({
+      text: { query: productCollections, path: "offers.siteCollection" },
+    });
+  }
+  if (categories) {
+    operator.compound.filter.push({
+      text: { query: categories, path: "mpnCategories.key" },
+    });
+  }
+
+  if (query && !sort) {
+    operator.compound.must.push({
+      text: {
+        path: ["title", "subtitle", "brand"],
+        query,
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["title"],
+        query,
+        score: { boost: { value: 3 } },
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["subtitle", "brand", "offers.categories", "mpnCategories"],
+        query,
+        score: { boost: { value: 1.5 } },
+      },
+    });
+    if (isExtraOffers) {
+      const siteCollection = get(productCollections, [0]);
+      if (siteCollection) {
+        operator.compound.should.push({
+          text: {
+            path: "offers.siteCollection",
+            query: siteCollection,
+            score: { boost: { value: 1.5 } },
+          },
+        });
+      }
+      operator.compound.should.push({
+        equals: {
+          path: "offers.isPartner",
+          value: true,
+          score: { boost: { value: 1.5 } },
+        },
+      });
+    }
+    // Attempt to make search more restrictive (AND) after selecting sort
+  } else if (query && sort) {
+    query
+      .split(" ")
+      .map((x) => x.trim())
+      .forEach((x) => {
+        operator.compound.must.push({
+          text: {
+            path: [
+              "title",
+              "subtitle",
+              "brand",
+              "offers.categories",
+              "mpnCategories",
+            ],
+            query: x,
+          },
+        });
+      });
+  }
+
+  if (sort) {
+    const path = Object.keys(sort)[0];
+    operator.compound.should.push({
+      near: {
+        path,
+        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
+        pivot: 2,
+        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
+      },
+    });
+  }
+
+  const aggregationPipeline: Record<string, any>[] = [
+    {
+      $search: {
+        facet: {
+          operator,
+          facets,
+        },
+      },
+    },
+    { $skip: (Math.max(page - 1, 0) || 0) * _limit },
+    { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
+    {
+      $project: {
+        ...projection,
+        score: { $meta: "searchScore" },
+        offers: 1,
+        priceMin: 1,
+        priceMax: 1,
+        valueMin: 1,
+        valueMax: 1,
+        pageviews: 1,
+      },
+    },
+
+    {
+      $facet: {
+        items: [{ $limit: _limit }],
+        meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
+      },
+    },
+    { $unwind: "$meta" },
+    {
+      $set: {
+        dealerKeys: {
+          $map: {
+            input: "$meta.facet.dealersFacet.buckets",
+            as: "t",
+            in: "$$t._id",
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "dealers",
+        localField: "dealerKeys",
+        foreignField: "key",
+        as: "dealers",
+        pipeline: [
+          { $match: { market } },
+          { $project: defaultDealerProjection },
+        ],
+      },
+    },
+  ];
+
+  const mongoSearchResponse = await searchCollection
+    .aggregate(aggregationPipeline)
+    .toArray();
+
+  if (!mongoSearchResponse[0]?.items.length) {
+    return {
+      items: [],
+      meta: { count: 0, page: 1, pageSize: _limit, pageCount: 1 },
+      facets: { dealersFacet: { buckets: [] } },
+    };
+  }
+
+  const meta: MpnMongoSearchResponseMeta = {
+    count: mongoSearchResponse[0].meta.count.lowerBound,
+    page,
+  };
+
+  const result = {
+    items: mongoSearchResponse[0].items,
+    meta: {
+      ...meta,
+      pageSize: _limit,
+      pageCount: Math.ceil(meta.count / _limit),
+    },
+    facets: { ...mongoSearchResponse[0].meta.facet },
+  };
+
+  const dealerMap = {};
+  mongoSearchResponse[0].dealers.forEach((x) => {
+    dealerMap[x.key] = x;
+  });
+
+  result.items.forEach((rel) => {
+    rel.offers.forEach((x) => {
+      x.dealerObject = dealerMap[x.dealerKey] || { key: x.dealerKey };
+    });
+  });
+  result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets
+    .map((x) => {
+      return {
+        ...(dealerMap[x._id] || { key: x._id, _id: x._id }),
+        ...x,
+      };
+    })
+    .filter((x) => x.market === market);
+
+  return result;
 };

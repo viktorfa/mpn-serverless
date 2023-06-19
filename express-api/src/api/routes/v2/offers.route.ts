@@ -1,7 +1,11 @@
 import { router } from "typera-express";
 import { Router } from "express";
 
-import { search, searchExtra } from "@/api/controllers/search.controller";
+import {
+  search,
+  searchExtra,
+  searchRelations,
+} from "@/api/controllers/search.controller";
 import {
   similar,
   similarEnd,
@@ -15,6 +19,7 @@ import {
 const routes: Router = router(
   search,
   searchExtra,
+  searchRelations,
   extra,
   similar,
   similarEnd,
