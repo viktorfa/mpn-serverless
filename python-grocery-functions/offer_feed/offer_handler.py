@@ -1,5 +1,4 @@
 from amp_types.amp_product import MpnOffer
-from offer_feed.categories import handle_offers_for_categories
 
 import json
 import pydash
@@ -36,39 +35,6 @@ class SnsMessage(TypedDict):
     collection_name: str
     scrape_time: str
     provenance: str
-
-
-def offer_feed_sns_for_categories(event, context):
-    logging.info("event")
-    logging.info(event)
-    aws_config.lambda_context = context
-    sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
-    provenance = sns_message["provenance"]
-    result = []
-
-    try:
-        result.append(handle_offers_for_categories(sns_message))
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        result.append({"message": str(e)})
-    return result
-
-
-def offer_feed_trigger_for_categories(event, context):
-    logging.info("event")
-    logging.info(event)
-    aws_config.lambda_context = context
-    provenance = event["provenance"]
-    result = []
-
-    try:
-        result.append(handle_offers_for_categories(event))
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        result.append({"message": str(e)})
-    return result
 
 
 def handle_gtins_for_offers(offers: Iterable[MpnOffer]):
@@ -111,8 +77,6 @@ def handle_gtins_for_offers(offers: Iterable[MpnOffer]):
             for key, value in offer.get("gtins", {}).items():
                 if key in ("gtin13", "ean"):
                     gtins.append(f"ean:{value}")
-                elif key == "gtin12":
-                    gtins.append(f"{key}:{value}")
                 elif key == "nobb":
                     gtins.append(f"{key}:{value}")
 
@@ -210,9 +174,7 @@ def handle_offer_feed_for_gtins_with_provenance(provenance: str):
     offers = (
         offer
         for offer in offers
-        if pydash.get(offer, "gtins.nobb")
-        or pydash.get(offer, "gtins.gtin12")
-        or pydash.get(offer, "gtins.gtin13")
+        if pydash.get(offer, "gtins.nobb") or pydash.get(offer, "gtins.gtin13")
     )
 
     return handle_gtins_for_offers(offers)
@@ -229,9 +191,7 @@ def handle_offer_feed_for_gtins_with_scrape_batch(scrape_batch_id: str):
     offers = (
         offer
         for offer in offers
-        if pydash.get(offer, "gtins.nobb")
-        or pydash.get(offer, "gtins.gtin12")
-        or pydash.get(offer, "gtins.gtin13")
+        if pydash.get(offer, "gtins.nobb") or pydash.get(offer, "gtins.gtin13")
     )
 
     return handle_gtins_for_offers(offers)
@@ -241,6 +201,9 @@ def offer_feed_sns_for_gtins(event, context):
     logging.info("event")
     logging.info(event)
     aws_config.lambda_context = context
+    # Using offer relations handler instead
+    logging.info("Using offer relations handler instead")
+    return
     sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
     provenance = sns_message.get("provenance")
     scrape_batch_id = sns_message.get("scrapeBatchId")
@@ -258,6 +221,9 @@ def offer_feed_trigger_for_gtins(event, context):
     logging.info("event")
     logging.info(event)
     aws_config.lambda_context = context
+    # Using offer relations handler instead
+    logging.info("Using offer relations handler instead")
+    return
     provenance = event.get("provenance")
     scrape_batch_id = event.get("scrapeBatchId")
 

@@ -1,3 +1,4 @@
+import aws_config
 import logging
 import json
 import pydash
@@ -6,10 +7,53 @@ from datetime import datetime
 from copy import deepcopy
 from pymongo import UpdateOne
 from bson.objectid import ObjectId
+from typing import Iterable, TypedDict
 
 from storage.db import chunked_iterable, get_collection
 from amp_types.amp_product import HandleConfig, MpnOffer
 from util.utils import log_traceback
+from util.logging import configure_lambda_logging
+
+configure_lambda_logging()
+
+
+class SnsMessage(TypedDict):
+    collection_name: str
+    scrape_time: str
+    provenance: str
+
+
+def offer_feed_sns_for_categories(event, context):
+    logging.info("event")
+    logging.info(event)
+    aws_config.lambda_context = context
+    sns_message: SnsMessage = json.loads(event["Records"][0]["Sns"]["Message"])
+    provenance = sns_message["provenance"]
+    result = []
+
+    try:
+        result.append(handle_offers_for_categories(sns_message))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+    return result
+
+
+def offer_feed_trigger_for_categories(event, context):
+    logging.info("event")
+    logging.info(event)
+    aws_config.lambda_context = context
+    provenance = event["provenance"]
+    result = []
+
+    try:
+        result.append(handle_offers_for_categories(event))
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        result.append({"message": str(e)})
+    return result
 
 
 def get_offer_context_from_site_collection(site_collection: str) -> Optional[str]:

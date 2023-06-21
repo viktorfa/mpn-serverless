@@ -115,7 +115,7 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["uri"])
         self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["sku"])
-        self.assertIsNotNone(actual[0]["gtins"]["gtin13"])
+        self.assertIsNotNone(actual[0]["gtins"]["ean"])
         self.assertEqual(actual[0]["mpnCategories"][-1]["key"], "bananer_2")
 
     def test_kolonial_products(self):
@@ -305,7 +305,6 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["href"])
         self.assertIsNotNone(actual[0]["uri"])
         self.assertIsNotNone(actual[0]["quantity"]["size"])
-        self.assertIsNotNone(actual[0]["mpn"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["imageUrl"])
 

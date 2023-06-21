@@ -27,7 +27,7 @@ def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
     for key in macro_names:
         value_string = get_field_from_scraper_offer(offer, key)
 
-        if not value_string:
+        if value_string != 0 and not value_string:
             continue
 
         try:
@@ -70,4 +70,7 @@ def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
                 "key": key,
                 "value": number,
             }
+    if result.get("energy") and result.get("energy").get("unit") == "kj":
+        result["energy"]["value"] = round(result["energy"]["value"] * 0.2390057)
+        result["energy"]["unit"] = result["energy"]["unit"] = "kcal"
     return result

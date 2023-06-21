@@ -7,6 +7,7 @@ from copy import deepcopy
 import itertools
 import logging
 from util.utils import log_traceback
+from pymongo.cursor import Cursor
 
 from config.mongo import get_collection
 from util.helpers import get_product_uri
@@ -93,3 +94,19 @@ def store_handle_run(handle_run_config):
 
 def save_book_offers(offers):
     return bulk_upsert(offers, "bookoffers")
+
+
+def yield_rows(cursor: Cursor, chunk_size: int):
+    """
+    Generator to yield chunks from cursor
+    :param cursor:
+    :param chunk_size:
+    :return:
+    """
+    chunk = []
+    for i, row in enumerate(cursor):
+        if i % chunk_size == 0 and i > 0:
+            yield chunk
+            del chunk[:]
+        chunk.append(row)
+    yield chunk

@@ -1,5 +1,6 @@
 import re
 from urllib.parse import urlparse
+from gtin import has_valid_check_digit
 
 from util.enums import currency_codes
 from amp_types.amp_product import ScraperOffer, PricingField
@@ -27,24 +28,35 @@ def transform_key(key: str) -> str:
     return re.sub(r"\.", "", key)
 
 
+def is_valid_ean(ean: str) -> bool:
+    return (
+        len(ean) == 13 and has_valid_check_digit(ean) and not ean.startswith("000000")
+    )
+
+
+def is_valid_nobb(nobb: str) -> bool:
+    return len(nobb) == 8 and not nobb.startswith("000000")
+
+
 def get_gtins(offer: ScraperOffer) -> dict:
     result = {}
     for k, v in {
-        _k: _v
+        _k: str(_v)
         for _k, _v in offer.items()
-        if _k in ["gtin", "gtin8", "gtin12", "gtin13", "upc", "ean", "nobb"]
+        if _k in ["gtin13", "ean", "nobb", "gtin", "gtin8", "gtin12"]
         and re.match(r"^\d+$", str(_v))
+        and not str(_v).startswith("000000")
     }.items():
-        if k == "nobb":
+        if k == "nobb" and is_valid_nobb(v):
             result["nobb"] = v
-        elif len(v) == 8:
+        elif k == "gtin8" and len(v) == 8 and has_valid_check_digit(v):
             result["gtin8"] = v
-        elif len(v) == 12:
+        elif k == "gtin12" and len(v) == 12 and has_valid_check_digit(v):
             result["gtin12"] = v
-        elif len(v) == 13:
-            result["gtin13"] = v
-        else:
-            result[k] = v
+        elif k in ["ean", "gtin13"] and is_valid_ean(v):
+            result["ean"] = v
+        elif k == "gtin" and has_valid_check_digit(v):
+            result["gtin"] = v
     return result
 
 
