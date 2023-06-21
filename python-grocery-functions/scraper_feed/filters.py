@@ -247,7 +247,53 @@ def transform_product(
     result = standardize_quantity(result)
     quantity = result.get("quantity")
 
-    final_result = {**offer, **result, **quantity}
+    # Only include necessary fields to save db space
+    final_result = pydash.pick(
+        {**offer, **result, **quantity},
+        [
+            "title",
+            "subtitle",
+            "shortDescription",
+            "description",
+            "categories",
+            "provenance",
+            "market",
+            "dealer",
+            "dealerKey",
+            "brand",
+            "brandKey",
+            "vendor",
+            "vendorKey",
+            "pricing",
+            "value",
+            "quantity",
+            "items",
+            "uri",
+            "href",
+            "ahref",
+            "trackingUrl",
+            "imageUrl",
+            "gtins",
+            "mpnStock",
+            "mpnNutrition",
+            "mpnProperties",
+            "mpnIngredients",
+            "mpnCategories",
+            "validFrom",
+            "validThrough",
+            "siteCollection",
+            "isPartner",
+            "isRecent",
+            "provenanceId",
+            "sku",
+            "scrapeBatchId",
+            # Book products
+            "book_uri",
+            "isbn",
+            "isbn10",
+            "isbn13",
+        ],
+    )
 
     if config["ignore_none"]:
         # Some offers with 2 provenances such as Byggmax.no and Byggmax feed will have ignore quantity

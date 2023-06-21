@@ -226,36 +226,56 @@ def handle_offer_relations_chunk(offers: Iterable[MpnOffer], market):
             elif key == "nobb" and is_valid_nobb(str(value)):
                 gtins.append(f"{key}:{value}")
 
-    existing_relations = relations_collection.find(
+    relations_projection = {
+        "offerSet": 1,
+        "gtins": 1,
+        "title": 1,
+        "subtitle": 1,
+        "shortDescription": 1,
+        "description": 1,
+        "imageUrl": 1,
+        "brand": 1,
+        "brandKey": 1,
+        "mpnIngredients": 1,
+        "mpnProperties": 1,
+        "mpnNutrition": 1,
+        "quantity": 1,
+        ":manual": 1,
+        f"m:{market}": 1,
+    }
+    existing_uri_relations = relations_collection.find(
         {
             "relationType": "identical",
             "isMerged": {"$ne": True},
-            "$or": [
-                {"offerSet": {"$in": uris}},
-                {"gtins": {"$in": gtins}},
-            ],
+            "offerSet": {"$in": uris},
         },
+        relations_projection,
+    )
+    existing_gtins_relations = relations_collection.find(
         {
-            "offerSet": 1,
-            "gtins": 1,
-            "title": 1,
-            "subtitle": 1,
-            "shortDescription": 1,
-            "description": 1,
-            "imageUrl": 1,
-            "brand": 1,
-            "brandKey": 1,
-            "mpnIngredients": 1,
-            "mpnProperties": 1,
-            "mpnNutrition": 1,
-            "quantity": 1,
-            ":manual": 1,
-            f"m:{market}": 1,
+            "relationType": "identical",
+            "isMerged": {"$ne": True},
+            "gtins": {"$in": gtins},
+            "gtins.0": {"$exists": True},
         },
+        relations_projection,
     )
 
     relations_map = {}
-    for rel in existing_relations:
+    for rel in existing_uri_relations:
+        for uri in rel["offerSet"]:
+            rels = relations_map.get(uri)
+            if rels:
+                rels.append(rel)
+            else:
+                relations_map[uri] = [rel]
+        for gtin in rel.get("gtins", []):
+            rels = relations_map.get(gtin)
+            if rels:
+                rels.append(rel)
+            else:
+                relations_map[gtin] = [rel]
+    for rel in existing_gtins_relations:
         for uri in rel["offerSet"]:
             rels = relations_map.get(uri)
             if rels:
