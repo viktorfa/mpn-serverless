@@ -9,7 +9,7 @@ import offerGroupsRoute from "@/api/routes/v1/offer-groups.route";
 import categoriesRoute from "@/api/routes/v1/categories.route";
 import spiderrunsRoute from "@/api/routes/v1/spiderruns.route";
 import handlerunsRoute from "@/api/routes/v1/handleruns.route";
-import promotionsRoute from "@/api/routes/v1/promotions.route";
+import promotionsRoute from "@/api/routes/v2/promotions.route";
 
 const router = express.Router();
 

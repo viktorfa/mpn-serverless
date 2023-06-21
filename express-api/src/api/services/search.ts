@@ -667,6 +667,25 @@ export type MongoSearchParamsRelations = {
   includeOutdated?: boolean;
   projection?: Record<string, number | boolean | Record<number, boolean>>;
 };
+export type MongoSearchParamsRelationsExtra = {
+  title: string;
+  mustProductCollections?: string[];
+  mustCategories?: string[];
+  mustBrands?: string[];
+  productCollections?: string[];
+  market: string;
+  limit?: number;
+  page?: number;
+  dealers?: string[];
+  categories?: string[];
+  brands?: string[];
+  vendors?: string[];
+  price?: { from?: number; to?: number };
+  sort?: { [key: string]: 1 | -1 };
+  isPartner?: boolean;
+  projection?: Record<string, number | boolean | Record<number, boolean>>;
+  offerUri: string;
+};
 
 export const searchWithMongoRelations = async ({
   query,
@@ -768,8 +787,30 @@ export const searchWithMongoRelations = async ({
       text: { query: categories, path: "mpnCategories.key" },
     });
   }
-
-  if (query && !sort) {
+  if (isExtraOffers) {
+    const siteCollection = get(productCollections, [0]);
+    if (siteCollection) {
+      operator.compound.should.push({
+        text: {
+          path: "offers.siteCollection",
+          query: siteCollection,
+          score: { boost: { value: 1.5 } },
+        },
+      });
+    }
+    operator.compound.should.push({
+      equals: {
+        path: "offers.isPartner",
+        value: true,
+        score: { boost: { value: 1.5 } },
+      },
+    });
+    operator.compound.should.push({
+      moreLikeThis: {
+        like: [{ title: query }],
+      },
+    });
+  } else if (query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
@@ -790,25 +831,7 @@ export const searchWithMongoRelations = async ({
         score: { boost: { value: 1.5 } },
       },
     });
-    if (isExtraOffers) {
-      const siteCollection = get(productCollections, [0]);
-      if (siteCollection) {
-        operator.compound.should.push({
-          text: {
-            path: "offers.siteCollection",
-            query: siteCollection,
-            score: { boost: { value: 1.5 } },
-          },
-        });
-      }
-      operator.compound.should.push({
-        equals: {
-          path: "offers.isPartner",
-          value: true,
-          score: { boost: { value: 1.5 } },
-        },
-      });
-    }
+
     // Attempt to make search more restrictive (AND) after selecting sort
   } else if (query && sort) {
     query
@@ -842,6 +865,9 @@ export const searchWithMongoRelations = async ({
     });
   }
 
+  console.log("operator");
+  console.log(JSON.stringify(operator, null, 2));
+
   const aggregationPipeline: Record<string, any>[] = [
     {
       $search: {
@@ -851,6 +877,236 @@ export const searchWithMongoRelations = async ({
         },
       },
     },
+    { $skip: (Math.max(page - 1, 0) || 0) * _limit },
+    { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
+    {
+      $project: {
+        ...projection,
+        score: { $meta: "searchScore" },
+        offers: 1,
+        priceMin: 1,
+        priceMax: 1,
+        valueMin: 1,
+        valueMax: 1,
+        pageviews: 1,
+      },
+    },
+
+    {
+      $facet: {
+        items: [{ $limit: _limit }],
+        meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
+      },
+    },
+    { $unwind: "$meta" },
+    {
+      $set: {
+        dealerKeys: {
+          $map: {
+            input: "$meta.facet.dealersFacet.buckets",
+            as: "t",
+            in: "$$t._id",
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "dealers",
+        localField: "dealerKeys",
+        foreignField: "key",
+        as: "dealers",
+        pipeline: [
+          { $match: { market } },
+          { $project: defaultDealerProjection },
+        ],
+      },
+    },
+  ];
+
+  const mongoSearchResponse = await searchCollection
+    .aggregate(aggregationPipeline)
+    .toArray();
+
+  if (!mongoSearchResponse[0]?.items.length) {
+    return {
+      items: [],
+      meta: { count: 0, page: 1, pageSize: _limit, pageCount: 1 },
+      facets: { dealersFacet: { buckets: [] } },
+    };
+  }
+
+  const meta: MpnMongoSearchResponseMeta = {
+    count: mongoSearchResponse[0].meta.count.lowerBound,
+    page,
+  };
+
+  const result = {
+    items: mongoSearchResponse[0].items,
+    meta: {
+      ...meta,
+      pageSize: _limit,
+      pageCount: Math.ceil(meta.count / _limit),
+    },
+    facets: { ...mongoSearchResponse[0].meta.facet },
+  };
+
+  const dealerMap = {};
+  mongoSearchResponse[0].dealers.forEach((x) => {
+    dealerMap[x.key] = x;
+  });
+
+  result.items.forEach((rel) => {
+    rel.offers.forEach((x) => {
+      x.dealerObject = dealerMap[x.dealerKey] || { key: x.dealerKey };
+    });
+  });
+  result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets
+    .map((x) => {
+      return {
+        ...(dealerMap[x._id] || { key: x._id, _id: x._id }),
+        ...x,
+      };
+    })
+    .filter((x) => x.market === market);
+
+  return result;
+};
+export const searchWithMongoRelationsExtra = async ({
+  title,
+  productCollections,
+  mustProductCollections,
+  mustCategories,
+  mustBrands,
+  market,
+  limit = 8,
+  page = 1,
+  dealers,
+  categories,
+  brands,
+  vendors,
+  price,
+  isPartner = false,
+  projection = defaultOfferProjection,
+  offerUri,
+}: MongoSearchParamsRelationsExtra): Promise<MpnMongoSearchResponse> => {
+  const now = getNowDate();
+  const _limit = Math.min(limit, 64);
+
+  const searchCollection = await getCollection(
+    `relations_with_offers_${market}`,
+  );
+
+  const facets: Record<string, { type: string; path: string }> = {
+    dealersFacet: {
+      type: "string",
+      path: "offers.dealerKey",
+    },
+  };
+
+  const operator = {
+    compound: {
+      filter: [{ text: { path: "relationType", query: "identical" } }],
+      must: [],
+      should: [
+        {
+          moreLikeThis: {
+            like: [{ title, score: { boost: { value: 2 } } }],
+          },
+        },
+      ],
+    },
+  };
+
+  if (productCollections) {
+    operator.compound.should.push({
+      moreLikeThis: {
+        like: {
+          "offers.siteCollection": productCollections,
+          score: { boost: { value: 0.6 } },
+        },
+      },
+    });
+  }
+  if (categories) {
+    operator.compound.should.push({
+      moreLikeThis: {
+        like: {
+          "mpnCategories.key": categories,
+          score: { boost: { value: 0.6 } },
+        },
+      },
+    });
+  }
+  if (brands) {
+    operator.compound.should.push({
+      moreLikeThis: {
+        like: { brandKey: brands, score: { boost: { value: 0.3 } } },
+      },
+    });
+  }
+
+  if (price) {
+    if (price.from) {
+      operator.compound.filter.push({
+        range: { gte: price.from, path: "priceMin" },
+      });
+    }
+    if (price.to) {
+      operator.compound.filter.push({
+        range: { lte: price.to, path: "priceMin" },
+      });
+    }
+  }
+  if (isPartner) {
+    operator.compound.filter.push({
+      equals: { value: true, path: "offers.isPartner" },
+    });
+  }
+  if (dealers) {
+    operator.compound.filter.push({
+      text: { query: dealers, path: "offers.dealerKey" },
+    });
+  }
+  if (mustBrands) {
+    operator.compound.filter.push({
+      text: { query: mustBrands, path: "brandKey" },
+    });
+  }
+  if (vendors) {
+    operator.compound.filter.push({
+      text: { query: vendors, path: "offers.vendorKey" },
+    });
+  }
+  if (mustProductCollections) {
+    operator.compound.filter.push({
+      text: { query: mustProductCollections, path: "offers.siteCollection" },
+    });
+  }
+  if (mustCategories) {
+    operator.compound.filter.push({
+      text: { query: mustCategories, path: "mpnCategories.key" },
+    });
+  }
+
+  operator.compound.should.push({
+    equals: {
+      path: "offers.isPartner",
+      value: true,
+      score: { boost: { value: 1.2 } },
+    },
+  });
+
+  const aggregationPipeline: Record<string, any>[] = [
+    {
+      $search: {
+        facet: {
+          operator,
+          facets,
+        },
+      },
+    },
+    { $match: { offerSet: { $ne: offerUri } } },
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
     {

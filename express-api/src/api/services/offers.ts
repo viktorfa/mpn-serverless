@@ -1,5 +1,5 @@
 import { getCollection } from "@/config/mongo";
-import { flatten, uniqBy } from "lodash";
+import { flatten, uniqBy, pick } from "lodash";
 import { ObjectId, Filter } from "mongodb";
 import {
   defaultDealerProjection,
@@ -8,7 +8,10 @@ import {
 import { offerTagsCollectionName } from "@/api/utils/constants";
 import { getDaysAhead, getNowDate, isMongoUri } from "@/api/utils/helpers";
 import { getBiRelationsForOfferUris } from "@/api/services/offer-relations";
-import { searchWithMongoNoFacets } from "./search";
+import {
+  searchWithMongoNoFacets,
+  searchWithMongoRelationsExtra,
+} from "./search";
 
 const getFindOneFilter = (
   id: string,
@@ -27,7 +30,7 @@ const getFindOneFilter = (
   }
 };
 
-export const findOne = async (id: string): Promise<MpnMongoOffer> => {
+export const findOne = async (id: string): Promise<MpnMongoOffer | null> => {
   const offersCollection = await getCollection("mpnoffers_with_context");
   let filter = getFindOneFilter(id);
   const offer = await offersCollection.findOne<MpnMongoOffer>(filter, {
@@ -294,15 +297,11 @@ export const findSimilarPromoted = async ({
   market: string;
   limit: number;
 }): Promise<MpnResultOffer[] | null> => {
-  let offer: FullMpnOffer;
-  try {
-    offer = await findOneFull(uri);
-    if (!offer) {
-      throw new Error();
-    }
-  } catch (e) {
+  const offer = await findOne(uri);
+  if (!offer) {
     return null;
   }
+
   const mongoSearchResponse = await searchWithMongoNoFacets({
     query: offer.title.substring(0, 127),
     markets: [market],
@@ -314,6 +313,39 @@ export const findSimilarPromoted = async ({
   );
 
   return mongoSearchResponse.items;
+};
+export const findSimilarPromotedV2 = async ({
+  uri,
+  limit,
+  market,
+}: {
+  uri: string;
+  market: string;
+  limit: number;
+}): Promise<MpnResultOffer[] | null> => {
+  const offer = await findOne(uri);
+  if (!offer) {
+    return null;
+  }
+  const mongoSearchResponse = await searchWithMongoRelationsExtra({
+    title: offer.title.substring(0, 127),
+    market,
+    limit,
+    isPartner: true,
+    offerUri: uri,
+  });
+
+  let result: MpnResultOffer[] = [];
+
+  mongoSearchResponse.items.forEach((item) => {
+    item.offers.forEach((offer) => {
+      if (offer.uri !== uri && offer.ahref) {
+        result.push({ ...offer, ...pick(item, ["title", "imageUrl"]) });
+      }
+    });
+  });
+
+  return result;
 };
 
 export const filterIdenticalOffers = ({

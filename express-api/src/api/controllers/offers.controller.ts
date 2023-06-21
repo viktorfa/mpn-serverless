@@ -15,7 +15,11 @@ import {
 } from "@/api/services/offers";
 import {
   MongoSearchParams,
+  MongoSearchParamsRelations,
+  MongoSearchParamsRelationsExtra,
   searchWithMongoNoFacets,
+  searchWithMongoRelations,
+  searchWithMongoRelationsExtra,
 } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
 import { getDaysAhead, getNowDate } from "../utils/helpers";
@@ -243,6 +247,7 @@ const extraOffersQueryParams = t.type({
   productCollection: t.union([t.string, t.undefined]),
   limit: t.union([t.string, t.undefined]),
   market: t.string,
+  categories: t.union([t.string, t.undefined]),
 });
 
 export const extra: Route<
@@ -294,6 +299,45 @@ export const extra: Route<
     });
 
     return Response.ok(searchResults.items);
+  });
+export const extraRelations: Route<
+  | Response.Ok<MpnResultOffer[]>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/extrarelations/:id")
+  .use(Parser.query(extraOffersQueryParams))
+  .handler(async (request) => {
+    const { limit, productCollection, market, categories } = request.query;
+    let _limit = getLimitFromQueryParam(limit, 5);
+
+    const offer = await findOne(request.routeParams.id);
+    if (!offer) {
+      return Response.notFound(
+        `Could not find offer with id ${request.routeParams.id}`,
+      );
+    }
+
+    const searchParams: MongoSearchParamsRelationsExtra = {
+      title: offer.title.substring(0, 127),
+      market: market,
+      limit: _limit,
+      offerUri: offer.uri,
+    };
+
+    if (productCollection) {
+      searchParams.productCollections = [productCollection];
+    }
+    if (offer.mpnCategories?.length > 0) {
+      searchParams.categories = offer.mpnCategories.map((x) => x.key);
+    }
+    if (offer.brandKey) {
+      searchParams.brands = [offer.brandKey];
+    }
+
+    const searchResults = await searchWithMongoRelationsExtra(searchParams);
+
+    return Response.ok(searchResults);
   });
 
 export const promoted: Route<
