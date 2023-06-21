@@ -47,7 +47,6 @@ const handleOffers = async ({ scrapeBatchId, market, is_partner }) => {
       dealerKey: 1,
       brandKey: 1,
       vendorKey: 1,
-      dealer: 1,
       brand: 1,
       vendor: 1,
     })
@@ -58,7 +57,7 @@ const handleOffers = async ({ scrapeBatchId, market, is_partner }) => {
       .filter((x) => !!x.dealerKey)
       .map((x) => ({
         key: x.dealerKey,
-        title: getDealerTitle(x.dealer),
+        title: getDealerTitle(x.dealerKey),
         market,
         is_partner,
       })),
