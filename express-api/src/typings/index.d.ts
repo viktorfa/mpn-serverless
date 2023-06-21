@@ -44,7 +44,8 @@ interface MpnOffer {
   subtitle: string;
   shortDescription: string;
   description: string;
-  brand: string;
+  brand?: string;
+  brandKey?: string;
 
   href: string;
   ahref?: string;
@@ -60,10 +61,13 @@ interface MpnOffer {
 
   categories: string[];
   dealer: string;
+  dealerKey: string;
   provenance: string;
   gtins?: Record<string, string>;
   mpnStock: string;
   market: string;
+
+  mpnCategories: MpnCategory[];
 }
 interface CustomOffer {
   title: string;
@@ -298,3 +302,26 @@ interface OfferPricingHistory {
   siteCollection: string;
   hisotry: PricingHistoryObject[];
 }
+
+type PartnerProduct = {
+  title: string;
+  description: string;
+  price: number;
+  stockAmount: number;
+};
+type PartnerProductMongo = PartnerProduct & {
+  _id: string;
+  status: string;
+};
+type MpnMongoOfferPartner = MpnMongoOffer & {
+  stockAmount: number;
+};
+type StorePartner = {
+  _id: string;
+  name: string;
+  description: string;
+  location?: Object;
+  cognitoId: string;
+  email: string;
+  phoneNumber: string;
+};

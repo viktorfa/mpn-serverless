@@ -33,6 +33,6 @@ router.use("/spiderruns", spiderrunsRoute);
 router.use("/handleruns", handlerunsRoute);
 router.use("/plakater", promotionsRoute);
 router.use("/product-game", productGameRoute);
-router.use("/partner", partnerRoutes);
+router.use("/partners", partnerRoutes);
 
 export default router;

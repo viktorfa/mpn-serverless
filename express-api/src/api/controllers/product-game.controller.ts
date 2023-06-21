@@ -44,7 +44,7 @@ export const getRandomOffer: Route<
 
     const similarOffers = await searchWithMongoNoFacets({
       query: offer.title,
-      markets: [market],
+      market,
       includeOutdated: true,
     });
 

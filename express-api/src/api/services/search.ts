@@ -2,19 +2,15 @@ import {
   defaultDealerProjection,
   defaultOfferProjection,
 } from "@/api/models/mpnOffer.model";
-import { elasticOfferToMpnOffer } from "@/api/models/mpnOffer.model";
-import { getElasticClient } from "@/config/elastic";
 import { getNowDate } from "../utils/helpers";
 import APIError from "../utils/APIError";
 import { getCollection } from "@/config/mongo";
-import { offerCollectionName } from "../utils/constants";
-import { getOffersByUris } from "./offers";
 import { get } from "lodash";
 
 export type MongoSearchParams = {
   query: string;
   productCollections?: string[];
-  markets?: string[];
+  market: string;
   limit?: number;
   page?: number;
   dealers?: string[];
@@ -32,7 +28,7 @@ export type MongoSearchParams = {
 export const searchWithMongo = async ({
   query,
   productCollections,
-  markets,
+  market,
   limit = 32,
   page = 1,
   dealers,
@@ -56,12 +52,12 @@ export const searchWithMongo = async ({
   }
   const now = getNowDate();
 
-  const offerCollection = await getCollection(offerCollectionName);
+  const offerCollection = await getCollection(`mpnoffers_${market}`);
 
   const facets: Record<string, { type: string; path: string }> = {
     dealersFacet: {
       type: "string",
-      path: "dealer",
+      path: "dealerKey",
     },
   };
 
@@ -96,12 +92,9 @@ export const searchWithMongo = async ({
       range: { gte: now, path: "validThrough" },
     });
   }
-  if (markets) {
-    operator.compound.filter.push({ text: { query: markets, path: "market" } });
-  }
   if (dealers) {
     operator.compound.filter.push({
-      text: { query: dealers, path: "dealer" },
+      text: { query: dealers, path: "dealerKey" },
     });
   }
   if (brands) {
@@ -282,7 +275,7 @@ export const searchWithMongo = async ({
 export const searchWithMongoNoFacets = async ({
   query,
   productCollections,
-  markets,
+  market,
   limit = 32,
   page = 1,
   dealers,
@@ -305,7 +298,7 @@ export const searchWithMongoNoFacets = async ({
     });
   }
   const now = getNowDate();
-  const offerCollection = await getCollection(offerCollectionName);
+  const offerCollection = await getCollection(`mpnoffers_${market}`);
 
   const operator = {
     compound: {
@@ -338,12 +331,9 @@ export const searchWithMongoNoFacets = async ({
       range: { gte: now, path: "validThrough" },
     });
   }
-  if (markets) {
-    operator.compound.filter.push({ text: { query: markets, path: "market" } });
-  }
   if (dealers) {
     operator.compound.filter.push({
-      text: { query: dealers, path: "dealer" },
+      text: { query: dealers, path: "dealerKey" },
     });
   }
   if (brands) {
@@ -460,7 +450,7 @@ export const searchWithMongoNoFacets = async ({
           $map: {
             input: "$items",
             as: "t",
-            in: "$$t.dealer",
+            in: "$$t.dealerKey",
           },
         },
       },
@@ -507,147 +497,6 @@ export const searchWithMongoNoFacets = async ({
   });
 
   return result;
-};
-
-export const searchWithElastic = async ({
-  query,
-  engineName,
-  limit = 32,
-  page = 1,
-  dealers,
-  categories,
-  price,
-  sort,
-  boosts,
-  precision = 4,
-}: {
-  query: string;
-  engineName: string;
-  limit?: number;
-  page?: number;
-  dealers?: string[];
-  categories?: string[];
-  price?: { from?: number; to?: number };
-  sort?: { [key: string]: "desc" | "asc" };
-  boosts?: AppSearchOfferBoosts;
-  precision?: number;
-}): Promise<{ items: MpnResultOffer[]; facets: any; meta: any }> => {
-  const elasticClient = await getElasticClient();
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
-  const now = getNowDate();
-  const filters: { all: Record<string, any>[] } = {
-    all: [{ valid_through: { from: now } }],
-  };
-
-  if (dealers) {
-    filters.all.push({ dealer: dealers });
-  }
-  if (categories) {
-    filters.all.push({ mpn_categories: categories });
-  }
-
-  if (price) {
-    filters.all.push({ price });
-  }
-
-  const facets: { dealer: any; brand: any; mpn_categories?: any } = {
-    dealer: [
-      {
-        type: "value",
-      },
-    ],
-    brand: [
-      {
-        type: "value",
-      },
-    ],
-  };
-  if (engineName.startsWith("groceryoffers")) {
-    facets.mpn_categories = [
-      {
-        type: "value",
-      },
-    ];
-  }
-  const searchOptions: AppSearchParams = {
-    page: { size: limit, current: page },
-    precision,
-    filters,
-    facets,
-  };
-
-  if (sort) {
-    searchOptions.sort = sort;
-  }
-  if (boosts) {
-    searchOptions.boosts = boosts;
-  }
-
-  const searchResponse = await elasticClient.search<ElasticMpnOfferRaw>(
-    engineName,
-    query,
-    searchOptions,
-  );
-
-  try {
-    const mpnResults = searchResponse.results.map((x) => {
-      return elasticOfferToMpnOffer(x);
-    });
-
-    // Filter offers that only exist in Elastic and not in Mongo
-    const resultUris = mpnResults.map((x) => x.uri);
-    const urisFromMongoSet = new Set(
-      (await getOffersByUris(resultUris, null, { uri: 1 })).map((x) => x.uri),
-    );
-
-    const validOffers = mpnResults.filter((x) => urisFromMongoSet.has(x.uri));
-
-    return {
-      facets: searchResponse.facets,
-      meta: searchResponse.meta,
-      items: validOffers,
-    };
-  } catch (e) {
-    console.error(e);
-    throw new APIError({
-      status: 500,
-      message: `Could not search for ${query}`,
-    });
-  }
-};
-
-export const querySuggestion = async (query, engineName): Promise<string[]> => {
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
-  const elasticClient = await getElasticClient();
-  const searchResponse = await elasticClient.querySuggestion(engineName, query);
-
-  return searchResponse.results.documents.map(({ suggestion }) => suggestion);
-};
-
-export const registerClick = async (
-  registerClickArgs,
-  engineName,
-): Promise<void> => {
-  const elasticClient = await getElasticClient();
-  const searchResponse = await elasticClient.client.post(
-    `engines/${encodeURIComponent(engineName)}/click`,
-    registerClickArgs,
-  );
-  return;
 };
 
 export type MongoSearchParamsRelations = {
@@ -757,11 +606,6 @@ export const searchWithMongoRelations = async ({
       range: { gte: now, path: "offers.validThrough" },
     });
   }
-  /*if (market) {
-    operator.compound.filter.push({
-      text: { query: market, path: "offers.market" },
-    });
-  }*/
   if (dealers) {
     operator.compound.filter.push({
       text: { query: dealers, path: "offers.dealerKey" },
@@ -864,9 +708,6 @@ export const searchWithMongoRelations = async ({
       },
     });
   }
-
-  console.log("operator");
-  console.log(JSON.stringify(operator, null, 2));
 
   const aggregationPipeline: Record<string, any>[] = [
     {

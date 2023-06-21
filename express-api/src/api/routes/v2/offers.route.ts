@@ -7,11 +7,8 @@ import {
   searchRelations,
 } from "@/api/controllers/search.controller";
 import {
-  similar,
-  similarEnd,
   extra,
   extraRelations,
-  similarPromoted,
   offerPricingHistoryV2,
   getDetailedOffers,
   findV2,
@@ -23,9 +20,6 @@ const routes: Router = router(
   searchRelations,
   extra,
   extraRelations,
-  similar,
-  similarEnd,
-  similarPromoted,
   offerPricingHistoryV2,
   getDetailedOffers,
   findV2,
