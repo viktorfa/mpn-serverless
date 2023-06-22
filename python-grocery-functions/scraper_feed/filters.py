@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from slugify import slugify
 
 from storage.db import get_collection
+from storage.models import mpn_offer_store_fields
 from parsing.ingredients_extraction import get_ingredients_data
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.category_extraction import extract_categories
@@ -251,42 +252,7 @@ def transform_product(
     final_result = pydash.pick(
         {**offer, **result, **quantity},
         [
-            "title",
-            "subtitle",
-            "shortDescription",
-            "description",
-            "categories",
-            "provenance",
-            "market",
-            "dealer",
-            "dealerKey",
-            "brand",
-            "brandKey",
-            "vendor",
-            "vendorKey",
-            "pricing",
-            "value",
-            "quantity",
-            "items",
-            "uri",
-            "href",
-            "ahref",
-            "trackingUrl",
-            "imageUrl",
-            "gtins",
-            "mpnStock",
-            "mpnNutrition",
-            "mpnProperties",
-            "mpnIngredients",
-            "mpnCategories",
-            "validFrom",
-            "validThrough",
-            "siteCollection",
-            "isPartner",
-            "isRecent",
-            "provenanceId",
-            "sku",
-            "scrapeBatchId",
+            *mpn_offer_store_fields,
             # Book products
             "book_uri",
             "isbn",

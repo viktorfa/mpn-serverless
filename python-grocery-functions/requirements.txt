@@ -10,3 +10,4 @@ bleach==3.3.0
 python-slugify==8.0.1
 urllib3<2
 gtin==1.3.1649173518
+google-analytics-data==0.16.2

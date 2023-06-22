@@ -25,7 +25,7 @@ provider:
   versionFunctions: false
 
   memorySize: 2048
-  timeout: 450
+  timeout: 900
 
   environment:
     MONGO_URI: ${env:MONGO_URI}
@@ -114,18 +114,36 @@ functions:
     handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
     timeout: 900
   productFeedSns:
-    handler: offer_feed.offer_handler.offer_feed_sns_for_categories
+    handler: offer_feed.categories.offer_feed_sns_for_categories
     events:
       - sns:
           topicName: ScraperFeedHandled
           arn:
             Ref: ScraperFeedHandledTopic
   offerFeedTrigger:
-    handler: offer_feed.offer_handler.offer_feed_trigger_for_categories
+    handler: offer_feed.categories.offer_feed_trigger_for_categories
   offerFeedMetaTrigger:
     handler: offer_feed.offer_handler.offer_feed_meta_trigger
   offerFeedMetaSns:
     handler: offer_feed.offer_handler.offer_feed_meta_sns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Ref: ScraperFeedHandledTopic
+  handle_offer_relations_trigger:
+    handler: offer_feed.offer_relations_handler.handle_offer_relations_trigger
+  handle_offer_relations_sns:
+    handler: offer_feed.offer_relations_handler.handle_offer_relations_sns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Ref: ScraperFeedHandledTopic
+  handle_offers_market_trigger:
+    handler: offer_feed.offer_market_handler.handle_market_offers_trigger
+  handle_offers_market_sns:
+    handler: offer_feed.offer_market_handler.handle_market_offers_sns
     events:
       - sns:
           topicName: ScraperFeedHandled
@@ -182,12 +200,12 @@ functions:
           method: post
 
   updatePageviews:
-    handler: scraper_feed.google_anal.pageviews.handle
+    handler: scraper_feed.google_anal.pageviews.handle_ga4
     events:
       - schedule:
-          rate: rate(6 hours)
+          rate: rate(12 hours)
           enabled: true
-          description: "Every six hours"
+          description: "Every twelve hours"
 
 resources:
   - ${file(../s3-sns-cloudformation.yml)}

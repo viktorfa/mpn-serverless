@@ -10,6 +10,7 @@ from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
 from pymongo import UpdateOne
 from config.mongo import get_collection
+from storage.db import chunked_iterable
 from scraper_feed.handle_config import fetch_single_handle_config
 from scraper_feed.pricing_history import get_price_difference_update_set
 from util.logging import configure_lambda_logging
@@ -89,9 +90,9 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     try:
         # Limit the number of offers to avoid too much database load
         result = []
-        for chunk in pydash.chunk(
+        for chunk in chunked_iterable(
             json.loads(file_content)[: 512 if os.getenv("STAGE") == "dev" else 200000],
-            1000,
+            5000,
         ):
             result.append(handle_offer_chunk(chunk, handle_config))
         trigger_timer.time_log("finished handle_feed_with_config_for_pricing_series")
@@ -107,12 +108,12 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         return {"message": str(e)}
 
 
-def handle_offer_chunk(offers: list, handle_config: HandleConfig, use_history=True):
+def handle_offer_chunk(offers: Iterable, handle_config: HandleConfig, use_history=True):
     chunk_timer = Timer("chunk timer")
     result = handle_feed_with_config_for_pricing_series(
         offers, handle_config, use_history=use_history
     )
-    logging.info(f"Finished chunk of {len(offers)} offers")
+    logging.info(f"Finished chunk of offers")
     chunk_timer.time_log("finished chunk")
     return result
 

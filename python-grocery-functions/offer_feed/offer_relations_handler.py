@@ -107,17 +107,35 @@ def handle_offer_relations(offer_filter, market):
         f"Finish match offers {int((time.perf_counter_ns() - timer_start) / 1e6)} ms"
     )
     timer_start = time.perf_counter_ns()
+    update_view_response = update_offer_relations_view(
+        {
+            "offerSet": {"$in": uris},
+            "relationType": "identical",
+            "isMerged": {"$ne": True},
+        },
+        market,
+    )
+
+    logging.info(
+        f"Finish update view {int((time.perf_counter_ns() - timer_start) / 1e6)} ms"
+    )
+    timer_start = time.perf_counter_ns()
+    # market_rel_collection = get_collection(f"relations_with_offers_{market}")
+
+    return json.dumps(update_view_response, default=str)
+
+
+def update_offer_relations_view(relations_filter: dict, market: str):
+    logging.info(f"Saving offer relations to market {market}")
     rel_collection = get_collection("offerbirelations")
+    filter = {
+        **relations_filter,
+        "relationType": "identical",
+        "isMerged": {"$ne": True},
+    }
     update_view_response = rel_collection.aggregate(
         [
-            {
-                "$match": {
-                    "offerSet": {"$in": uris},
-                    "relationType": "identical",
-                    "isMerged": {"$ne": True},
-                }
-            },
-            # {"$limit": 1000},
+            {"$match": filter},
             {
                 "$lookup": {
                     "from": "mpnoffers",
@@ -160,6 +178,7 @@ def handle_offer_relations(offer_filter, market):
                                 }
                             },
                         },
+                        {"$sort": {"pricing.price": 1}},
                     ],
                 }
             },
@@ -188,13 +207,7 @@ def handle_offer_relations(offer_filter, market):
             },
         ]
     )
-    logging.info(
-        f"Finish update view {int((time.perf_counter_ns() - timer_start) / 1e6)} ms"
-    )
-    timer_start = time.perf_counter_ns()
-    # market_rel_collection = get_collection(f"relations_with_offers_{market}")
-
-    return json.dumps(update_view_response, default=str)
+    return update_view_response
 
 
 def handle_offer_relations_chunk(offers: Iterable[MpnOffer], market):
