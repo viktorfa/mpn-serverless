@@ -94,78 +94,20 @@ interface FullMpnOffer extends MpnMongoOffer {
   siteCollection: string;
 }
 
-interface ElasticMpnOffer {
+type MpnOfferRelation = {
+  readonly _id: { toString(): string };
+  offers: MpnMongoOffer[];
   title: string;
-  subtitle: string;
-  short_description: string;
-  description: string;
-  brand: string;
-
-  image_url: string;
-  href: string;
-  id: string;
-
-  valid_from: Date;
-  valid_through: Date;
-
-  price: number;
-  pre_price?: number;
-  price_currency: string;
-  price_text?: string;
-  standard_value?: number;
-  standard_value_unit?: string;
-  standard_size?: number;
-  standard_size_unit?: string;
-
-  categories: string[];
-  dealer: string;
-  provenance: string;
-  gtins: Record<string, string>;
-  mpn_stock: string;
-  market: string;
-}
-
-interface RawField<
-  T extends string[] | Record<string, string> | string = string,
-> {
-  raw: T;
-}
-
-interface ElasticMpnOfferRaw {
-  title: RawField;
-  subtitle: RawField;
-  short_description: RawField;
-  description: RawField;
-  brand: RawField;
-
-  image_url: RawField;
-  href: RawField;
-  id: RawField;
-
-  valid_from: RawField;
-  valid_through: RawField;
-
-  price: RawField;
-  pre_price?: RawField;
-  price_currency: RawField;
-  standard_value: RawField;
-  standard_value_unit: RawField;
-  standard_size: RawField;
-  standard_size_unit: RawField;
-
-  categories: RawField<string[]>;
-  dealer: RawField;
-  provenance: RawField;
-  gtins?: RawField<Record<string, string>>;
-  mpn_stock: RawField;
-  market: RawField;
-
-  quantity: RawField;
-  value: RawField;
-  pricing: RawField;
-
-  _meta: { score: number; id: string; engine: string };
-}
+  subtitle?: string;
+  shortDescription?: string;
+  description?: string;
+  imageUrl: string;
+  dealerKey: string;
+  mpnNutrition: any;
+};
+type MpnOfferRelationResult = MpnOfferRelation & {
+  readonly score: number;
+};
 
 declare type RatingScoreType = 1 | 2 | 3 | 4 | 5;
 declare type OfferRelationType =
@@ -263,9 +205,16 @@ interface MpnMongoSearchResponse {
   items: MpnResultOffer[];
   facets: MpnMongoSearchResponseFacets;
 }
+interface MpnMongoRelationsSearchResponse {
+  meta: MpnMongoSearchResponseMeta;
+  items: MpnOfferRelationResult[];
+  facets: MpnMongoSearchResponseFacets;
+}
 interface MpnMongoSearchResponseMeta {
   count: number;
   page: number;
+  pageSize: number;
+  pageCount: number;
 }
 interface MpnMongoSearchResponseFacets {
   [key: string]: { buckets: any[] };

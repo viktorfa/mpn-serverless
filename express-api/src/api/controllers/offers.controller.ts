@@ -149,7 +149,7 @@ export const extra: Route<
     return Response.ok(searchResults.items);
   });
 export const extraRelations: Route<
-  | Response.Ok<MpnResultOffer[]>
+  | Response.Ok<Omit<MpnMongoRelationsSearchResponse, "facets">>
   | Response.BadRequest<string>
   | Response.NotFound<string>
 > = route
@@ -273,7 +273,11 @@ export const find: Route<
   }
 });
 export const findV2: Route<
-  | Response.Ok<MpnOffer>
+  | Response.Ok<{
+      offer: MpnOfferRelation;
+      identical: MpnOfferRelation[];
+      interchangeable: MpnOfferRelation[];
+    }>
   | Response.NotFound<string>
   | Response.BadRequest<string>
 > = route
@@ -568,7 +572,10 @@ export const offerPricingHistoryV2: Route<
   const offerPricingHistoryCollection = await getCollection(
     "offerpricinghistories",
   );
-  const pricingHistory = await offerPricingHistoryCollection.findOne({
+  const pricingHistory = await offerPricingHistoryCollection.findOne<{
+    history: PricingHistoryObject[];
+    updatedAt: string;
+  }>({
     uri: request.routeParams.id,
   });
   if (!pricingHistory) {
@@ -577,7 +584,7 @@ export const offerPricingHistoryV2: Route<
 
   const pricingObjects = getPricingHistoryV2({
     pricingHistory,
-    endDate: addDays(pricingHistory.updatedAt, 7),
+    endDate: addDays(new Date(pricingHistory.updatedAt), 7),
   });
 
   return Response.ok(pricingObjects);
@@ -664,88 +671,6 @@ export const offersWithPriceDifference: Route<
           ]),
         })),
     );
-
-    const before7Days = getDaysAhead(-7);
-
-    const offerPricingCollection = await getCollection("offerpricinghistories");
-
-    const filter: Record<string, any> = {
-      updatedAt: { $gt: before7Days },
-      siteCollection: request.query.productCollection || "groceryoffers",
-    };
-
-    if (dealersArray.length > 0) {
-      filter.uri = { $regex: new RegExp(`^(${dealersArray.join("|")})`) };
-    }
-
-    if (direction === "desc") {
-      filter[differencePercentageField] = {
-        $gt: 10,
-      };
-    } else {
-      filter[differencePercentageField] = {
-        $lt: -10,
-      };
-    }
-
-    const sort = { [differencePercentageField]: sortDirection };
-
-    const pricingLimit = categoriesArray.length > 0 ? 1024 : _limit;
-
-    const pricingObjects: OfferPricingHistory[] = await offerPricingCollection
-      .find(filter)
-      .project({
-        uri: 1,
-        difference: 1,
-        differencePercentage: 1,
-        difference7DaysMean: 1,
-        difference7DaysMeanPercentage: 1,
-        difference30DaysMean: 1,
-        difference30DaysMeanPercentage: 1,
-        difference90DaysMean: 1,
-        difference90DaysMeanPercentage: 1,
-        difference365DaysMean: 1,
-        difference365DaysMeanPercentage: 1,
-      })
-      .sort(sort)
-      .limit(pricingLimit)
-      .toArray();
-
-    const pricingMap = {};
-
-    pricingObjects.forEach((x) => {
-      pricingMap[x.uri] = x;
-    });
-
-    const offerLimit = pricingObjects.length;
-    const offerCollection = await getCollection("mpnoffers_with_context");
-    const offerSelection = {
-      uri: { $in: take(pricingObjects, offerLimit).map((x) => x.uri) },
-    };
-    if (categoriesArray.length > 0) {
-      offerSelection["mpnCategories.key"] = { $in: categoriesArray };
-    }
-
-    const offers = await offerCollection
-      .find(offerSelection)
-      .project(defaultOfferProjection)
-      .limit(offerLimit)
-      .toArray();
-
-    if (offers.length === 0) {
-      return Response.ok([]);
-    }
-
-    const offersMap = {};
-    offers.map((x) => {
-      offersMap[x.uri] = x;
-    });
-
-    const result = pricingObjects
-      .filter((x) => Object.keys(offersMap).includes(x.uri))
-      .map((x) => ({ ...offersMap[x.uri], pricingHistoryObject: x }));
-
-    return Response.ok(take(result, _limit));
   });
 
 const detailedOffersQueryParams = t.type({

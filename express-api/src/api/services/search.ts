@@ -51,7 +51,7 @@ export const searchWithMongo = async ({
     });
   }
   const now = getNowDate();
-
+  const _limit = Math.min(limit, 1000);
   const offerCollection = await getCollection(`mpnoffers_${market}`);
 
   const facets: Record<string, { type: string; path: string }> = {
@@ -193,8 +193,8 @@ export const searchWithMongo = async ({
         },
       },
     },
-    { $limit: Math.min(limit, 1000) }, // Will be incredibly slow when sorting if the results are many
-    { $skip: (Math.max(page - 1, 0) || 0) * limit },
+    { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
+    { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     {
       $project: {
         ...projection,
@@ -203,7 +203,7 @@ export const searchWithMongo = async ({
     },
     {
       $facet: {
-        items: [{ $limit: limit }],
+        items: [{ $limit: _limit }],
         meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
       },
     },
@@ -237,16 +237,18 @@ export const searchWithMongo = async ({
   if (!mongoSearchResponse[0]?.items.length) {
     return {
       items: [],
-      meta: { count: 0, page: 1 },
+      meta: { count: 0, page: 1, pageCount: 1, pageSize: _limit },
       facets: { dealersFacet: { buckets: [] } },
     };
   }
 
+  const itemCount = mongoSearchResponse[0].meta.count.lowerBound;
   const meta: MpnMongoSearchResponseMeta = {
-    count: mongoSearchResponse[0].meta.count.lowerBound,
+    count: itemCount,
     page,
+    pageSize: _limit,
+    pageCount: Math.ceil(itemCount / _limit),
   };
-
   const result = {
     items: mongoSearchResponse[0].items,
     meta,
@@ -299,6 +301,7 @@ export const searchWithMongoNoFacets = async ({
   }
   const now = getNowDate();
   const offerCollection = await getCollection(`mpnoffers_${market}`);
+  const _limit = Math.min(limit, 1000);
 
   const operator = {
     compound: {
@@ -429,8 +432,8 @@ export const searchWithMongoNoFacets = async ({
         ...operator,
       },
     },
-    { $limit: Math.min(limit, 1000) }, // Will be incredibly slow when sorting if the results are many
-    { $skip: (Math.max(page - 1, 0) || 0) * limit },
+    { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
+    { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     {
       $project: {
         ...projection,
@@ -473,13 +476,16 @@ export const searchWithMongoNoFacets = async ({
   if (!mongoSearchResponse[0]?.items.length) {
     return {
       items: [],
-      meta: { count: 0, page: 1 },
+      meta: { count: 0, page: 1, pageCount: 1, pageSize: _limit },
     };
   }
 
+  const itemCount = mongoSearchResponse[0].meta.count.lowerBound;
   const meta: MpnMongoSearchResponseMeta = {
-    count: mongoSearchResponse[0].meta.count.lowerBound,
+    count: itemCount,
     page,
+    pageSize: _limit,
+    pageCount: Math.ceil(itemCount / _limit),
   };
 
   const result = {
@@ -552,7 +558,7 @@ export const searchWithMongoRelations = async ({
   isExtraOffers = false,
   includeOutdated = false,
   projection = defaultOfferProjection,
-}: MongoSearchParamsRelations): Promise<MpnMongoSearchResponse> => {
+}: MongoSearchParamsRelations): Promise<MpnMongoRelationsSearchResponse> => {
   if (query.length > 127) {
     const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
     console.error(message);
@@ -777,18 +783,17 @@ export const searchWithMongoRelations = async ({
     };
   }
 
+  const itemCount = mongoSearchResponse[0].meta.count.lowerBound;
   const meta: MpnMongoSearchResponseMeta = {
-    count: mongoSearchResponse[0].meta.count.lowerBound,
+    count: itemCount,
     page,
+    pageSize: _limit,
+    pageCount: Math.ceil(itemCount / _limit),
   };
 
   const result = {
     items: mongoSearchResponse[0].items,
-    meta: {
-      ...meta,
-      pageSize: _limit,
-      pageCount: Math.ceil(meta.count / _limit),
-    },
+    meta,
     facets: { ...mongoSearchResponse[0].meta.facet },
   };
 
@@ -813,6 +818,264 @@ export const searchWithMongoRelations = async ({
 
   return result;
 };
+export const searchWithMongoRelationsNoFacets = async ({
+  query,
+  productCollections,
+  market,
+  limit = 32,
+  page = 1,
+  dealers,
+  categories,
+  brands,
+  vendors,
+  price,
+  sort,
+  isPartner = false,
+  isExtraOffers = false,
+  includeOutdated = false,
+  projection = defaultOfferProjection,
+}: MongoSearchParamsRelations): Promise<
+  Omit<MpnMongoRelationsSearchResponse, "facets">
+> => {
+  if (query.length > 127) {
+    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
+    console.error(message);
+    throw new APIError({
+      status: 500,
+      message,
+    });
+  }
+  const now = getNowDate();
+  const _limit = Math.min(limit, 64);
+
+  const searchCollection = await getCollection(
+    `relations_with_offers_${market}`,
+  );
+
+  const operator = {
+    compound: {
+      filter: [{ text: { path: "relationType", query: "identical" } }],
+      must: [],
+      should: [],
+    },
+  };
+
+  if (price) {
+    if (price.from) {
+      operator.compound.filter.push({
+        range: { gte: price.from, path: "priceMin" },
+      });
+    }
+    if (price.to) {
+      operator.compound.filter.push({
+        range: { lte: price.to, path: "priceMin" },
+      });
+    }
+  }
+
+  if (isPartner) {
+    operator.compound.filter.push({
+      equals: { value: true, path: "offers.isPartner" },
+    });
+  }
+  if (!includeOutdated && false) {
+    operator.compound.filter.push({
+      range: { gte: now, path: "offers.validThrough" },
+    });
+  }
+  if (dealers) {
+    operator.compound.filter.push({
+      text: { query: dealers, path: "offers.dealerKey" },
+    });
+  }
+  if (brands) {
+    operator.compound.filter.push({
+      text: { query: brands, path: "brandKey" },
+    });
+  }
+  if (vendors) {
+    operator.compound.filter.push({
+      text: { query: vendors, path: "offers.vendorKey" },
+    });
+  }
+  if (productCollections && !isExtraOffers) {
+    operator.compound.filter.push({
+      text: { query: productCollections, path: "offers.siteCollection" },
+    });
+  }
+  if (categories) {
+    operator.compound.filter.push({
+      text: { query: categories, path: "mpnCategories.key" },
+    });
+  }
+  if (isExtraOffers) {
+    const siteCollection = get(productCollections, [0]);
+    if (siteCollection) {
+      operator.compound.should.push({
+        text: {
+          path: "offers.siteCollection",
+          query: siteCollection,
+          score: { boost: { value: 1.5 } },
+        },
+      });
+    }
+    operator.compound.should.push({
+      equals: {
+        path: "offers.isPartner",
+        value: true,
+        score: { boost: { value: 1.5 } },
+      },
+    });
+    operator.compound.should.push({
+      moreLikeThis: {
+        like: [{ title: query }],
+      },
+    });
+  } else if (query && !sort) {
+    operator.compound.must.push({
+      text: {
+        path: ["title", "subtitle", "brand"],
+        query,
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["title"],
+        query,
+        score: { boost: { value: 3 } },
+      },
+    });
+    operator.compound.should.push({
+      text: {
+        path: ["subtitle", "brand", "offers.categories", "mpnCategories"],
+        query,
+        score: { boost: { value: 1.5 } },
+      },
+    });
+
+    // Attempt to make search more restrictive (AND) after selecting sort
+  } else if (query && sort) {
+    query
+      .split(" ")
+      .map((x) => x.trim())
+      .forEach((x) => {
+        operator.compound.must.push({
+          text: {
+            path: [
+              "title",
+              "subtitle",
+              "brand",
+              "offers.categories",
+              "mpnCategories",
+            ],
+            query: x,
+          },
+        });
+      });
+  }
+
+  if (sort) {
+    const path = Object.keys(sort)[0];
+    operator.compound.should.push({
+      near: {
+        path,
+        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
+        pivot: 2,
+        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
+      },
+    });
+  }
+
+  const aggregationPipeline: Record<string, any>[] = [
+    {
+      $search: {
+        ...operator,
+      },
+    },
+    { $skip: (Math.max(page - 1, 0) || 0) * _limit },
+    { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
+    {
+      $project: {
+        ...projection,
+        score: { $meta: "searchScore" },
+        offers: 1,
+        priceMin: 1,
+        priceMax: 1,
+        valueMin: 1,
+        valueMax: 1,
+        pageviews: 1,
+      },
+    },
+
+    {
+      $facet: {
+        items: [{ $limit: _limit }],
+        meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
+      },
+    },
+    { $unwind: "$meta" },
+    {
+      $set: {
+        dealerKeys: {
+          $reduce: {
+            initialValue: [],
+            input: "$items.offers.dealerKey",
+            in: {
+              $setUnion: {
+                $concatArrays: ["$$value", "$$this"],
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "dealers",
+        localField: "dealerKeys",
+        foreignField: "key",
+        as: "dealers",
+        pipeline: [{ $project: defaultDealerProjection }],
+      },
+    },
+  ];
+
+  const mongoSearchResponse = await searchCollection
+    .aggregate(aggregationPipeline)
+    .toArray();
+
+  if (!mongoSearchResponse[0]?.items.length) {
+    return {
+      items: [],
+      meta: { count: 0, page: 1, pageSize: _limit, pageCount: 1 },
+    };
+  }
+
+  const itemCount = mongoSearchResponse[0].meta.count.lowerBound;
+  const meta: MpnMongoSearchResponseMeta = {
+    count: itemCount,
+    page,
+    pageSize: _limit,
+    pageCount: Math.ceil(itemCount / _limit),
+  };
+  const result = {
+    items: mongoSearchResponse[0].items,
+    meta,
+  };
+
+  const dealerMap = {};
+  mongoSearchResponse[0].dealers.forEach((x) => {
+    dealerMap[x.key] = x;
+  });
+
+  result.items.forEach((rel) => {
+    rel.offers.forEach((x) => {
+      x.dealerObject = dealerMap[x.dealerKey] || { key: x.dealerKey };
+    });
+  });
+
+  return result;
+};
 export const searchWithMongoRelationsExtra = async ({
   title,
   productCollections,
@@ -830,20 +1093,15 @@ export const searchWithMongoRelationsExtra = async ({
   isPartner = false,
   projection = defaultOfferProjection,
   offerUri,
-}: MongoSearchParamsRelationsExtra): Promise<MpnMongoSearchResponse> => {
+}: MongoSearchParamsRelationsExtra): Promise<
+  Omit<MpnMongoRelationsSearchResponse, "facets">
+> => {
   const now = getNowDate();
   const _limit = Math.min(limit, 64);
 
   const searchCollection = await getCollection(
     `relations_with_offers_${market}`,
   );
-
-  const facets: Record<string, { type: string; path: string }> = {
-    dealersFacet: {
-      type: "string",
-      path: "offers.dealerKey",
-    },
-  };
 
   const operator = {
     compound: {
@@ -941,10 +1199,7 @@ export const searchWithMongoRelationsExtra = async ({
   const aggregationPipeline: Record<string, any>[] = [
     {
       $search: {
-        facet: {
-          operator,
-          facets,
-        },
+        ...operator,
       },
     },
     { $match: { offerSet: { $ne: offerUri } } },
@@ -962,7 +1217,6 @@ export const searchWithMongoRelationsExtra = async ({
         pageviews: 1,
       },
     },
-
     {
       $facet: {
         items: [{ $limit: _limit }],
@@ -973,10 +1227,14 @@ export const searchWithMongoRelationsExtra = async ({
     {
       $set: {
         dealerKeys: {
-          $map: {
-            input: "$meta.facet.dealersFacet.buckets",
-            as: "t",
-            in: "$$t._id",
+          $reduce: {
+            initialValue: [],
+            input: "$items.offers.dealerKey",
+            in: {
+              $setUnion: {
+                $concatArrays: ["$$value", "$$this"],
+              },
+            },
           },
         },
       },
@@ -987,10 +1245,7 @@ export const searchWithMongoRelationsExtra = async ({
         localField: "dealerKeys",
         foreignField: "key",
         as: "dealers",
-        pipeline: [
-          { $match: { market } },
-          { $project: defaultDealerProjection },
-        ],
+        pipeline: [{ $project: defaultDealerProjection }],
       },
     },
   ];
@@ -1003,23 +1258,19 @@ export const searchWithMongoRelationsExtra = async ({
     return {
       items: [],
       meta: { count: 0, page: 1, pageSize: _limit, pageCount: 1 },
-      facets: { dealersFacet: { buckets: [] } },
     };
   }
 
+  const itemCount = mongoSearchResponse[0].meta.count.lowerBound;
   const meta: MpnMongoSearchResponseMeta = {
-    count: mongoSearchResponse[0].meta.count.lowerBound,
+    count: itemCount,
     page,
+    pageSize: _limit,
+    pageCount: Math.ceil(itemCount / _limit),
   };
-
   const result = {
     items: mongoSearchResponse[0].items,
-    meta: {
-      ...meta,
-      pageSize: _limit,
-      pageCount: Math.ceil(meta.count / _limit),
-    },
-    facets: { ...mongoSearchResponse[0].meta.facet },
+    meta,
   };
 
   const dealerMap = {};
@@ -1032,14 +1283,6 @@ export const searchWithMongoRelationsExtra = async ({
       x.dealerObject = dealerMap[x.dealerKey] || { key: x.dealerKey };
     });
   });
-  result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets
-    .map((x) => {
-      return {
-        ...(dealerMap[x._id] || { key: x._id, _id: x._id }),
-        ...x,
-      };
-    })
-    .filter((x) => x.market === market);
 
   return result;
 };

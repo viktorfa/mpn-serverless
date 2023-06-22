@@ -115,7 +115,7 @@ export const search: Route<
   });
 
 export const searchRelations: Route<
-  Response.Ok<MpnMongoSearchResponse> | Response.BadRequest<string>
+  Response.Ok<MpnMongoRelationsSearchResponse> | Response.BadRequest<string>
 > = route
   .get("/searchrelations")
   .use(Parser.query(searchQueryParams))
