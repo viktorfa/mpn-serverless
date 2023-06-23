@@ -438,7 +438,7 @@ def get_relation_info(offer, relations, market):
         "mpnIngredients": offer.get("mpnIngredients", {}),
         "mpnProperties": offer.get("mpnProperties", {}),
         "imageUrl": offer.get("imageUrl"),
-        "quantity": offer["quantity"],
+        "quantity": offer.get("quantity", {}),
         "brand": offer.get("brand"),
         "brandKey": offer.get("brandKey"),
     }
@@ -452,7 +452,7 @@ def get_relation_info(offer, relations, market):
         "mpnIngredients": offer.get("mpnIngredients", {}),
         "mpnProperties": offer.get("mpnProperties", {}),
         "imageUrl": offer.get("imageUrl"),
-        "quantity": offer["quantity"],
+        "quantity": offer.get("quantity", {}),
         "brand": offer.get("brand"),
         "brandKey": offer.get("brandKey"),
     }
