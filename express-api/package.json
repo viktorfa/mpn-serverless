@@ -25,7 +25,8 @@
     "ohmyfetch": "^0.4.21",
     "serverless-http": "^3.2.0",
     "slugify": "^1.6.6",
-    "typera-express": "^2.4.4"
+    "typera-express": "^2.4.4",
+    "urllib": "^3.17.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.5",
