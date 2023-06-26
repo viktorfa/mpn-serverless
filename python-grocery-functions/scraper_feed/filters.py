@@ -255,6 +255,7 @@ def transform_product(
             *mpn_offer_store_fields,
             # Book products
             "book_uri",
+            "book_type",
             "isbn",
             "isbn10",
             "isbn13",
