@@ -3,7 +3,7 @@ import type { AWS } from "@serverless/typescript";
 // Only use API Gateway locally as only that is supported by serverless-offline
 // Lambda URLS cost less, are faster, and have longer timeout
 const functions: AWS["functions"] = {};
-if (process.argv.includes("offline") || true) {
+if (process.argv.includes("offline")) {
   functions.api = {
     timeout: 30,
     handler: "src/server.handler",
@@ -22,8 +22,11 @@ if (process.argv.includes("offline") || true) {
       },
     ],
   };
-}
-if (true) {
+} else {
+  functions.api = {
+    timeout: 30,
+    handler: "src/server.handler",
+  };
   functions["api-url"] = {
     timeout: 30,
     handler: "src/server.handler",
