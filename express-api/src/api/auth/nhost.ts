@@ -30,9 +30,9 @@ const canBypassAuthentication = (req: Request) => {
     !!getCognitoIdentityId(req)
   ) {
     return true;
-  } else if (process.env.NODE_ENV !== "production") {
+  } /*else if (process.env.NODE_ENV !== "production") {
     return true;
-  }
+  }*/
   return false;
 };
 
@@ -72,11 +72,19 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       const decodedToken = jose.decodeJwt(bearerToken) as NhostToken;
       const userId =
         decodedToken["https://hasura.io/jwt/claims"]["x-hasura-user-id"];
-      if (userId) {
-        req["user"] = userId;
-      } else {
+      if (!userId) {
         throw new ApiError({
           message: "User cannot be anonymous",
+          status: 401,
+        });
+      }
+      if (
+        !decodedToken["https://hasura.io/jwt/claims"][
+          "x-hasura-allowed-roles"
+        ].includes("admin")
+      ) {
+        throw new ApiError({
+          message: "User is not admin",
           status: 401,
         });
       }

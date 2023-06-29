@@ -2,7 +2,7 @@ service: node-express-read-api
 
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs18.x
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
@@ -15,6 +15,8 @@ provider:
   environment:
     MONGO_URI: ${self:custom.vars.MONGO_URI}
     MONGO_DATABASE: ${self:custom.vars.MONGO_DATABASE}
+    COGNITO_USER_POOL_ID: ${self:custom.vars.COGNITO_USER_POOL_ID}
+    NHOST_JWT_SECRET: ${self:custom.vars.NHOST_JWT_SECRET}
     #ELASTIC_API_KEY: ${self:custom.vars.ELASTIC_API_KEY}
     #ELASTIC_URL: ${self:custom.vars.ELASTIC_URL}
     SENTRY_DSN: ${self:custom.vars.SENTRY_DSN}
