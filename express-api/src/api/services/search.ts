@@ -516,6 +516,12 @@ export type MongoSearchParamsRelations = {
   brands?: string[];
   vendors?: string[];
   price?: { from?: number; to?: number };
+  value?: { from?: number; to?: number };
+  proteins?: { from?: number; to?: number };
+  carbs?: { from?: number; to?: number };
+  fats?: { from?: number; to?: number };
+  kcals?: { from?: number; to?: number };
+  processedScore?: { from?: number; to?: number };
   sort?: { [key: string]: 1 | -1 };
   isPartner?: boolean;
   isExtraOffers?: boolean;
@@ -553,6 +559,12 @@ export const searchWithMongoRelations = async ({
   brands,
   vendors,
   price,
+  value,
+  proteins,
+  carbs,
+  fats,
+  kcals,
+  processedScore,
   sort,
   isPartner = false,
   isExtraOffers = false,
@@ -598,6 +610,84 @@ export const searchWithMongoRelations = async ({
     if (price.to) {
       operator.compound.filter.push({
         range: { lte: price.to, path: "priceMin" },
+      });
+    }
+  }
+  if (value) {
+    if (value.from) {
+      operator.compound.filter.push({
+        range: { gte: value.from, path: "valueMin" },
+      });
+    }
+    if (value.to) {
+      operator.compound.filter.push({
+        range: { lte: value.to, path: "valueMin" },
+      });
+    }
+  }
+  if (proteins) {
+    if (proteins.from) {
+      operator.compound.filter.push({
+        range: { gte: proteins.from, path: "mpnNutrition.proteins.value" },
+      });
+    }
+    if (proteins.to) {
+      operator.compound.filter.push({
+        range: { lte: proteins.to, path: "mpnNutrition.proteins.value" },
+      });
+    }
+  }
+  if (kcals) {
+    if (kcals.from) {
+      operator.compound.filter.push({
+        range: { gte: kcals.from, path: "mpnNutrition.energyKcal.value" },
+      });
+    }
+    if (kcals.to) {
+      operator.compound.filter.push({
+        range: { lte: kcals.to, path: "mpnNutrition.energyKcal.value" },
+      });
+    }
+  }
+  if (fats) {
+    if (fats.from) {
+      operator.compound.filter.push({
+        range: { gte: fats.from, path: "mpnNutrition.fats.value" },
+      });
+    }
+    if (fats.to) {
+      operator.compound.filter.push({
+        range: { lte: fats.to, path: "mpnNutrition.fats.value" },
+      });
+    }
+  }
+  if (carbs) {
+    if (carbs.from) {
+      operator.compound.filter.push({
+        range: { gte: carbs.from, path: "mpnNutrition.carbohydrates.value" },
+      });
+    }
+    if (carbs.to) {
+      operator.compound.filter.push({
+        range: { lte: carbs.to, path: "mpnNutrition.carbohydrates.value" },
+      });
+    }
+  }
+  if (processedScore) {
+    if (processedScore.from) {
+      operator.compound.filter.push({
+        range: {
+          gte: processedScore.from,
+          path: "mpnIngredients.processedScore",
+        },
+      });
+    }
+    if (processedScore.to) {
+      operator.compound.filter.push({
+        range: {
+          lte: processedScore.to,
+          path: "mpnIngredients.processedScore",
+        },
       });
     }
   }

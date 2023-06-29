@@ -19,6 +19,12 @@ const searchQueryParams = t.type({
   brands: t.union([t.string, t.undefined]),
   vendors: t.union([t.string, t.undefined]),
   price: t.union([t.string, t.undefined]),
+  value: t.union([t.string, t.undefined]),
+  proteins: t.union([t.string, t.undefined]),
+  carbs: t.union([t.string, t.undefined]),
+  fats: t.union([t.string, t.undefined]),
+  kcals: t.union([t.string, t.undefined]),
+  processedScore: t.union([t.string, t.undefined]),
   sort: t.union([t.string, t.undefined]),
 });
 
@@ -114,6 +120,18 @@ export const search: Route<
     return Response.ok(searchResults);
   });
 
+const getRangeField = ({ field }: { field: string }) => {
+  const [min, max] = (field || "").split(",");
+  const result: { from?: number; to?: number } = {};
+  if (min) {
+    result.from = min ? Number.parseInt(min) : null;
+  }
+  if (max) {
+    result.to = max ? Number.parseInt(max) : null;
+  }
+  return result;
+};
+
 export const searchRelations: Route<
   Response.Ok<MpnMongoRelationsSearchResponse> | Response.BadRequest<string>
 > = route
@@ -127,6 +145,12 @@ export const searchRelations: Route<
       page,
       dealers,
       price,
+      value,
+      proteins,
+      carbs,
+      fats,
+      kcals,
+      processedScore,
       categories,
       brands,
       vendors,
@@ -151,18 +175,36 @@ export const searchRelations: Route<
       vendors: vendors ? vendors.split(",") : null,
       sort: sortConfig,
       price: null,
+      value: null,
       page: Number.parseInt(page || "1"),
     };
-    const [priceMin, priceMax] = (price || "").split(",");
-    const _price: { from?: number; to?: number } = {};
-    if (priceMin) {
-      _price.from = priceMin ? Number.parseInt(priceMin) : null;
-    }
-    if (priceMax) {
-      _price.to = priceMax ? Number.parseInt(priceMax) : null;
-    }
+    const _price = getRangeField({ field: price });
     if (_price.from || _price.to) {
       searchArgs.price = _price;
+    }
+    const _value = getRangeField({ field: value });
+    if (_value.from || _value.to) {
+      searchArgs.value = _value;
+    }
+    const _proteins = getRangeField({ field: proteins });
+    if (_proteins.from || _proteins.to) {
+      searchArgs.proteins = _proteins;
+    }
+    const _kcals = getRangeField({ field: kcals });
+    if (_kcals.from || _kcals.to) {
+      searchArgs.kcals = _kcals;
+    }
+    const _carbs = getRangeField({ field: carbs });
+    if (_carbs.from || _carbs.to) {
+      searchArgs.carbs = _carbs;
+    }
+    const _fats = getRangeField({ field: fats });
+    if (_fats.from || _fats.to) {
+      searchArgs.fats = _fats;
+    }
+    const _processedScore = getRangeField({ field: processedScore });
+    if (_processedScore.from || _processedScore.to) {
+      searchArgs.processedScore = _processedScore;
     }
 
     const searchResults = await searchWithMongoRelations({
