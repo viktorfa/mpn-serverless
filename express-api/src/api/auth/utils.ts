@@ -11,14 +11,3 @@ export const getBearerToken = (req: Request) => {
   }
   return idToken;
 };
-export const getCognitoIdentityId = (req: Request) => {
-  const cognitoToken = req.headers.authorization as string;
-  if (!cognitoToken) {
-    return false;
-  }
-  const [scheme, idToken] = cognitoToken.split(" ");
-  if (scheme !== "Cognito" || !idToken) {
-    return false;
-  }
-  return idToken;
-};

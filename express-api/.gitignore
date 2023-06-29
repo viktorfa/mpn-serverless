@@ -3,8 +3,8 @@ package-lock.json
 
 # Environment variables
 .env
-.env.development
-.env.production
+.env.dev
+.env.prod
 .env.local.*
 
 # Logs
@@ -61,3 +61,7 @@ artifact.zip
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+
+.esbuild/
+out/

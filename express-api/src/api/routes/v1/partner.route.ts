@@ -1,8 +1,20 @@
 import { router } from "typera-express";
 import { Router } from "express";
 
-import { getPartnerProducts } from "@/api/controllers/partner.controller";
+import {
+  getPartner,
+  getPartnerProducts,
+  getPartnerShopWithProducts,
+  getPartners,
+  getProducts,
+} from "@/api/controllers/partner.controller";
 
-const routes: Router = router(getPartnerProducts).handler();
+const routes: Router = router(
+  getPartners,
+  getProducts,
+  getPartner,
+  getPartnerProducts,
+  getPartnerShopWithProducts,
+).handler();
 
 export default routes;

@@ -1,5 +1,5 @@
 import * as jose from "jose";
-import { getBearerToken, getCognitoIdentityId } from "./utils";
+import { getBearerToken } from "./utils";
 import { Request, Response, NextFunction } from "express";
 import ApiError from "@/api/utils/APIError";
 
@@ -24,12 +24,6 @@ const canBypassAuthentication = (req: Request) => {
     return true;
   } else if (req.method === "POST" && req.path.startsWith("/v1/reviews")) {
     return true;
-  } else if (
-    req.method === "POST" &&
-    req.path === "/v1/offers" &&
-    !!getCognitoIdentityId(req)
-  ) {
-    return true;
   } /*else if (process.env.NODE_ENV !== "production") {
     return true;
   }*/
@@ -46,7 +40,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         const decodedToken = jose.decodeJwt(bearerToken) as NhostToken;
         req["user"] = decodedToken;
       } catch (error) {
-        res
+        return res
           .status(403)
           .json({ error: 403, message: error.message, code: error.code })
           .end();
@@ -54,12 +48,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     }
     next();
   } else {
-    const cognitoIdentityId = getCognitoIdentityId(req);
-    if (req.method === "POST" && /\/offers\/?$/.test(req.path)) {
-      if (!!cognitoIdentityId) {
-        next();
-      }
-    }
     const bearerToken = getBearerToken(req);
     if (!bearerToken) {
       return res
@@ -90,7 +78,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       }
       req["user"] = decodedToken;
     } catch (error) {
-      res.status(403).json({ error: 403, message: error.message }).end();
+      return res.status(403).json({ error: 403, message: error.message }).end();
     }
     next();
   }

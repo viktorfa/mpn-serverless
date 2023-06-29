@@ -7,6 +7,7 @@ import {
   createPartnerProduct,
   deletePartnerProduct,
   updatePartnerProduct,
+  updatePartnerStore,
 } from "@/api/controllers/partner-user.controller";
 
 const routes: Router = router(
@@ -15,6 +16,7 @@ const routes: Router = router(
   createPartnerProduct,
   deletePartnerProduct,
   updatePartnerProduct,
+  updatePartnerStore,
 ).handler();
 
 export default routes;

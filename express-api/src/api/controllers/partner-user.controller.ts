@@ -1,116 +1,18 @@
-import { nanoid } from "nanoid";
-import slugify from "slugify";
+import {
+  makeNewMpnOfferFromPartnerProduct,
+  makePartnerProductFromMpnOffer,
+  makeUpdateSetMpnOfferFromPartnerProduct,
+} from "./../utils/partners";
 import { ObjectId } from "mongodb";
 import { offerCollectionName } from "./../utils/constants";
 import { Parser, Response, Route, route } from "typera-express";
 import { getCollection } from "@/config/mongo";
 import * as t from "io-ts";
-import { addDays } from "date-fns";
-
-type PartnerProduct = {
-  title: string;
-  description: string;
-  price: number;
-  stockAmount: number;
-};
-type PartnerProductMongo = PartnerProduct & {
-  _id: string;
-  status: string;
-};
-type MpnMongoOfferPartner = MpnMongoOffer & {
-  stockAmount: number;
-};
-type StorePartner = {
-  _id: string;
-  name: string;
-  description: string;
-  location?: Object;
-  cognitoId: string;
-  email: string;
-  phoneNumber: string;
-};
-
-const makeNewMpnOfferFromPartnerProduct = ({
-  partnerProduct,
-  partner,
-}: {
-  partnerProduct: PartnerProduct;
-  partner: StorePartner;
-}) => {
-  const offerId = nanoid();
-  const uri = `partner:product:${offerId}`;
-  const now = new Date();
-  const dealerSlug = slugify(partner.name, {
-    lower: true,
-    replacement: "_",
-    locale: "nb",
-  });
-  const imageUrl = new URL("https://link.sharizard.com/v1/create");
-  imageUrl.searchParams.set("backgroundColor", "#eec643");
-  imageUrl.searchParams.set("color", "#111111");
-  imageUrl.searchParams.set("title", partner.name);
-  imageUrl.searchParams.set("subtitle", partnerProduct.title);
-
-  return {
-    pricing: { price: partnerProduct.price },
-    title: partnerProduct.title,
-    description: partnerProduct.description,
-    stockAmount: partnerProduct.stockAmount,
-    dealer: dealerSlug,
-    uri,
-    href: "",
-    imageUrl: imageUrl.toString(),
-    partnerId: partner.cognitoId,
-    status: "ACTIVE",
-    validThrough: addDays(now, 28),
-    validFrom: new Date(),
-    siteCollection: "groceryoffers",
-    market: "no",
-    isPartner: true,
-  };
-};
-const makeUpdateSetMpnOfferFromPartnerProduct = ({
-  partnerProduct,
-  partner,
-}: {
-  partnerProduct: PartnerProduct;
-  partner: StorePartner;
-}) => {
-  const now = new Date();
-  const imageUrl = new URL("https://link.sharizard.com/v1/create");
-  imageUrl.searchParams.set("backgroundColor", "#eec643");
-  imageUrl.searchParams.set("color", "#111111");
-  imageUrl.searchParams.set("title", partner.name);
-  imageUrl.searchParams.set("subtitle", partnerProduct.title);
-
-  return {
-    pricing: { price: partnerProduct.price },
-    title: partnerProduct.title,
-    description: partnerProduct.description,
-    stockAmount: partnerProduct.stockAmount,
-    imageUrl: imageUrl.toString(),
-    validThrough: addDays(now, 28),
-  };
-};
-const makePartnerProductFromMpnOffer = ({
-  mpnOffer,
-}: {
-  mpnOffer: MpnMongoOfferPartner;
-}) => {
-  return {
-    _id: mpnOffer._id,
-    price: mpnOffer.pricing.price,
-    title: mpnOffer.title,
-    description: mpnOffer.description,
-    stockAmount: mpnOffer.stockAmount,
-    status: "ACTIVE",
-  };
-};
 
 export const getProducts: Route<
   Response.Ok<{ items: PartnerProductMongo[] }> | Response.BadRequest<string>
 > = route.get("/products").handler(async (request) => {
-  const partnerId = request.req["user"].sub;
+  const partnerId = new ObjectId(request.req["mongoUser"]._id);
   const offerCollection = await getCollection(offerCollectionName);
 
   const response = await offerCollection
@@ -130,9 +32,9 @@ export const getProducts: Route<
 export const getPartner: Route<Response.Ok<any> | Response.NotFound<string>> =
   route.get("/me").handler(async (request) => {
     const partnerCollection = await getCollection("partnerstores");
-    const partnerId = request.req["user"].sub;
+    const partnerId = new ObjectId(request.req["mongoUser"]._id);
 
-    const response = await partnerCollection.findOne({ cognitoId: partnerId });
+    const response = await partnerCollection.findOne({ _id: partnerId });
 
     if (!response) {
       return Response.notFound();
@@ -157,22 +59,10 @@ export const createPartnerProduct: Route<
   .use(Parser.body(createPartnerProductBody))
   .handler(async (request) => {
     const offerCollection = await getCollection(offerCollectionName);
-    const partnerStoreCollection = await getCollection("partnerstores");
-    const partnerId = request.req["user"].sub;
-
-    const partner = await partnerStoreCollection.findOne({
-      cognitoId: partnerId,
-    });
-
-    if (!partner) {
-      return Response.internalServerError(
-        `Not found partner with id ${partnerId}`,
-      );
-    }
 
     const mpnOffer = makeNewMpnOfferFromPartnerProduct({
       partnerProduct: request.body,
-      partner,
+      partner: request.req["mongoUser"],
     });
 
     const response = await offerCollection.insertOne(mpnOffer);
@@ -197,24 +87,46 @@ export const updatePartnerProduct: Route<
   .use(Parser.body(updatePartnerProductBody))
   .handler(async (request) => {
     const offerCollection = await getCollection(offerCollectionName);
-    const partnerStoreCollection = await getCollection("partnerstores");
-    const partnerId = request.req["user"].sub;
-
-    const partner = await partnerStoreCollection.findOne({
-      cognitoId: partnerId,
-    });
+    const partnerId = new ObjectId(request.req["mongoUser"]._id);
 
     const mpnOffer = makeUpdateSetMpnOfferFromPartnerProduct({
       partnerProduct: request.body,
-      partner,
+      partner: request.req["mongoUser"],
     });
 
     const response = await offerCollection.updateOne(
       {
-        _id: ObjectId(request.body._id),
+        _id: new ObjectId(request.body._id),
         partnerId,
       },
       { $set: { ...mpnOffer } },
+    );
+
+    return Response.ok(response);
+  });
+const updatePartnerStoreBody = t.type({
+  name: t.string,
+  description: t.string,
+  email: t.string,
+  phoneNumber: t.string,
+});
+
+export const updatePartnerStore: Route<
+  | Response.Ok<any>
+  | Response.BadRequest<string>
+  | Response.InternalServerError<string>
+> = route
+  .put("/me")
+  .use(Parser.body(updatePartnerStoreBody))
+  .handler(async (request) => {
+    const partnerStoresCollection = await getCollection("partnerstores");
+    const partnerId = new ObjectId(request.req["mongoUser"]._id);
+
+    const response = await partnerStoresCollection.updateOne(
+      {
+        _id: partnerId,
+      },
+      { $set: { ...request.body } },
     );
 
     return Response.ok(response);
@@ -226,13 +138,13 @@ export const deletePartnerProduct: Route<
   | Response.InternalServerError<string>
 > = route.delete("/products/:id").handler(async (request) => {
   const offerCollection = await getCollection(offerCollectionName);
-  const partnerId = request.req["user"].sub;
+  const partnerId = new ObjectId(request.req["mongoUser"]._id);
 
   const now = new Date();
 
   const response = await offerCollection.updateOne(
     {
-      _id: ObjectId(request.routeParams.id),
+      _id: new ObjectId(request.routeParams.id),
       partnerId,
     },
     { $set: { status: "DISABLED", validThrough: now } },

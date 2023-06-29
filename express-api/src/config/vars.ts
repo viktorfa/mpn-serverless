@@ -1,10 +1,10 @@
 const dotenv = require("dotenv-safe");
 
 if (!process.env.LAMBDA_TASK_ROOT) {
-  let dotenvFileName = ".env.development";
+  let dotenvFileName = ".env.dev";
   switch (process.env.NODE_ENV) {
     case "production":
-      dotenvFileName = ".env.production";
+      dotenvFileName = ".env.prod";
       break;
     case "test":
       dotenvFileName = ".env.test";
@@ -18,11 +18,9 @@ if (!process.env.LAMBDA_TASK_ROOT) {
   });
 }
 
-export const port = process.env.PORT || 3000;
+export const port = process.env.PORT || 3010;
 
 export const mongoUri = process.env.MONGO_URI;
 export const mongoDatabase = process.env.MONGO_DATABASE;
-export const elasticUrl = process.env.ELASTIC_URL;
-export const elasticApiKey = process.env.ELASTIC_API_KEY;
 
 export const stage = process.env.STAGE;

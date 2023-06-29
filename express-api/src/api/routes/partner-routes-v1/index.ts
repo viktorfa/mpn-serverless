@@ -2,11 +2,11 @@ import express from "express";
 
 import partnerRoutes from "@/api/routes/v1/partner-user.route";
 
-import cognitoAuth from "@/api/auth/cognito";
+import nhostAuth from "@/api/auth/nhost";
 
 const router = express.Router();
 
-router.use(cognitoAuth);
+router.use(nhostAuth);
 
 router.use(partnerRoutes);
 
