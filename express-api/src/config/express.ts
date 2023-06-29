@@ -3,7 +3,7 @@ import morgan from "morgan";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-import firebaseAuth from "@/api/auth/firebase";
+import nhostAuth from "@/api/auth/nhost";
 import routesV1 from "@/api/routes/v1";
 import routesV2 from "@/api/routes/v2";
 import partnerRoutesV1 from "@/api/routes/partner-routes-v1";
@@ -30,7 +30,7 @@ app.use((req, _res, next) => {
   next();
 });
 
-app.use(firebaseAuth);
+app.use(nhostAuth);
 
 app.use(bodyParser.json());
 
