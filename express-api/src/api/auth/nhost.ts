@@ -39,6 +39,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         await jose.jwtVerify(bearerToken, new TextEncoder().encode(jwtKey));
         const decodedToken = jose.decodeJwt(bearerToken) as NhostToken;
         req["user"] = decodedToken;
+        req["userId"] =
+          decodedToken["https://hasura.io/jwt/claims"]["x-hasura-user-id"];
       } catch (error) {
         return res
           .status(403)
@@ -77,6 +79,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         });
       }
       req["user"] = decodedToken;
+      req["userId"] =
+        decodedToken["https://hasura.io/jwt/claims"]["x-hasura-user-id"];
     } catch (error) {
       return res.status(403).json({ error: 403, message: error.message }).end();
     }

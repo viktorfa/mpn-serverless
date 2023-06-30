@@ -4,7 +4,7 @@ import { mongoUri, mongoDatabase } from "./vars";
 
 const clientPromise: MongoClient = MongoClient.connect(mongoUri, {});
 
-const connectToMongo = async (): Promise<MongoClient> => {
+export const connectToMongo = async (): Promise<MongoClient> => {
   const client = await clientPromise;
   return client;
 };

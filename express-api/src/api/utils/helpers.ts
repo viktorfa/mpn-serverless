@@ -18,3 +18,7 @@ export const getDaysAhead = (days: number): Date => {
   result.setDate(result.getDate() + days);
   return result;
 };
+
+export const getMongoSafeUri = (uri: string): string => {
+  return uri.replaceAll(".", "\uff0E");
+};

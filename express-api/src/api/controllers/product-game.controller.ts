@@ -1,12 +1,12 @@
-import { searchWithMongoNoFacets } from "./../services/search";
+import { searchWithMongoRelationsNoFacets } from "./../services/search";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import { getCollection } from "@/config/mongo";
-import { addDays } from "date-fns";
+import { ObjectId } from "mongodb";
 
 export const productGameRandomQueryParams = t.type({
-  provenance: t.string,
-  market: t.union([t.string, t.undefined]),
+  dealer: t.string,
+  market: t.string,
 });
 
 export const getRandomOffer: Route<
@@ -15,44 +15,79 @@ export const getRandomOffer: Route<
   .get("/random")
   .use(Parser.query(productGameRandomQueryParams))
   .handler(async (request) => {
-    const now = new Date();
-    const { provenance, market } = request.query;
-    const offerCollection = await getCollection("mpnoffers_with_context");
+    const { dealer, market } = request.query;
+    const relationsCollection = await getCollection(
+      `relations_with_offers_${market}`,
+    );
     const productGameData = await getCollection("productgamedata");
 
     const allProductGameData = await productGameData
-      .find({ updatedAt: { $gt: addDays(now, -365) } })
-      .project({ uri: 1 })
+      .find({})
+      .project({ relId: 1 })
       .toArray();
 
-    const findOneFilter = {
-      provenance: provenance,
-      "gtins.ean": { $exists: false },
-      "gtins.gtin13": { $exists: false },
-      validThrough: { $gt: now },
-      isRecent: true,
-      uri: { $nin: allProductGameData.map((x) => x.uri) },
-    };
-    const nDocs = await offerCollection.count(findOneFilter);
-    const offer = (
-      await offerCollection
-        .find(findOneFilter)
-        .limit(1)
-        .skip(Math.floor(Math.random() * nDocs))
-        .toArray()
-    )[0];
+    const randomOfferResponse = await relationsCollection
+      .aggregate([
+        {
+          $search: {
+            compound: {
+              filter: [
+                {
+                  text: {
+                    path: "offers.dealerKey",
+                    query: dealer,
+                  },
+                },
+              ],
+            },
+          },
+        },
+        {
+          $match: {
+            "gtins.0": { $exists: false },
+            _id: { $nin: allProductGameData.map((x) => x.relId) },
+          },
+        },
+        {
+          $facet: {
+            items: [{ $limit: 100 }],
+            meta: [{ $replaceWith: "$$SEARCH_META" }, { $limit: 1 }],
+          },
+        },
+        {
+          $set: {
+            offer: {
+              $arrayElemAt: [
+                "$items",
+                {
+                  $toInt: {
+                    $multiply: [{ $size: "$items" }, { $rand: {} }],
+                  },
+                },
+              ],
+            },
+          },
+        },
+        { $unset: ["items"] },
+      ])
+      .toArray();
 
-    const similarOffers = await searchWithMongoNoFacets({
-      query: offer.title,
+    const randomOffer = randomOfferResponse[0].offer;
+
+    const similarOffers = await searchWithMongoRelationsNoFacets({
+      query: randomOffer.title,
       market,
       includeOutdated: true,
     });
 
     const eligibleSimilarOffers = similarOffers.items.filter(
-      (x) => x.gtins && (!!x.gtins.ean || !!x.gtins.gtin13),
+      (x) => x._id.toString() !== randomOffer._id.toString(),
     );
 
-    return Response.ok({ offer, candidates: eligibleSimilarOffers });
+    return Response.ok({
+      offer: randomOffer,
+      candidates: eligibleSimilarOffers,
+    });
   });
 
 export const registerSkipOffer: Route<
@@ -62,11 +97,11 @@ export const registerSkipOffer: Route<
   const productGameData = await getCollection("productgamedata");
 
   const mongoResponse = await productGameData.updateOne(
-    { uri: request.routeParams.id },
+    { relId: new ObjectId(request.routeParams.id) },
     {
       $set: {
         updatedAt: now,
-        updatedBy: request["user"],
+        updatedBy: request.req["userId"],
       },
     },
     { upsert: true },

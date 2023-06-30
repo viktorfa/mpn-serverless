@@ -1,3 +1,4 @@
+import ApiError from "@/api/utils/APIError";
 import { flatten, get, sortBy } from "lodash";
 import { getCollection } from "@/config/mongo";
 import { AnyBulkWriteOperation, Collection, ObjectId } from "mongodb";
@@ -7,7 +8,7 @@ import {
   OfferRelation,
   offerBiRelationTagsCollectionName,
 } from "@/api/utils/constants";
-import { getDaysAhead, getNowDate } from "../utils/helpers";
+import { getDaysAhead, getNowDate, getMongoSafeUri } from "@/api/utils/helpers";
 
 export const getOfferRelationsCollection = async (): Promise<Collection> => {
   const promotionCollection = await getCollection(offerRelationsCollectionName);
@@ -40,34 +41,34 @@ export const updateOfferBiRelation = async (
   return offerRelation;
 };
 
-const getMongoSafeUri = (uri: string): string => {
-  return uri.replaceAll(".", "\uff0E");
-};
-
 export const addBiRelationalOffers = async (
-  offers: MpnMongoOffer[],
+  offerUris: string[],
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
+  if (relationType === OfferRelation.identical) {
+    throw new ApiError({
+      message: "Cannot remove identical offers",
+      status: 400,
+    });
+  }
   const biRelationsOffersCollection = await getCollection(
     offerBiRelationsCollectionName,
   );
 
-  const offerUris = Array.from(new Set(offers.map((x) => x.uri)));
   const now = new Date();
 
-  const existingRelations: IdenticalOfferRelation[] =
-    await biRelationsOffersCollection
-      .find({
-        offerSet: { $in: offerUris },
-        relationType,
-      })
-      .toArray();
+  const existingRelations = (await biRelationsOffersCollection
+    .find({
+      offerSet: { $in: offerUris },
+      relationType,
+    })
+    .toArray()) as IdenticalOfferRelation[];
   let mongoResult = null;
 
   // Get the relation with most offers and not including the target offer
   const existingRelation = sortBy(existingRelations, [
     (x) => x.offerSet.length,
-    (x) => !x.offerSet.includes(offers[0].uri),
+    (x) => !x.offerSet.includes(offerUris[0]),
   ]).at(-1);
 
   if (existingRelation) {
@@ -131,6 +132,7 @@ export const addBiRelationalOffers = async (
       console.warn("Adding new offer relation");
       console.warn(offerUris);
     }
+
     const updateSet = {};
     offerUris.forEach((uri) => {
       updateSet[`offerSetMeta.${getMongoSafeUri(uri)}.manual`] = {
@@ -154,19 +156,25 @@ export const addBiRelationalOffers = async (
   return mongoResult.result;
 };
 export const removeBiRelationalOffer = async (
-  offer: MpnMongoOffer,
+  uri: string,
   relationType: OfferRelationType,
 ): Promise<IdenticalOfferRelation> => {
+  if (relationType === OfferRelation.identical) {
+    throw new ApiError({
+      message: "Cannot remove identical offers",
+      status: 400,
+    });
+  }
   const biRelationsOffersCollection = await getCollection(
     offerBiRelationsCollectionName,
   );
 
-  const existingRelations = await biRelationsOffersCollection
+  const existingRelations = (await biRelationsOffersCollection
     .find({
-      offerSet: offer.uri,
+      offerSet: uri,
       relationType: relationType,
     })
-    .toArray();
+    .toArray()) as IdenticalOfferRelation[];
   // Get the relation with the most offers
   const existingRelation = sortBy(existingRelations, [
     (x) => x.offerSet.length,
@@ -180,47 +188,44 @@ export const removeBiRelationalOffer = async (
     otherRelations.forEach((x) => {
       otherRelationsUris.push(...x.offerSet);
     });
-    const newOfferSet = existingRelation.offerSet.filter(
-      (x) => x.uri !== offer.uri,
-    );
-    /*if (newOfferSet.length === 0) {
+    const newOfferSet = existingRelation.offerSet.filter((x) => x !== uri);
+    if (newOfferSet.length === 0) {
       mongoResult = await biRelationsOffersCollection.deleteOne({
         _id: new ObjectId(existingRelation._id),
       });
-    } else {*/
-    const updateSet = {
-      [`offerSetMeta.${getMongoSafeUri(offer.uri)}.manual`]: {
-        method: "manual",
-        reason: "manual_remove",
-        updatedAt: new Date(),
-      },
-    };
-    mongoResult = await biRelationsOffersCollection.updateOne(
-      {
-        _id: new ObjectId(existingRelation._id),
-      },
-      {
-        $pull: { offerSet: { $in: otherRelationsUris } },
-        $set: { ...updateSet },
-      },
-    );
-    const operations = [];
-    otherRelations.forEach((x) => {
-      operations.push({
-        updateOne: {
-          filter: { _id: new ObjectId(x._id) },
-          update: {
-            $set: { mergedTo: null, isMerged: null },
-          },
+    } else {
+      const updateSet = {
+        [`offerSetMeta.${getMongoSafeUri(uri)}.manual`]: {
+          method: "manual",
+          reason: "manual_remove",
+          updatedAt: new Date(),
         },
+      };
+      mongoResult = await biRelationsOffersCollection.updateOne(
+        {
+          _id: new ObjectId(existingRelation._id),
+        },
+        {
+          $pull: { offerSet: uri },
+          $set: { ...updateSet },
+        },
+      );
+      const operations = [];
+      otherRelations.forEach((x) => {
+        operations.push({
+          updateOne: {
+            filter: { _id: new ObjectId(x._id) },
+            update: {
+              $set: { mergedTo: null, isMerged: null },
+            },
+          },
+        });
       });
-    });
-    const unmergeExistingResponse = await biRelationsOffersCollection.bulkWrite(
-      operations,
-    );
-    console.log("unmergeExistingResponse");
-    console.log(unmergeExistingResponse);
-    //}
+      const unmergeExistingResponse =
+        operations.length > 0
+          ? await biRelationsOffersCollection.bulkWrite(operations)
+          : null;
+    }
   } else {
     return null;
   }

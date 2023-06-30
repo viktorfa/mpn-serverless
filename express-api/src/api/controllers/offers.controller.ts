@@ -401,6 +401,7 @@ export const findV2: Route<
       offerRelation.mpnNutrition = relNutrition;
       offerRelation.mpnIngredients = relIngredients;
       offerRelation.mpnProperties = relProperties;
+      offerRelation.relId = offerRelation.identical?._id;
 
       delete offerRelation.identical;
       delete offerRelation.interchangeable;
