@@ -113,14 +113,14 @@ functions:
   scraperFeedPricingHistory:
     handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
     timeout: 900
-  productFeedSns:
+  offerFeedCategoriesSns:
     handler: offer_feed.categories.offer_feed_sns_for_categories
     events:
       - sns:
           topicName: ScraperFeedHandled
           arn:
             Ref: ScraperFeedHandledTopic
-  offerFeedTrigger:
+  offerFeedCategoriesTrigger:
     handler: offer_feed.categories.offer_feed_trigger_for_categories
   offerFeedMetaTrigger:
     handler: offer_feed.offer_handler.offer_feed_meta_trigger

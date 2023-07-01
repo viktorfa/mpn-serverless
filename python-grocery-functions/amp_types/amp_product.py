@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Mapping, Any, TypedDict
+from typing import Any, List, Literal, Mapping, Any, TypedDict, Optional
 from datetime import datetime
 from enum import Enum
 
@@ -151,3 +151,12 @@ class PriceHistoryRecord(TypedDict):
 class PriceHistoryForOffer(TypedDict):
     uri: str
     history: List[PriceHistoryRecord]
+
+
+class IngredientType(TypedDict):
+    key: str
+    eNumber: Optional[str]
+    name: Optional[str]
+    shortDescription: Optional[str]
+    processedValue: Optional[int]
+    patterns: Optional[list[str]]
