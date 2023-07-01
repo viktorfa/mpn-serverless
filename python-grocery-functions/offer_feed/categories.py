@@ -13,6 +13,7 @@ from storage.db import chunked_iterable, get_collection
 from amp_types.amp_product import HandleConfig, MpnOffer
 from util.utils import log_traceback
 from util.logging import configure_lambda_logging
+from util.helpers import is_null_or_empty
 
 configure_lambda_logging()
 
@@ -126,6 +127,15 @@ def get_mpn_categories_for_offer(offer: MpnOffer, source_cat_map, target_cat_map
     return offer_mpn_categories
 
 
+safe_categories_for_not_processed = [
+    "frukt-gront_0",
+    "kjott_0",
+    "fisk_0",
+    "kylling-og-fjrkre_0",
+    "vann_1",
+]
+
+
 def handle_offers_for_categories(config: HandleConfig):
     logging.info("handle_offers_for_categories")
     now = datetime.now()
@@ -155,12 +165,12 @@ def handle_offers_for_categories(config: HandleConfig):
             {
                 "scrapeBatchId": scrape_batch_id,
             },
-            {"categories": 1, "slugCategories": 1},
+            {"categories": 1, "slugCategories": 1, "mpnNutrition": 1},
         )
     else:
         offers = offer_collection.find(
             {"provenance": provenance, "validThrough": {"$gt": now}, "isRecent": True},
-            {"categories": 1, "slugCategories": 1},
+            {"categories": 1, "slugCategories": 1, "mpnNutrition": 1},
         )
 
     offers = (
@@ -181,18 +191,30 @@ def handle_offers_for_categories(config: HandleConfig):
     updates = []
 
     for offer in offers:
-        if config["provenance"] == "meny_api_spider":
-            pass
-        else:
-            offer_mpn_categories = get_mpn_categories_for_offer(
-                offer, category_mappings_map, mpn_categories_map
+        offer_mpn_categories = get_mpn_categories_for_offer(
+            offer, category_mappings_map, mpn_categories_map
+        )
+
+        update_set = {"mpnCategories": offer_mpn_categories}
+
+        # Some products have no ingredients, so we mark them as not processed here.
+        if len(
+            set(safe_categories_for_not_processed).intersection(
+                set((x["key"] for x in offer_mpn_categories))
             )
-            updates.append(
-                UpdateOne(
-                    {"_id": ObjectId(offer["_id"])},
-                    {"$set": {"mpnCategories": offer_mpn_categories}},
-                )
+        ) > 0 and is_null_or_empty(
+            pydash.get(offer, ["mpnIngredients", "ingredients"])
+        ):
+            update_set["mpnIngredients"] = {
+                "processedScore": 0,
+                "ingredients": pydash.get(offer, ["mpnIngredients", "ingredients"], {}),
+            }
+        updates.append(
+            UpdateOne(
+                {"_id": ObjectId(offer["_id"])},
+                {"$set": update_set},
             )
+        )
     logging.debug(f"Updates: {len(updates)}")
 
     result = 0

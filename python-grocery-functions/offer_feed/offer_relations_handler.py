@@ -11,6 +11,7 @@ from amp_types.amp_product import MpnOffer
 from util.logging import configure_lambda_logging
 from bson import ObjectId
 from scraper_feed.helpers import is_valid_ean, is_valid_nobb
+from util.helpers import is_null_or_empty
 
 
 configure_lambda_logging()
@@ -90,6 +91,12 @@ def handle_offer_relations(offer_filter, market):
             "quantity": 1,
             "brand": 1,
             "brandKey": 1,
+            "mpnCategoriesV": 1,
+            "mpnIngredientsV": 1,
+            "mpnNutritionV": 1,
+            "mpnPropertiesV": 1,
+            "mpnStockV": 1,
+            "mpnQuantityV": 1,
         },
         batch_size=CHUNK_SIZE,
     )
@@ -223,6 +230,12 @@ def handle_offer_relations_chunk(offers: Iterable[MpnOffer], market):
         "mpnIngredients",
         "mpnProperties",
         "imageUrl",
+        "mpnCategoriesV",
+        "mpnIngredientsV",
+        "mpnNutritionV",
+        "mpnPropertiesV",
+        "mpnStockV",
+        "mpnQuantityV",
     ]
     rel_market_fields = [
         "title",
@@ -255,6 +268,12 @@ def handle_offer_relations_chunk(offers: Iterable[MpnOffer], market):
         "quantity": 1,
         ":manual": 1,
         f"m:{market}": 1,
+        "mpnCategoriesV": 1,
+        "mpnIngredientsV": 1,
+        "mpnNutritionV": 1,
+        "mpnPropertiesV": 1,
+        "mpnStockV": 1,
+        "mpnQuantityV": 1,
     }
     existing_uri_relations = relations_collection.find(
         {
@@ -457,8 +476,6 @@ def get_relation_info(offer, relations, market):
         "brandKey": offer.get("brandKey"),
     }
 
-    standard_quantities = []
-
     for rel in relations:
         rel_title = get_from_rel(rel, "title", market)
         if rel_title:
@@ -481,42 +498,146 @@ def get_relation_info(offer, relations, market):
         rel_imageUrl = get_from_rel(rel, "imageUrl")
         if rel_imageUrl:
             rel_result["imageUrl"] = rel_imageUrl
-        rel_mpnNutrition = get_from_rel(rel, "mpnNutrition")
-        if rel_mpnNutrition and len(list(rel_mpnNutrition.keys())) >= len(
-            list(rel_result.get("mpnNutrition", {}).keys())
-        ):
-            rel_result["mpnNutrition"] = rel_mpnNutrition
-        rel_mpnProperties = get_from_rel(rel, "mpnProperties")
-        if rel_mpnProperties and len(list(rel_mpnProperties.keys())) >= len(
-            list(rel_result.get("mpnProperties", {}).keys())
-        ):
-            rel_result["mpnProperties"] = rel_mpnProperties
-        rel_mpnIngredients = get_from_rel(rel, "mpnIngredients")
-        if rel_mpnIngredients and len(
-            list(rel_mpnIngredients.get("ingredients", {}).keys())
-        ) >= len(
-            list(
-                (rel_result.get("mpnIngredients", {}) or {})
-                .get("ingredients", {})
-                .keys()
-            )
-        ):
-            rel_result["mpnIngredients"] = rel_mpnIngredients
-        rel_mpnCategories = get_from_rel(rel, "mpnCategories", market)
-        if rel_mpnCategories and len(rel_mpnCategories) >= len(
-            rel_result.get("mpnCategories", []) or []
-        ):
-            rel_result["mpnCategories"] = rel_mpnCategories
-        rel_quantity = get_from_rel(rel, "quantity")
-        rel_standard_quantity = pydash.get(rel_quantity, "size.standard.max")
-        if rel_standard_quantity:
-            rel_result["quantity"] = rel_quantity
+        rel_result["mpnNutrition"] = get_nutrition(offer, rel, market)
+        rel_result["mpnProperties"] = get_properties(offer, rel, market)
+        rel_result["mpnIngredients"] = get_ingredients(offer, rel, market)
+        rel_result["mpnCategories"] = get_categories(offer, rel, market)
+        rel_result["quantity"] = get_quantity(offer, rel, market)
 
     return {"offer": offer_result, "rel": rel_result}
 
 
-def is_null_or_empty(value):
-    return value == {} or value == [] or not value
+def get_nutrition(offer, relation, market):
+    """
+    Checks whether to update existing nutrition data or not
+    """
+    rel_version = relation.get("mpnNutritionV", 0)
+    offer_version = offer.get("mpnNutritionV", 0)
+
+    manual_rel_value = pydash.get(relation, [":manual", "mpnNutrition"])
+    auto_rel_value = pydash.get(relation, [":auto", "mpnNutrition"])
+    rel_value = pydash.get(relation, "mpnNutrition")
+    offer_value = pydash.get(offer, "mpnNutrition")
+
+    if not is_null_or_empty(manual_rel_value):
+        return manual_rel_value
+    if not is_null_or_empty(auto_rel_value):
+        return auto_rel_value
+
+    if is_null_or_empty(rel_value):
+        return offer_value
+
+    if is_null_or_empty(offer_value):
+        return rel_value
+
+    if offer_version > rel_version:
+        return offer_value
+    else:
+        return rel_value
+
+
+def get_properties(offer, relation, market):
+    rel_version = relation.get("mpnPropertiesV", 0)
+    offer_version = offer.get("mpnPropertiesV", 0)
+
+    manual_rel_value = pydash.get(relation, [":manual", "mpnProperties"])
+    auto_rel_value = pydash.get(relation, [":auto", "mpnProperties"])
+    rel_value = pydash.get(relation, "mpnProperties")
+    offer_value = pydash.get(offer, "mpnProperties")
+
+    if not is_null_or_empty(manual_rel_value):
+        return manual_rel_value
+    if not is_null_or_empty(auto_rel_value):
+        return auto_rel_value
+
+    if is_null_or_empty(rel_value):
+        return offer_value
+
+    if is_null_or_empty(offer_value):
+        return rel_value
+
+    if offer_version > rel_version:
+        return offer_value
+    else:
+        return rel_value
+
+
+def get_quantity(offer, relation, market):
+    rel_version = relation.get("mpnQuantityV", 0)
+    offer_version = offer.get("mpnQuantityV", 0)
+
+    manual_rel_value = pydash.get(relation, [":manual", "quantity"])
+    auto_rel_value = pydash.get(relation, [":auto", "quantity"])
+    rel_value = pydash.get(relation, "quantity")
+    offer_value = pydash.get(offer, "quantity")
+
+    if not is_null_or_empty(pydash.get(manual_rel_value, "size.standard.max")):
+        return manual_rel_value
+    if not is_null_or_empty(pydash.get(auto_rel_value, "size.standard.max")):
+        return auto_rel_value
+
+    if is_null_or_empty(pydash.get(rel_value, "size.standard.max")):
+        return offer_value
+
+    if is_null_or_empty(pydash.get(offer_value, "size.standard.max")):
+        return rel_value
+
+    if offer_version > rel_version:
+        return offer_value
+    else:
+        return rel_value
+
+
+def get_ingredients(offer, relation, market):
+    rel_version = relation.get("mpnIngredientsV", 0)
+    offer_version = offer.get("mpnIngredientsV", 0)
+
+    manual_rel_value = pydash.get(relation, [":manual", "mpnIngredients"])
+    auto_rel_value = pydash.get(relation, [":auto", "mpnIngredients"])
+    rel_value = pydash.get(relation, "mpnIngredients")
+    offer_value = pydash.get(offer, "mpnIngredients")
+
+    if not is_null_or_empty(manual_rel_value):
+        return manual_rel_value
+    if not is_null_or_empty(auto_rel_value):
+        return auto_rel_value
+
+    if is_null_or_empty(rel_value):
+        return offer_value
+
+    if is_null_or_empty(offer_value):
+        return rel_value
+
+    if offer_version > rel_version:
+        return offer_value
+    else:
+        return rel_value
+
+
+def get_categories(offer, relation, market):
+    rel_version = relation.get("mpnCategoriesV", 0)
+    offer_version = offer.get("mpnCategoriesV", 0)
+
+    manual_rel_value = pydash.get(relation, [f"m:{market}", ":manual", "mpnCategories"])
+    auto_rel_value = pydash.get(relation, [f"m:{market}", ":auto", "mpnCategories"])
+    rel_value = pydash.get(relation, [f"m:{market}", "mpnCategories"])
+    offer_value = pydash.get(offer, [f"m:{market}", "mpnCategories"])
+
+    if not is_null_or_empty(manual_rel_value):
+        return manual_rel_value
+    if not is_null_or_empty(auto_rel_value):
+        return auto_rel_value
+
+    if is_null_or_empty(rel_value):
+        return offer_value
+
+    if is_null_or_empty(offer_value):
+        return rel_value
+
+    if offer_version > rel_version and len(offer_value) > len(rel_value):
+        return offer_value
+    else:
+        return rel_value
 
 
 def get_from_rel(rel: dict, key: str, market: str = None):

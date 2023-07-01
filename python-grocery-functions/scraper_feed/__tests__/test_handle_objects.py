@@ -116,7 +116,6 @@ class TestWithConfig(TestCase):
         self.assertIsNotNone(actual[0]["quantity"]["size"])
         self.assertIsNotNone(actual[0]["sku"])
         self.assertIsNotNone(actual[0]["gtins"]["ean"])
-        self.assertEqual(actual[0]["mpnCategories"][-1]["key"], "bananer_2")
 
     def test_kolonial_products(self):
         config = generate_handle_config(

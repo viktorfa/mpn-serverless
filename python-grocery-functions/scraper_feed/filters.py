@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Mapping, Iterable
 import pydash
 import logging
 from datetime import datetime, timedelta
@@ -8,7 +8,6 @@ from storage.db import get_collection
 from storage.models import mpn_offer_store_fields
 from parsing.ingredients_extraction import get_ingredients_data
 from parsing.nutrition_extraction import extract_nutritional_data
-from parsing.category_extraction import extract_categories
 from parsing.property_extraction import (
     extract_dimensions,
     extract_properties,
@@ -40,10 +39,15 @@ from scraper_feed.helpers import (
     remove_none_fields,
 )
 
-from amp_types.amp_product import (
-    MpnOffer,
-    OfferFilterConfig,
-)
+from amp_types.amp_product import MpnOffer, OfferFilterConfig, IngredientType
+
+
+mpn_categories_version = 1
+mpn_ingredients_version = 2
+mpn_nutrition_version = 1
+mpn_properties_version = 1
+mpn_stock_version = 1
+mpn_quantity_version = 1
 
 
 class MyTime(object):
@@ -125,7 +129,7 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
 def transform_product(
     offer: ScraperOffer,
     config: HandleConfig,
-    ingredients_data,
+    ingredients_data: Mapping[str, IngredientType],
 ) -> MpnOffer:
     time.set_time(config.get("scrape_time", datetime.utcnow()))
     result: MpnOffer = {}
@@ -135,8 +139,6 @@ def transform_product(
         result = transform_shopgun_product(offer, config)
     else:
         # Start here for everything not Shopgun offer.
-        result: MpnOffer = {}
-
         offer = transform_fields(offer, config["fieldMapping"])
 
         provenance_id = get_provenance_id(offer)
@@ -216,10 +218,13 @@ def transform_product(
             **parsed_explicit_quantity,
         }
         result["mpnStock"] = get_stock_status(offer)
-        result["categories"] = get_categories(
-            pydash.get(offer, "categories"),
-            config["categoriesLimits"],
-        )
+        if config["provenance"] in ["meny_api_spider"]:
+            result["categories"] = pydash.get(offer, "slugCategories", [])
+        else:
+            result["categories"] = get_categories(
+                pydash.get(offer, "categories"),
+                config["categoriesLimits"],
+            )
         result = {**result, **parsed_quantity}
     if result["validThrough"].timestamp() > time.time.timestamp():
         result["isRecent"] = True
@@ -241,8 +246,6 @@ def transform_product(
     if config["collection_name"] in ["groceryoffers"]:
         result["mpnIngredients"] = get_ingredients_data(offer, config, ingredients_data)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
-    if config["provenance"] == "meny_api_spider":
-        result["mpnCategories"] = extract_categories({**offer, **result}, config)
 
     result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)
@@ -262,6 +265,16 @@ def transform_product(
         ],
     )
 
+    final_result = {
+        **final_result,
+        "mpnCategoriesV": mpn_categories_version,
+        "mpnIngredientsV": mpn_ingredients_version,
+        "mpnNutritionV": mpn_nutrition_version,
+        "mpnPropertiesV": mpn_properties_version,
+        "mpnStockV": mpn_stock_version,
+        "mpnQuantityV": mpn_quantity_version,
+    }
+
     if config["ignore_none"]:
         # Some offers with 2 provenances such as Byggmax.no and Byggmax feed will have ignore quantity
         # on Byggmax feed
@@ -273,13 +286,13 @@ def transform_product(
 def transform_and_filter_offers(
     offers: List[ScraperOffer], config: HandleConfig
 ) -> List[MpnOffer]:
-    ingredients_data = {}
+    ingredients_data: Mapping[str, IngredientType] = {}
     if (
         config["collection_name"] in ["groceryoffers"]
         and len(config.get("extractIngredientsFields", [])) > 0
     ):
         ingredients_collection = get_collection("ingredients")
-        db_ingredients = ingredients_collection.find({})
+        db_ingredients: Iterable[IngredientType] = ingredients_collection.find({})
         for x in db_ingredients:
             ingredients_data[x["key"]] = x
 

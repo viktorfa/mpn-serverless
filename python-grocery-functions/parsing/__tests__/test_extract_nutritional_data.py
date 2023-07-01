@@ -262,3 +262,32 @@ class TestExtractNutrionalData(TestCase):
         actual = extract_nutritional_data(offer, config)
         self.assertEqual(actual["energy"]["unit"], "kcal")
         self.assertEqual(actual["energy"]["value"], 133)
+
+    def test_with_only_kcals(self):
+        offer = {
+            "satFats": "0",
+            "carbohydrates": 52,
+            "provenance": "europris",
+            "gtins": {"gtin13": "7028630000835"},
+            "canonical_url": "https://www.europris.no/p-melkesjokolade-300-g-hval-105964",
+            "siteCollection": "groceryoffers",
+            "pieces": {},
+            "validFrom": "2021-09-04T02:44:27.000Z",
+            "kcals": 558,
+            "price": 59.9,
+            "validThrough": "2021-09-14T06:44:27.000Z",
+            "mpnStock": "På nettlager",
+            "href": "https://www.europris.no/p-melkesjokolade-300-g-hval-105964",
+            "uri": "europris:product:105964",
+            "ahref": None,
+            "gtin": "7028630000835",
+            "properties": [],
+            "url_fingerprint": "210189beba4021b444723fecd0c6d9c660c538af",
+            "imageUrl": "https://images.europris.no/produkter/vw370/105964/Melkesjokoladejpg",
+            "salt": "0",
+            "fats": 0,
+            "sugars": "50",
+        }
+        config = {}
+        actual = extract_nutritional_data(offer, config)
+        self.assertEqual(actual["energyKcal"]["value"], 558)

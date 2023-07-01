@@ -66,3 +66,7 @@ def get_product_uri(provenance: str, _id: str) -> str:
 def get_difference_percentage(original: float, new: float) -> float:
     diff = new - original
     return (diff / original) * 100
+
+
+def is_null_or_empty(value):
+    return value == {} or value == [] or not value

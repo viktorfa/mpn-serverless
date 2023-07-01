@@ -1,3 +1,4 @@
+import pydash
 import logging
 
 from transform.offer import get_field_from_scraper_offer
@@ -73,4 +74,19 @@ def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
     if result.get("energy") and result.get("energy").get("unit") == "kj":
         result["energy"]["value"] = round(result["energy"]["value"] * 0.2390057)
         result["energy"]["unit"] = result["energy"]["unit"] = "kcal"
+    if pydash.get(result, "kcals.value") is not None:
+        result["energyKcal"] = {
+            "value": pydash.get(result, "kcals.value"),
+            "key": "energyKcal",
+        }
+    elif pydash.get(result, "kjs.value") is not None:
+        result["energyKcal"] = {
+            "value": pydash.get(result, "kjs.value") * 0.2390057,
+            "key": "energyKcal",
+        }
+    elif pydash.get(result, "energy.value") is not None:
+        result["energyKcal"] = {
+            "value": pydash.get(result, "energy.value"),
+            "key": "energyKcal",
+        }
     return result
