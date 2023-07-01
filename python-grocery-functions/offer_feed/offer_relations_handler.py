@@ -621,7 +621,7 @@ def get_categories(offer, relation, market):
     manual_rel_value = pydash.get(relation, [f"m:{market}", ":manual", "mpnCategories"])
     auto_rel_value = pydash.get(relation, [f"m:{market}", ":auto", "mpnCategories"])
     rel_value = pydash.get(relation, [f"m:{market}", "mpnCategories"])
-    offer_value = pydash.get(offer, [f"m:{market}", "mpnCategories"])
+    offer_value = pydash.get(offer, "mpnCategories")
 
     if not is_null_or_empty(manual_rel_value):
         return manual_rel_value
