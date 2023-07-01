@@ -147,26 +147,39 @@ export const getDealersForContext: Route<
 
 export const getByKey: Route<
   Response.Ok<MpnCategoryInTree> | Response.BadRequest<string>
-> = route.get("/:key").handler(async (request) => {
-  const categoriesCollection = await getCollection(mpnCategoriesCollectionName);
+> = route
+  .use(Parser.query(categoriesQueryParams))
+  .get("/:key")
+  .handler(async (request) => {
+    const categoriesCollection = await getCollection(
+      mpnCategoriesCollectionName,
+    );
 
-  const category = await categoriesCollection.findOne<MpnCategory>({
-    key: request.routeParams.key,
-  });
-  let parentObject = null;
-  if (category.parent) {
-    parentObject = await categoriesCollection.findOne<MpnCategory>({
-      key: category.parent,
-    });
-  }
-  const children = await categoriesCollection
-    .find<MpnCategory>({
+    const parentFilter: Filter<MpnCategory> = {};
+    const filter: Filter<MpnCategory> = { key: request.routeParams.key };
+    const childrenFilter: Filter<MpnCategory> = {
       parent: request.routeParams.key,
-    })
-    .toArray();
+    };
+    if (request.query.context) {
+      filter.context = request.query.context;
+      childrenFilter.context = request.query.context;
+      parentFilter.context = request.query.context;
+    }
+    const [category, children] = await Promise.all([
+      categoriesCollection.findOne<MpnCategory>(filter),
+      categoriesCollection.find<MpnCategory>(childrenFilter).toArray(),
+    ]);
 
-  return Response.ok({ ...category, children, parentObject });
-});
+    let parentObject = null;
+    if (category.parent) {
+      parentFilter.key = category.parent;
+      parentObject = await categoriesCollection.findOne<MpnCategory>(
+        parentFilter,
+      );
+    }
+
+    return Response.ok({ ...category, children, parentObject });
+  });
 
 const putDealerMappingBody = t.type({
   source: t.array(t.string),
