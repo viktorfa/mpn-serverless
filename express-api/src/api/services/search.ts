@@ -6,6 +6,7 @@ import { getNowDate } from "../utils/helpers";
 import APIError from "../utils/APIError";
 import { getCollection } from "@/config/mongo";
 import { get } from "lodash";
+import { ObjectId } from "mongodb";
 
 export type MongoSearchParams = {
   query: string;
@@ -545,7 +546,8 @@ export type MongoSearchParamsRelationsExtra = {
   sort?: { [key: string]: 1 | -1 };
   isPartner?: boolean;
   projection?: Record<string, number | boolean | Record<number, boolean>>;
-  offerUri: string;
+  offerUri?: string;
+  relationId?: string;
 };
 
 export const searchWithMongoRelations = async ({
@@ -1183,6 +1185,7 @@ export const searchWithMongoRelationsExtra = async ({
   isPartner = false,
   projection = defaultOfferProjection,
   offerUri,
+  relationId,
 }: MongoSearchParamsRelationsExtra): Promise<
   Omit<MpnMongoRelationsSearchResponse, "facets">
 > => {
@@ -1286,13 +1289,21 @@ export const searchWithMongoRelationsExtra = async ({
     },
   });
 
+  const relationsMatch = {};
+  if (offerUri) {
+    relationsMatch.offerSet = { $ne: offerUri };
+  }
+  if (relationId) {
+    relationsMatch._id = { $ne: new ObjectId(relationId) };
+  }
+
   const aggregationPipeline: Record<string, any>[] = [
     {
       $search: {
         ...operator,
       },
     },
-    { $match: { offerSet: { $ne: offerUri } } },
+    { $match: relationsMatch },
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
     {

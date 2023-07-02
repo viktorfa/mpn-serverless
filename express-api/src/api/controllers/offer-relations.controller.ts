@@ -1,3 +1,7 @@
+import {
+  MongoSearchParamsRelationsExtra,
+  searchWithMongoRelationsExtra,
+} from "./../services/search";
 import ApiError from "@/api/utils/APIError";
 import { getCollection, connectToMongo } from "@/config/mongo";
 import * as t from "io-ts";
@@ -16,6 +20,9 @@ import {
 import { ObjectId } from "mongodb";
 import { getMongoSafeUri } from "@/api/utils/helpers";
 import { intersection } from "lodash";
+import { defaultOfferProjection } from "../models/mpnOffer.model";
+import { getBoolean } from "./request-param-parsing";
+import { getLimitFromQueryParam } from "./typera-types";
 
 const addOfferRelationBody = t.type({
   uri: t.string,
@@ -301,4 +308,221 @@ export const removeOfferRelation: Route<
       );
       return Response.ok(dbResult);
     }
+  });
+
+const getByGtinParams = t.type({
+  market: t.string,
+  gtin: t.union([t.string, t.undefined]),
+});
+export const getByGtin: Route<
+  | Response.Ok<{ product: MpnOfferRelation }>
+  | Response.NotFound<string>
+  | Response.BadRequest<string>
+> = route
+  .get("/gtin/:gtin")
+  .use(Parser.query(getByGtinParams))
+  .handler(async (request) => {
+    const relationsCollection = await getCollection(
+      offerBiRelationsCollectionName,
+    );
+
+    const { market, gtin: queryGtin } = request.query;
+
+    const gtin = [queryGtin, request.routeParams.gtin].find((x) => !!x);
+
+    const relationResponse = (
+      await relationsCollection
+        .aggregate<MpnOfferRelation>([
+          {
+            $match: {
+              gtins: gtin,
+              "gtins.0": { $exists: 1 },
+              relationType: OfferRelation.identical,
+            },
+          },
+          {
+            $lookup: {
+              from: "mpnoffers_with_context",
+              localField: "offerSet",
+              foreignField: "uri",
+              as: "offers",
+              pipeline: [
+                {
+                  $match: {
+                    market,
+                  },
+                },
+                {
+                  $project: defaultOfferProjection,
+                },
+              ],
+            },
+          },
+        ])
+        .toArray()
+    )[0];
+
+    if (!relationResponse) {
+      return Response.notFound(`Product with gtin ${gtin} not found`);
+    }
+
+    let marketData = relationResponse[`m:${market}`];
+
+    if (!marketData) {
+      const marketCandidates = Object.entries(relationResponse).filter(
+        ([key, value]) => key.startsWith("m:") && value,
+      );
+      marketData = marketCandidates[0][1];
+    }
+
+    relationResponse.title = marketData.title;
+    relationResponse.subtitle = marketData.subtitle;
+    relationResponse.market = marketData.market;
+
+    return Response.ok({ product: relationResponse });
+  });
+
+const getByIdParams = t.type({
+  market: t.string,
+  allMarkets: t.union([t.string, t.undefined]),
+});
+export const getById: Route<
+  | Response.Ok<{ product: MpnOfferRelation }>
+  | Response.NotFound<string>
+  | Response.BadRequest<string>
+> = route
+  .get("/:id")
+  .use(Parser.query(getByIdParams))
+  .handler(async (request) => {
+    const relationsCollection = await getCollection(
+      offerBiRelationsCollectionName,
+    );
+
+    const { market, allMarkets } = request.query;
+    const id = request.routeParams.id;
+
+    const productMatch = getBoolean(allMarkets) ? {} : { market };
+
+    const relationResponse = (
+      await relationsCollection
+        .aggregate<MpnOfferRelation>([
+          {
+            $match: {
+              _id: new ObjectId(id),
+            },
+          },
+          {
+            $lookup: {
+              from: "mpnoffers_with_context",
+              localField: "offerSet",
+              foreignField: "uri",
+              as: "offers",
+              pipeline: [
+                {
+                  $match: productMatch,
+                },
+                {
+                  $project: defaultOfferProjection,
+                },
+              ],
+            },
+          },
+        ])
+        .toArray()
+    )[0];
+
+    if (!relationResponse) {
+      return Response.notFound(`Product with gtin ${gtin} not found`);
+    }
+
+    let marketData = relationResponse[`m:${market}`];
+
+    if (!marketData) {
+      const marketCandidates = Object.entries(relationResponse).filter(
+        ([key, value]) => key.startsWith("m:") && value,
+      );
+      marketData = marketCandidates[0][1];
+    } else {
+      relationResponse.priceMin = marketData.priceMin;
+      relationResponse.priceMax = marketData.priceMax;
+      relationResponse.valueMin = marketData.valueMin;
+      relationResponse.valueMax = marketData.valueMax;
+    }
+
+    const localOffers = relationResponse.offers.filter(
+      (x) => x.market === market,
+    );
+    const foreignOffers = relationResponse.offers.filter(
+      (x) => x.market !== market,
+    );
+
+    relationResponse.offers = localOffers;
+    relationResponse.foreignOffers = foreignOffers;
+
+    relationResponse.title = marketData.title;
+    relationResponse.market = marketData.market;
+
+    return Response.ok({ product: relationResponse });
+  });
+
+const extraParams = t.type({
+  market: t.string,
+  limit: t.union([t.string, t.undefined]),
+  productCollection: t.union([t.string, t.undefined]),
+});
+export const extraRelations: Route<
+  | Response.Ok<Omit<MpnMongoRelationsSearchResponse, "facets">>
+  | Response.BadRequest<string>
+  | Response.NotFound<string>
+> = route
+  .get("/extra/:id")
+  .use(Parser.query(extraParams))
+  .handler(async (request) => {
+    const { limit, productCollection, market } = request.query;
+    let _limit = getLimitFromQueryParam(limit, 5);
+
+    const relationsCollection = await getCollection(
+      offerBiRelationsCollectionName,
+    );
+
+    const relationResponse = await relationsCollection.findOne({
+      _id: new ObjectId(request.routeParams.id),
+    });
+    if (!relationResponse) {
+      return Response.notFound(
+        `Could not find relation with id ${request.routeParams.id}`,
+      );
+    }
+
+    let marketData = relationResponse[`m:${market}`];
+
+    if (!marketData) {
+      const marketCandidates = Object.entries(relationResponse).filter(
+        ([key, value]) => key.startsWith("m:") && value,
+      );
+      marketData = marketCandidates[0][1];
+    }
+
+    const title = marketData.title;
+
+    const searchParams: MongoSearchParamsRelationsExtra = {
+      title: title.substring(0, 127),
+      market: market,
+      limit: _limit,
+      relationId: request.routeParams.id,
+    };
+
+    if (productCollection) {
+      searchParams.productCollections = [productCollection];
+    }
+    if (marketData.mpnCategories?.length > 0) {
+      searchParams.categories = marketData.mpnCategories.map((x) => x.key);
+    }
+    if (relationResponse.brandKey) {
+      searchParams.brands = [relationResponse.brandKey];
+    }
+
+    const searchResults = await searchWithMongoRelationsExtra(searchParams);
+
+    return Response.ok(searchResults);
   });
