@@ -12,6 +12,7 @@ from util.logging import configure_lambda_logging
 from bson import ObjectId
 from scraper_feed.helpers import is_valid_ean, is_valid_nobb
 from util.helpers import is_null_or_empty
+from storage.db import chunked_iterable
 
 
 configure_lambda_logging()
@@ -104,7 +105,10 @@ def handle_offer_relations(offer_filter, market):
     result = []
     logging.info(f"Finish setup {int((time.perf_counter_ns() - timer_start) / 1e6)} ms")
     timer_start = time.perf_counter_ns()
+    counter = 1
     for chunk in chunks:
+        logging.info(f"Matching chunk number {counter} of {CHUNK_SIZE}")
+        counter += 1
         chunk_list = list(chunk)
         for x in chunk_list:
             uris.append(x["uri"])
@@ -114,14 +118,21 @@ def handle_offer_relations(offer_filter, market):
         f"Finish match offers {int((time.perf_counter_ns() - timer_start) / 1e6)} ms"
     )
     timer_start = time.perf_counter_ns()
-    update_view_response = update_offer_relations_view(
-        {
-            "offerSet": {"$in": uris},
-            "relationType": "identical",
-            "isMerged": {"$ne": True},
-        },
-        market,
-    )
+
+    update_view_responses = []
+
+    logging.info(f"Saving {len(uris)} offers")
+    for uri_chunk in chunked_iterable(uris, 5000):
+        logging.info(f"Updating view with chunk of 5000")
+        update_view_response = update_offer_relations_view(
+            {
+                "offerSet": {"$in": uri_chunk},
+                "relationType": "identical",
+                "isMerged": {"$ne": True},
+            },
+            market,
+        )
+        update_view_responses.append(update_view_response)
 
     logging.info(
         f"Finish update view {int((time.perf_counter_ns() - timer_start) / 1e6)} ms"
@@ -129,7 +140,7 @@ def handle_offer_relations(offer_filter, market):
     timer_start = time.perf_counter_ns()
     # market_rel_collection = get_collection(f"relations_with_offers_{market}")
 
-    return json.dumps(update_view_response, default=str)
+    return json.dumps(update_view_responses, default=str)
 
 
 def update_offer_relations_view(relations_filter: dict, market: str):
@@ -140,6 +151,7 @@ def update_offer_relations_view(relations_filter: dict, market: str):
         "relationType": "identical",
         "isMerged": {"$ne": True},
     }
+
     update_view_response = rel_collection.aggregate(
         [
             {"$match": filter},
