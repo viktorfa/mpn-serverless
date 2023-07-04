@@ -82,14 +82,17 @@ class ExtractUnit(TestCase):
     def test_with_suffix(self):
         string = "hgKrok"
         expected = dict(
-            symbol="hg", type=unit_types.QUANTITY, si=dict(symbol="kg", factor=0.01)
+            symbol="hg", type=unit_types.QUANTITY, si=dict(symbol="kg", factor=0.1)
         )
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
     def test_pieces(self):
         string = "stk"
-        expected = dict(symbol="stk", type=unit_types.PIECE,)
+        expected = dict(
+            symbol="stk",
+            type=unit_types.PIECE,
+        )
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
@@ -111,7 +114,10 @@ class ExtractUnit(TestCase):
 
     def test_value_with_pieces(self):
         string = "krboks"
-        expected = dict(symbol="boks", type=unit_types.PIECE_VALUE,)
+        expected = dict(
+            symbol="boks",
+            type=unit_types.PIECE_VALUE,
+        )
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
@@ -130,13 +136,19 @@ class ExtractUnit(TestCase):
 
     def test_with_multiplier(self):
         string = "x"
-        expected = dict(symbol="x", type=unit_types.MULTIPLIER,)
+        expected = dict(
+            symbol="x",
+            type=unit_types.MULTIPLIER,
+        )
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
     def test_with_ambiguous_unit(self):
         string = "m"
-        expected = dict(symbol="m", type=unit_types.QUANTITY,)
+        expected = dict(
+            symbol="m",
+            type=unit_types.QUANTITY,
+        )
         actual = extract_unit(string)
         self.assertDictContainsSubset(expected, actual)
 
