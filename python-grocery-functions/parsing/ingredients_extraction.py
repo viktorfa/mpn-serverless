@@ -18,6 +18,16 @@ def extract_e_number(string: str):
         return ""
 
 
+def sort_db_ingredient_key(ingredient: IngredientType):
+    if ingredient.get("patterns") and len(ingredient["patterns"]) > 0:
+        longest_pattern = sorted(
+            ingredient["patterns"], key=lambda x: len(x), reverse=True
+        )[0]
+        return -len(longest_pattern)
+    else:
+        return -len(ingredient["key"])
+
+
 def extract_individual_ingredients(raw_ingredients: str) -> List[str]:
     return raw_ingredients.split(", ")
 

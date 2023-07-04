@@ -6,7 +6,7 @@ from slugify import slugify
 
 from storage.db import get_collection
 from storage.models import mpn_offer_store_fields
-from parsing.ingredients_extraction import get_ingredients_data
+from parsing.ingredients_extraction import get_ingredients_data, sort_db_ingredient_key
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
     extract_dimensions,
@@ -43,11 +43,11 @@ from amp_types.amp_product import MpnOffer, OfferFilterConfig, IngredientType
 
 
 mpn_categories_version = 1
-mpn_ingredients_version = 2
-mpn_nutrition_version = 1
+mpn_ingredients_version = 3
+mpn_nutrition_version = 2
 mpn_properties_version = 1
 mpn_stock_version = 1
-mpn_quantity_version = 1
+mpn_quantity_version = 2
 
 
 class MyTime(object):
@@ -293,7 +293,7 @@ def transform_and_filter_offers(
     ):
         ingredients_collection = get_collection("ingredients")
         db_ingredients: Iterable[IngredientType] = ingredients_collection.find({})
-        for x in db_ingredients:
+        for x in sorted(db_ingredients, key=sort_db_ingredient_key):
             ingredients_data[x["key"]] = x
 
     transformed_offers = (

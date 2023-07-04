@@ -237,6 +237,13 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
+                ["200gram"],
+                [
+                    (lambda x: pydash.get(x, "quantity.size.amount.min"), 200),
+                    (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "g"),
+                ],
+            ),
+            (
                 ["175 g. Pr kg 285,14"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), 285.14),

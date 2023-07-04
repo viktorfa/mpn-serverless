@@ -18,6 +18,8 @@ macro_names = [
     "starch",
     "sugars",
     "energy",
+    "energyKcal",
+    "energyKj",
     "kcals",
     "kjs",
 ]

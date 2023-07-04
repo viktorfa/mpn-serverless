@@ -7,6 +7,7 @@ from parsing.ingredients_extraction import (
     get_ingredients_data,
     extract_individual_ingredients,
     get_extracted_ingredients,
+    sort_db_ingredient_key,
 )
 from unittest import TestCase
 
@@ -36,7 +37,7 @@ class TestExtractIngredientsMethods(TestCase):
         ingredients_collection = get_collection("ingredients")
         db_ingredients = ingredients_collection.find({})
 
-        for ingredient in db_ingredients:
+        for ingredient in sorted(db_ingredients, key=sort_db_ingredient_key):
             self.ingredients_data[ingredient["key"]] = ingredient
 
     def test_get_extracted_ingredients(self):

@@ -17,7 +17,7 @@ from util.errors import NoHandleConfigError
 OVERWRITE_EDIT_LIMIT_DAYS = 365
 
 
-def chunked_iterable(iterable: Iterable, size):
+def chunked_iterable(iterable: Iterable, size: int):
     it = iter(iterable)
     while True:
         chunk = tuple(itertools.islice(it, size))
