@@ -274,7 +274,7 @@ export const find: Route<
 });
 export const findV2: Route<
   | Response.Ok<{
-      offer: MpnOfferRelation;
+      offer: MpnOffer;
       identical: MpnOfferRelation[];
       interchangeable: MpnOfferRelation[];
     }>
@@ -389,6 +389,7 @@ export const findV2: Route<
       const interchangeable = offerRelation.interchangeable?.offers || [];
 
       const marketData = get(offerRelation, ["identical", `m:${market}`]);
+      const relQuantity = get(offerRelation, ["identical", "quantity"]);
       const relCategories = get(marketData, ["mpnCategories"]);
       const relNutrition = get(offerRelation, ["identical", "mpnNutrition"]);
       const relIngredients = get(offerRelation, [
@@ -397,11 +398,32 @@ export const findV2: Route<
       ]);
       const relProperties = get(offerRelation, ["identical", "mpnProperties"]);
 
+      offerRelation.quantity = relQuantity;
       offerRelation.mpnCategories = relCategories;
       offerRelation.mpnNutrition = relNutrition;
       offerRelation.mpnIngredients = relIngredients;
       offerRelation.mpnProperties = relProperties;
       offerRelation.relId = offerRelation.identical?._id;
+
+      if (relQuantity?.size?.standard?.min && offerRelation.pricing?.price) {
+        offerRelation.value = {
+          size: {
+            amount: {
+              min:
+                offerRelation.pricing.price / relQuantity?.size?.standard?.min,
+              max:
+                offerRelation.pricing.price / relQuantity?.size?.standard?.max,
+            },
+            standard: {
+              min:
+                offerRelation.pricing.price / relQuantity?.size?.standard?.min,
+              max:
+                offerRelation.pricing.price / relQuantity?.size?.standard?.max,
+            },
+            unit: relQuantity.size.unit,
+          },
+        };
+      }
 
       delete offerRelation.identical;
       delete offerRelation.interchangeable;

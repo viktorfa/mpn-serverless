@@ -3,7 +3,6 @@ import {
   defaultOfferProjection,
 } from "@/api/models/mpnOffer.model";
 import { getNowDate } from "../utils/helpers";
-import APIError from "../utils/APIError";
 import { getCollection } from "@/config/mongo";
 import { get } from "lodash";
 import { ObjectId } from "mongodb";
@@ -43,14 +42,7 @@ export const searchWithMongo = async ({
   includeOutdated = false,
   projection = defaultOfferProjection,
 }: MongoSearchParams): Promise<MpnMongoSearchResponse> => {
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
+  const _query = (query || "").trim().substring(0, 128);
   const now = getNowDate();
   const _limit = Math.min(limit, 1000);
   const offerCollection = await getCollection(`mpnoffers_${market}`);
@@ -119,24 +111,24 @@ export const searchWithMongo = async ({
     });
   }
 
-  if (query && !sort) {
+  if (_query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
-        query,
+        query: _query,
       },
     });
     operator.compound.should.push({
       text: {
         path: ["title"],
-        query,
+        query: _query,
         score: { boost: { value: 3 } },
       },
     });
     operator.compound.should.push({
       text: {
         path: ["subtitle", "brand", "categories", "mpnCategories"],
-        query,
+        query: _query,
         score: { boost: { value: 1.5 } },
       },
     });
@@ -160,8 +152,8 @@ export const searchWithMongo = async ({
       });
     }
     // Attempt to make search more restrictive (AND) after selecting sort
-  } else if (query && sort) {
-    query
+  } else if (_query && sort) {
+    _query
       .split(" ")
       .map((x) => x.trim())
       .forEach((x) => {
@@ -292,14 +284,7 @@ export const searchWithMongoNoFacets = async ({
   includeOutdated = false,
   projection = defaultOfferProjection,
 }: MongoSearchParams): Promise<Omit<MpnMongoSearchResponse, "facets">> => {
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
+  const _query = (query || "").trim().substring(0, 128);
   const now = getNowDate();
   const offerCollection = await getCollection(`mpnoffers_${market}`);
   const _limit = Math.min(limit, 1000);
@@ -361,24 +346,24 @@ export const searchWithMongoNoFacets = async ({
     });
   }
 
-  if (query && !sort) {
+  if (_query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
-        query,
+        query: _query,
       },
     });
     operator.compound.should.push({
       text: {
         path: ["title"],
-        query,
+        query: _query,
         score: { boost: { value: 3 } },
       },
     });
     operator.compound.should.push({
       text: {
         path: ["subtitle", "brand", "categories", "mpnCategories"],
-        query,
+        query: _query,
         score: { boost: { value: 1.5 } },
       },
     });
@@ -402,8 +387,8 @@ export const searchWithMongoNoFacets = async ({
       });
     }
     // Attempt to make search more restrictive (AND) after selecting sort
-  } else if (query && sort) {
-    query
+  } else if (_query && sort) {
+    _query
       .split(" ")
       .map((x) => x.trim())
       .forEach((x) => {
@@ -573,14 +558,7 @@ export const searchWithMongoRelations = async ({
   includeOutdated = false,
   projection = defaultOfferProjection,
 }: MongoSearchParamsRelations): Promise<MpnMongoRelationsSearchResponse> => {
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
+  const _query = (query || "").trim().substring(0, 128);
   const now = getNowDate();
   const _limit = Math.min(limit, 64);
 
@@ -749,34 +727,34 @@ export const searchWithMongoRelations = async ({
     });
     operator.compound.should.push({
       moreLikeThis: {
-        like: [{ title: query }],
+        like: [{ title: _query }],
       },
     });
-  } else if (query && !sort) {
+  } else if (_query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
-        query,
+        query: _query,
       },
     });
     operator.compound.should.push({
       text: {
         path: ["title"],
-        query,
+        query: _query,
         score: { boost: { value: 3 } },
       },
     });
     operator.compound.should.push({
       text: {
         path: ["subtitle", "brand", "offers.categories", "mpnCategories"],
-        query,
+        query: _query,
         score: { boost: { value: 1.5 } },
       },
     });
 
     // Attempt to make search more restrictive (AND) after selecting sort
-  } else if (query && sort) {
-    query
+  } else if (_query && sort) {
+    _query
       .split(" ")
       .map((x) => x.trim())
       .forEach((x) => {
@@ -929,14 +907,7 @@ export const searchWithMongoRelationsNoFacets = async ({
 }: MongoSearchParamsRelations): Promise<
   Omit<MpnMongoRelationsSearchResponse, "facets">
 > => {
-  if (query.length > 127) {
-    const message = `Query ${query} is too long (${query.length} characters). Max is 128.`;
-    console.error(message);
-    throw new APIError({
-      status: 500,
-      message,
-    });
-  }
+  const _query = (query || "").trim().substring(0, 128);
   const now = getNowDate();
   const _limit = Math.min(limit, 64);
 
@@ -1020,34 +991,34 @@ export const searchWithMongoRelationsNoFacets = async ({
     });
     operator.compound.should.push({
       moreLikeThis: {
-        like: [{ title: query }],
+        like: [{ title: _query }],
       },
     });
-  } else if (query && !sort) {
+  } else if (_query && !sort) {
     operator.compound.must.push({
       text: {
         path: ["title", "subtitle", "brand"],
-        query,
+        query: _query,
       },
     });
     operator.compound.should.push({
       text: {
         path: ["title"],
-        query,
+        query: _query,
         score: { boost: { value: 3 } },
       },
     });
     operator.compound.should.push({
       text: {
         path: ["subtitle", "brand", "offers.categories", "mpnCategories"],
-        query,
+        query: _query,
         score: { boost: { value: 1.5 } },
       },
     });
 
     // Attempt to make search more restrictive (AND) after selecting sort
-  } else if (query && sort) {
-    query
+  } else if (_query && sort) {
+    _query
       .split(" ")
       .map((x) => x.trim())
       .forEach((x) => {

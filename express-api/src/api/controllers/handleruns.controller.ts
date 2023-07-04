@@ -15,24 +15,10 @@ export const getGrouped: Route<Response.Ok<any> | Response.BadRequest<string>> =
       const collection = await getCollection(handlerunsCollectionName);
 
       const handleruns = await collection
-        .aggregate(
-          [
-            {
-              $project: {
-                example_items: 0,
-              },
-            },
-            {
-              $sort: {
-                updatedAt: -1,
-              },
-            },
-            {
-              $limit: _limit,
-            },
-          ],
-          { allowDiskUse: true },
-        )
+        .find({})
+        .project({ example_items: 0 })
+        .sort({ updatedAt: -1 })
+        .limit(_limit)
         .toArray();
 
       const result = groupBy(handleruns, "provenance");
