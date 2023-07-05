@@ -113,7 +113,7 @@ def add_vetduat_products():
         if is_valid_ean(product["gtin"]):
             gtin_key = f"ean:{product['gtin']}"
         else:
-            print(f"WARN invalid ean {product['gtin']}")
+            print(f"WARN invalid ean {product['gtin']} {product['fellesProduktnavn']}")
             continue
         result = {}
         mpn_ingredients = get_ingredients_data(
@@ -176,12 +176,13 @@ def add_vetduat_products():
             UpdateOne(
                 {
                     "gtins": gtin_key,
-                    "isMerged": False,
+                    "isMerged": {"$ne": True},
                     "relationType": "identical",
                     "gtins.0": {"$exists": 1},
                 },
                 {
                     "$setOnInsert": {
+                        "isMerged": False,
                         "createdAt": now,
                         "provenance": "vetduat",
                         "gtins": [gtin_key],

@@ -29,9 +29,30 @@ def transform_key(key: str) -> str:
 
 
 def is_valid_ean(ean: str) -> bool:
-    return (
-        len(ean) == 13 and has_valid_check_digit(ean) and not ean.startswith("000000")
-    )
+    if not type(ean) is str:
+        return False
+    if len(ean) != 13:
+        return False
+    if not has_valid_check_digit(ean):
+        return False
+    if ean.startswith("000000"):
+        return False
+    if re.match(r"^02[0-9]", ean):
+        # 020-029 are for internal use and not globally unique
+        return False
+    return True
+
+
+def is_valid_gtin12(gtin12: str) -> bool:
+    if not type(gtin12) is str:
+        return False
+    if len(gtin12) != 12:
+        return False
+    if not has_valid_check_digit(gtin12):
+        return False
+    if gtin12.startswith("000000"):
+        return False
+    return True
 
 
 def is_valid_nobb(nobb: str) -> bool:
@@ -51,7 +72,7 @@ def get_gtins(offer: ScraperOffer) -> dict:
             result["nobb"] = v
         elif k == "gtin8" and len(v) == 8 and has_valid_check_digit(v):
             result["gtin8"] = v
-        elif k == "gtin12" and len(v) == 12 and has_valid_check_digit(v):
+        elif k == "gtin12" and len(v) == 12 and is_valid_gtin12(v):
             result["gtin12"] = v
         elif k in ["ean", "gtin13"] and is_valid_ean(v):
             result["ean"] = v

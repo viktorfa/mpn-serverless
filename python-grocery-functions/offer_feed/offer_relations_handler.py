@@ -207,6 +207,7 @@ def update_offer_relations_view(relations_filter: dict, market: str):
                     "priceMax": {"$max": "$offers.pricing.price"},
                     "valueMin": {"$min": "$offers.value"},
                     "valueMax": {"$max": "$offers.value"},
+                    "validThrough": {"$max": "$offers.validThrough"},
                     "pageviews": {"$sum": "$offers.pageviews"},
                     "title": f"$m:{market}.title",
                     "subtitle": f"$m:{market}.subtitle",
@@ -418,6 +419,7 @@ def handle_offer_relations_chunk(offers: Iterable[MpnOffer], market):
                     {
                         "$setOnInsert": {
                             "relationType": "identical",
+                            "isMerged": False,
                             "createdAt": now,
                             "updatedAt": now,
                             "offerSet": [offer["uri"]],
