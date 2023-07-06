@@ -223,7 +223,7 @@ export const unmergeIdenticalRelations: Route<
           );
           await offerBiRelationsCollection.updateMany(
             { _id: sourceOids },
-            { $set: { isMerged: null, mergedTo: null } },
+            { $set: { isMerged: false, mergedTo: null } },
             { session },
           );
         });

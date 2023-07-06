@@ -216,7 +216,7 @@ export const removeBiRelationalOffer = async (
           updateOne: {
             filter: { _id: new ObjectId(x._id) },
             update: {
-              $set: { mergedTo: null, isMerged: null },
+              $set: { mergedTo: null, isMerged: false },
             },
           },
         });
