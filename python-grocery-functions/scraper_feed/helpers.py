@@ -37,6 +37,8 @@ def is_valid_ean(ean: str) -> bool:
         return False
     if ean.startswith("000000"):
         return False
+    if ean.startswith("2"):  # 2 prefix reserved for internal use
+        return False
     if re.match(r"^02[0-9]", ean):
         # 020-029 are for internal use and not globally unique
         return False
