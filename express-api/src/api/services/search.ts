@@ -254,7 +254,9 @@ export const searchWithMongo = async ({
   });
 
   result.items.forEach((x) => {
-    x.dealerObject = dealerMap[x.dealer] || { key: x.dealer };
+    x.dealerObject = dealerMap[x.dealerKey] || {
+      key: x.dealerKey,
+    };
   });
   result.facets.dealersFacet.buckets = result.facets.dealersFacet.buckets.map(
     (x) => {
@@ -484,7 +486,9 @@ export const searchWithMongoNoFacets = async ({
     dealerMap[x.key] = x;
   });
   result.items = result.items.map((x) => {
-    x.dealerObject = dealerMap[x.dealer] || { key: x.dealer };
+    x.dealerObject = dealerMap[x.dealerKey] || {
+      key: x.dealerKey,
+    };
     return x;
   });
 
