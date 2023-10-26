@@ -1,5 +1,5 @@
 import { getCollection } from "@/config/mongo";
-import { $fetch } from "ohmyfetch";
+import { ofetch } from "ofetch";
 import { shuffle } from "lodash";
 
 const adTractionChannels = [
@@ -71,7 +71,7 @@ export const getAdTractionCampaigns = async ({
     market: market.toUpperCase(),
     channelId: adTractionChannel.channelId,
   };
-  let campaigns: AdTractionCampaign[] = await $fetch(
+  let campaigns: AdTractionCampaign[] = await ofetch(
     "https://api.adtraction.com/v2/partner/offers/",
     {
       method: "POST",

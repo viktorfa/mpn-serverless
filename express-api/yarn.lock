@@ -4289,10 +4289,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"destr@npm:^1.2.0":
-  version: 1.2.2
-  resolution: "destr@npm:1.2.2"
-  checksum: 3906b49513a64d8442dacb8b798c59d66257ded4ccd2ef1d99b58644d4aa6b30ca61f9a9823d3dcbc78b4db812596e53e85e499f39a498b3b165a045b5228b2b
+"destr@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "destr@npm:2.0.0"
+  checksum: 5439cfc8e4b207a4c77cce89b3490dcb68b8cbea1ea5171958b89ae1a814a8f988e54e259d9dae8ebee64cfc9d658497e96d0a8905b2d243cf49bda36e578850
   languageName: node
   linkType: hard
 
@@ -7563,10 +7563,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch-native@npm:^0.1.8":
-  version: 0.1.8
-  resolution: "node-fetch-native@npm:0.1.8"
-  checksum: 1cea29dc30e9b570b5510656f41050e7d2df70acc41937911d4374c404ac35b4592d6b6959a81f336f00f2d74b321d039b80d8a1b62eaaa395747733bc31c799
+"node-fetch-native@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "node-fetch-native@npm:1.2.0"
+  checksum: f18d775523fc25b9fbec05a1da99cbf40214045bcaca82c8fd949b99148890c3cead4ab1764e26a92af600d14884d846481bcebf82d56815210624f836051a10
   languageName: node
   linkType: hard
 
@@ -7761,15 +7761,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ohmyfetch@npm:^0.4.21":
-  version: 0.4.21
-  resolution: "ohmyfetch@npm:0.4.21"
+"ofetch@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "ofetch@npm:1.1.1"
   dependencies:
-    destr: ^1.2.0
-    node-fetch-native: ^0.1.8
-    ufo: ^0.8.6
-    undici: ^5.12.0
-  checksum: 28bc6dc507de37d2e818dc48a768716b24ef0d00830ea810f5d3d19e36f93d49281e91fe6a7b323555097fe0079b47c3bff05d736ea30445c3995dd5db43317b
+    destr: ^2.0.0
+    node-fetch-native: ^1.2.0
+    ufo: ^1.1.2
+  checksum: 93d3e10f1ebcc0f1da69ee9cfd38b2f8818ce849ec3b6bf803351a6175adf6a5565cb130b7dcabd3a639bfe27589f5f84ac0ee4fd294855567d879a0e1f38484
   languageName: node
   linkType: hard
 
@@ -8584,7 +8583,7 @@ __metadata:
     mongodb: ^5.6.0
     morgan: ^1.10.0
     nanoid: ^3.3.6
-    ohmyfetch: ^0.4.21
+    ofetch: ^1.1.1
     serverless: ^3.32.2
     serverless-esbuild: ^1.45.1
     serverless-http: ^3.2.0
@@ -9728,10 +9727,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ufo@npm:^0.8.6":
-  version: 0.8.6
-  resolution: "ufo@npm:0.8.6"
-  checksum: 5d483576230c7bfa2c9c9e5d864995e18d6c08ee3955c2237cc1a0d4b35a52991a0f5d26fe8cbf11952109a925a88dc14d973e0d14159b5b96b0fe7393a52899
+"ufo@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "ufo@npm:1.1.2"
+  checksum: 83c940a6a23b6d4fc0cd116265bb5dcf88ab34a408ad9196e413270ca607a4781c09b547dc518f43caee128a096f20fe80b5a0e62b4bcc0a868619896106d048
   languageName: node
   linkType: hard
 
@@ -9757,7 +9756,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^5.12.0, undici@npm:^5.22.1":
+"undici@npm:^5.22.1":
   version: 5.22.1
   resolution: "undici@npm:5.22.1"
   dependencies:

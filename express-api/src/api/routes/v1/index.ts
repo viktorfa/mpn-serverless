@@ -12,6 +12,7 @@ import promotionsRoute from "@/api/routes/v1/promotions.route";
 import customOffersRoute from "@/api/routes/v1/custom-offers.route";
 import productGameRoute from "@/api/routes/v1/product-game.route";
 import partnerRoutes from "@/api/routes/v1/partner.route";
+import affiWebhooks from "@/api/routes/v1/affi-webhooks.route";
 
 const router = express.Router();
 
@@ -34,5 +35,6 @@ router.use("/handleruns", handlerunsRoute);
 router.use("/plakater", promotionsRoute);
 router.use("/product-game", productGameRoute);
 router.use("/partners", partnerRoutes);
+router.use("/affi-webhooks", affiWebhooks);
 
 export default router;
