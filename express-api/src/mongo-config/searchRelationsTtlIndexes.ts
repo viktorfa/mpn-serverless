@@ -1,4 +1,5 @@
 import { getCollection } from "../config/mongo";
+
 const offersWithRelationsCollections = [
   "relations_with_offers_au",
   "relations_with_offers_de",
@@ -32,7 +33,22 @@ const createUpdatedAtTtlIndexes = async () => {
   return result;
 };
 
-createUpdatedAtTtlIndexes()
+const createValidThroughTtlIndexes = async () => {
+  const promises = [];
+  for (const collectionName of offersWithRelationsCollections) {
+    const collection = await getCollection(collectionName);
+    promises.push(
+      collection.createIndex(
+        { validThrough: 1 },
+        { expireAfterSeconds: 1, name: "validThrough_1_ttl", sparse: true },
+      ),
+    );
+  }
+  const result = await Promise.all(promises);
+  return result;
+};
+
+createValidThroughTtlIndexes()
   .then((indexes) => {
     console.log(indexes);
     process.exit(0);

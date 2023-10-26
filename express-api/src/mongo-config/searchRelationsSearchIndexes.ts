@@ -30,8 +30,41 @@ const searchIndexMappings = {
       },
       type: "document",
     },
+    mpnIngredients: {
+      fields: {
+        processedScore: {
+          representation: "int64",
+          type: "number",
+        },
+      },
+      type: "document",
+    },
     mpnNutrition: {
       fields: {
+        carbohydrates: {
+          fields: {
+            value: {
+              type: "number",
+            },
+          },
+          type: "document",
+        },
+        energyKcal: {
+          fields: {
+            value: {
+              type: "number",
+            },
+          },
+          type: "document",
+        },
+        fats: {
+          fields: {
+            value: {
+              type: "number",
+            },
+          },
+          type: "document",
+        },
         proteins: {
           fields: {
             value: {
@@ -58,6 +91,9 @@ const searchIndexMappings = {
             type: "stringFacet",
           },
         ],
+        isPartner: {
+          type: "boolean",
+        },
         siteCollection: {
           analyzer: "lucene.keyword",
           indexOptions: "docs",
