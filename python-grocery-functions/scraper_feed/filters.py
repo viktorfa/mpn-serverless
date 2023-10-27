@@ -151,10 +151,15 @@ def transform_product(
 
         result["uri"] = get_product_uri(namespace, provenance_id)
         result["pricing"] = get_product_pricing({**offer, **result})
+
+        blocked_dealers = ("jemogfix_dk",)
         try:
             result["validThrough"] = json_time_to_datetime(offer["validThrough"])
         except Exception:
-            result["validThrough"] = time.ten_days_ahead
+            if namespace in blocked_dealers:
+                result["validThrough"] = time.time
+            else:
+                result["validThrough"] = time.ten_days_ahead
         try:
             result["validFrom"] = json_time_to_datetime(offer["validFrom"])
         except Exception:
