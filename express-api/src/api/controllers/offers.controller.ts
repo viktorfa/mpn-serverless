@@ -39,6 +39,7 @@ import {
   getPricingHistoryV2,
 } from "../services/pricing-history";
 import { addDays } from "date-fns";
+import { getDealersForMarket } from "../utils/dealers";
 
 const offersQueryParams = t.type({
   productCollection: t.string,
@@ -637,7 +638,7 @@ export const offersWithPriceDifference: Route<
 
     const sortDirection = direction === "desc" ? -1 : 1;
     const categoriesArray = categories.split(",").filter((x) => !!x);
-    const dealersArray = dealers.split(",").filter((x) => !!x);
+    let dealersArray = dealers.split(",").filter((x) => !!x);
 
     let differenceField = "difference7DaysMean";
     let differencePercentageField = "difference7DaysMeanPercentage";
@@ -664,6 +665,14 @@ export const offersWithPriceDifference: Route<
         break;
     }
 
+    if (dealersArray.length === 0) {
+      // Only use the most relevant dealers for some markets
+      dealersArray = getDealersForMarket({
+        market: request.query.market,
+        productCollection: request.query.productCollection,
+      });
+    }
+
     const searchResponse = await searchWithMongoNoFacets({
       query: "",
       market: request.query.market,
@@ -671,7 +680,7 @@ export const offersWithPriceDifference: Route<
       sort: { [differencePercentageField]: sortDirection },
       limit: _limit,
       categories: categories ? categoriesArray : undefined,
-      dealers: dealers ? dealersArray : undefined,
+      dealers: dealersArray.length > 0 ? dealersArray : undefined,
       projection: {
         ...defaultOfferProjection,
         difference7DaysMeanPercentage: 1,
