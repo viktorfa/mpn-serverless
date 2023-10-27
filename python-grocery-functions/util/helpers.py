@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from multiprocessing import Value
 from typing import Union
 
 from util.enums import currency_codes, select_methods
@@ -56,7 +57,10 @@ def json_handler(obj):
 
 
 def json_time_to_datetime(json_time_string: str) -> datetime:
-    return datetime.strptime(json_time_string, "%Y-%m-%dT%H:%M:%S+0000")
+    try:
+        return datetime.strptime(json_time_string, "%Y-%m-%dT%H:%M:%S+0000")
+    except ValueError:
+        return datetime.fromisoformat(json_time_string.replace("Z", "+00:00"))
 
 
 def get_product_uri(provenance: str, _id: str) -> str:

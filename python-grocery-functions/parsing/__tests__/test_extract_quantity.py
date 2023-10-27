@@ -121,8 +121,8 @@ class TestAnalyzeQuantity(TestCase):
             },
         }
         actual = analyze_quantity(offer)
-        self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 100)
-        self.assertEqual(pydash.get(actual, "quantity.size.unit.symbol"), "g")
+        self.assertEqual(pydash.get(actual, "quantity.size.amount.min"), 1)
+        self.assertEqual(pydash.get(actual, "quantity.size.unit.symbol"), "m")
 
 
 class TestStandarizeQuantity(TestCase):

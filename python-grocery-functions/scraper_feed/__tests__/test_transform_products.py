@@ -17,7 +17,7 @@ class TestHandleProducts(TestCase):
     def test_transform_product(self):
         product = self.obsbygg_products[0]
         config = {
-            "provenance": "obsbygg",
+            "provenance": "obsbygg_spider",
             "namespace": "obsbygg",
             "market": "no",
             "fieldMapping": get_field_mapping(),
@@ -56,7 +56,7 @@ class TestHandleProducts(TestCase):
     def test_transform_product_with_namespace(self):
         product = self.obsbygg_products[0]
         config = {
-            "provenance": "obsbygg",
+            "provenance": "obsbygg_spider",
             "namespace": "HALLA",
             "market": "no",
             "fieldMapping": get_field_mapping(),
@@ -75,7 +75,7 @@ class TestHandleProducts(TestCase):
     def test_transform_product_with_ignore_none_fields(self):
         product = self.obsbygg_products[0]
         config = {
-            "provenance": "obsbygg",
+            "provenance": "obsbygg_spider",
             "namespace": "obsbygg",
             "market": "no",
             "fieldMapping": get_field_mapping(),

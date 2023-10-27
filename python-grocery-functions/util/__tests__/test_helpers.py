@@ -16,6 +16,11 @@ class TestHelpers(TestCase):
         actual = json_time_to_datetime(json_time)
         self.assertIsInstance(actual, datetime)
 
+    def test_json_time_to_datetime_iso_format(self):
+        json_time = "2023-08-31T00:00:00.000Z"
+        actual = json_time_to_datetime(json_time)
+        self.assertIsInstance(actual, datetime)
+
     def test_json_handler_for_normal_object(self):
         obj = dict(hei="per", hallo=5)
         actual = json.dumps(obj, default=json_handler)

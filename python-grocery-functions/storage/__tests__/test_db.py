@@ -8,5 +8,5 @@ class TestDb(TestCase):
         pass
 
     def test_get_handle_config(self):
-        result = get_handle_configs("obsbygg")
+        result = get_handle_configs("obsbygg_spider")
         self.assertIsNotNone(result[0].get("collection_name"))

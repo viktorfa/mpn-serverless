@@ -32,7 +32,7 @@ class TestWithConfig(TestCase):
 
     def test_filter_products_with_has(self):
         config = {
-            "provenance": "obsbygg",
+            "provenance": "obsbygg_spider",
             "namespace": "obsbygg",
             "market": "no",
             "categoriesLimits": [],
@@ -58,7 +58,7 @@ class TestWithConfig(TestCase):
 
     def test_filter_products_with_gt(self):
         config = {
-            "provenance": "obsbygg",
+            "provenance": "obsbygg_spider",
             "namespace": "obsbygg",
             "market": "no",
             "categoriesLimits": [],
@@ -106,16 +106,16 @@ class TestWithConfig(TestCase):
             }
         )
         actual = handle_products(self.meny_products, config)
-        pprint(actual[0])
+        pprint(actual[-1])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.meny_products))
-        self.assertIsNotNone(actual[0]["title"])
-        self.assertIsNotNone(actual[0]["pricing"])
-        self.assertIsNotNone(actual[0]["href"])
-        self.assertIsNotNone(actual[0]["uri"])
-        self.assertIsNotNone(actual[0]["quantity"]["size"])
-        self.assertIsNotNone(actual[0]["sku"])
-        self.assertIsNotNone(actual[0]["gtins"]["ean"])
+        self.assertIsNotNone(actual[-1]["title"])
+        self.assertIsNotNone(actual[-1]["pricing"])
+        self.assertIsNotNone(actual[-1]["href"])
+        self.assertIsNotNone(actual[-1]["uri"])
+        self.assertIsNotNone(actual[-1]["quantity"]["size"])
+        self.assertIsNotNone(actual[-1]["sku"])
+        self.assertIsNotNone(actual[-1]["gtins"]["ean"])
 
     def test_kolonial_products(self):
         config = generate_handle_config(
@@ -310,7 +310,7 @@ class TestWithConfig(TestCase):
     def test_obsbygg_products(self):
         config = generate_handle_config(
             {
-                "provenance": "obsbygg",
+                "provenance": "obsbygg_spider",
                 "namespace": "obsbygg",
                 "market": "no",
                 "collection_name": "byggoffers",

@@ -75,11 +75,11 @@ def analyze_quantity(offer: MpnOffer) -> MpnOffer:
             unit_types.QUANTITY,
             unit_types.QUANTITY_VALUE,
         ):
-            if not pydash.get(offer, ["quantity", "size", "amount"]):
-                offer["quantity"]["size"] = {
-                    "amount": {"min": 1, "max": 1},
-                    "unit": price_unit,
-                }
+            # if not pydash.get(offer, ["quantity", "size", "amount"]):
+            offer["quantity"]["size"] = {
+                "amount": {"min": 1, "max": 1},
+                "unit": price_unit,
+            }
 
     if offer.get("altPrice") and offer.get("altPriceUnit"):
         if pydash.get(offer, ["quantity", "size"]) == {} or pydash.get(
@@ -149,7 +149,7 @@ def extract_quantity(strings: List[str], safe_units=None) -> QuantityField:
     size = {}
     pieces = {}
     for string in extracted_strings:
-        for (i, number) in enumerate(x for x in string if x):
+        for i, number in enumerate(x for x in string if x):
             unit = number.get("unit")
             unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
             unit = extract_unit(unit)
@@ -189,7 +189,7 @@ def extract_value(strings: List[str], safe_units=None) -> QuantityField:
     size = {}
     pieces = {}
     for string in extracted_strings:
-        for (i, number) in enumerate(string):
+        for i, number in enumerate(string):
             unit = extract_unit(number.get("unit"))
             if safe_units and unit["symbol"] not in safe_units:
                 continue
@@ -213,7 +213,7 @@ def extract_value(strings: List[str], safe_units=None) -> QuantityField:
 
 
 def handle_multipliers(extracted_numbers):
-    for (i, number) in enumerate(extracted_numbers):
+    for i, number in enumerate(extracted_numbers):
         if number.get("unit") in ["x"] and pydash.get(
             extracted_numbers, [i + 1, "value"]
         ):
