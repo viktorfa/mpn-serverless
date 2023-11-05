@@ -33,6 +33,7 @@ provider:
     STAGE: ${self:provider.stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
     SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
+    PRICING_FEED_HANDLED_TOPIC_ARN: !Ref PricingFeedHandledTopic
     BOOK_FEED_HANDLED_TOPIC_ARN: !Ref BookFeedHandledTopic
     SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
@@ -65,6 +66,10 @@ provider:
       Action:
         - "sns:Publish"
       Resource: !Ref ScraperFeedHandledTopic
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: !Ref PricingFeedHandledTopic
     - Effect: "Allow"
       Action:
         - "sns:Publish"

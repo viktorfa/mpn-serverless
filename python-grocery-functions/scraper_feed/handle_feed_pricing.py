@@ -6,6 +6,7 @@ import logging
 import os
 from typing import Dict, List, Iterable
 
+from util.helpers import json_handler
 from pymongo.errors import BulkWriteError
 from pymongo.results import InsertManyResult
 from pymongo import UpdateOne
@@ -16,8 +17,8 @@ from scraper_feed.pricing_history import get_price_difference_update_set
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
-import botostubs
 from scraper_feed.helpers import get_provenance_id
+from config.vars import PRICING_FEED_HANDLED_TOPIC_ARN
 
 import aws_config
 from util.helpers import get_product_uri
@@ -60,23 +61,19 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     logging.info(event)
     aws_config.lambda_context = context
 
-    if "amazon" in event["namespace"]:
-        return
-    if "shopgun" in event["namespace"]:
-        return
-    if "computersalg" in event["namespace"]:
-        return
-    if "cdon" in event["namespace"]:
-        return
+    bucket = os.environ["SCRAPER_FEED_BUCKET"]
+    key = event["feed_key"]
+    s3_object = get_s3_object(bucket, key)
+    scrape_time = s3_object["LastModified"]
+    handle_config: HandleConfig = {**event, "scrape_time": scrape_time}
+
+    for x in ["amazon", "shopgun", "computersalg", "cdon"]:
+        if x in event["namespace"]:
+            return publish_sns_message(handle_config)
 
     trigger_timer = Timer("trigger_scraper_feed_with_config")
 
     try:
-        bucket = os.environ["SCRAPER_FEED_BUCKET"]
-        key = event["feed_key"]
-        s3_object = get_s3_object(bucket, key)
-        scrape_time = s3_object["LastModified"]
-        handle_config: HandleConfig = {**event, "scrape_time": scrape_time}
         file_content = s3_object["Body"].read().decode()
     except Exception as e:
         logging.error(e)
@@ -96,6 +93,8 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         ):
             result.append(handle_offer_chunk(chunk, handle_config))
         trigger_timer.time_log("finished handle_feed_with_config_for_pricing_series")
+
+        publish_sns_message(handle_config)
 
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",
@@ -399,3 +398,20 @@ def handle_feed_with_config_for_pricing(
     logging.debug(result)
 
     return result.matched_count
+
+
+def publish_sns_message(config):
+    # To allow event-driven behaviour, we publish an sns topic when products are saved successfully.
+    sns_client = boto3.client("sns")  # type: botostubs.SNS
+    sns_message_data = {
+        **config,
+        "collection_name": config["collection_name"],
+    }
+    sns_message = json.dumps(
+        {"default": json.dumps(sns_message_data, default=json_handler)}
+    )
+    sns_client.publish(
+        Message=sns_message,
+        MessageStructure="json",
+        TargetArn=PRICING_FEED_HANDLED_TOPIC_ARN,
+    )

@@ -27,6 +27,8 @@ Resources:
         - Ref: ScraperFeedCreatedTopic
   ScraperFeedHandledTopic:
     Type: AWS::SNS::Topic
+  PricingFeedHandledTopic:
+    Type: AWS::SNS::Topic
   BookFeedHandledTopic:
     Type: AWS::SNS::Topic
 
@@ -39,6 +41,11 @@ Outputs:
       Ref: ScraperFeedHandledTopic
     Export:
       Name: ${self:provider.stage}-ScraperFeedHandledTopicArn
+  PricingFeedHandledTopic:
+    Value:
+      Ref: PricingFeedHandledTopic
+    Export:
+      Name: ${self:provider.stage}-PricingFeedHandledTopicArn
   BookFeedHandledTopicArn:
     Value:
       Ref: BookFeedHandledTopic
