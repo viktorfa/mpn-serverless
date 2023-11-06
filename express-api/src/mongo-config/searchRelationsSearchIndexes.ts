@@ -5,7 +5,9 @@ const searchIndexMappings = {
   dynamic: false,
   fields: {
     brand: {
+      analyzer: "diacriticFolderKeyword",
       indexOptions: "positions",
+      searchAnalyzer: "diacriticFolderKeyword",
       store: false,
       type: "string",
     },
@@ -151,7 +153,9 @@ const searchIndexMappings = {
       type: "string",
     },
     title: {
+      analyzer: "diacriticFolderStandard",
       indexOptions: "positions",
+      searchAnalyzer: "diacriticFolderStandard",
       store: false,
       type: "string",
     },
@@ -163,6 +167,36 @@ const searchIndexMappings = {
     },
   },
 };
+
+const searchIndexAnalyzers = [
+  {
+    name: "diacriticFolderKeyword",
+    charFilters: [],
+    tokenizer: {
+      type: "keyword",
+    },
+    tokenFilters: [
+      {
+        type: "icuFolding",
+      },
+    ],
+  },
+  {
+    name: "diacriticFolderStandard",
+    charFilters: [],
+    tokenizer: {
+      type: "standard",
+      //maxGram: 6,
+      //minGram: 4,
+      //type: "nGram",
+    },
+    tokenFilters: [
+      {
+        type: "icuFolding",
+      },
+    ],
+  },
+];
 
 const offersWithRelationsCollections = [
   "relations_with_offers_au",
@@ -227,6 +261,7 @@ const updateSearchIndex = async ({
             database: mongoDatabase,
             name: "default",
             mappings: searchIndexMappings,
+            analyzers: searchIndexAnalyzers,
           },
         },
       );
@@ -251,6 +286,7 @@ const updateSearchIndex = async ({
             database: mongoDatabase,
             name: "default",
             mappings: searchIndexMappings,
+            analyzers: searchIndexAnalyzers,
           },
         },
       );
