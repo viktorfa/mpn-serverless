@@ -165,26 +165,19 @@ export const searchWithMongo = async ({
         });
       });
   }
-
-  if (sort) {
-    operator.compound.should.push({
-      near: {
-        path: Object.keys(sort)[0],
-        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e7 * 1,
-        pivot: 2,
-        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
-      },
-    });
+  const searchConfig = {
+    facet: {
+      operator,
+      facets,
+    },
+  };
+  if (sort && !sort.score) {
+    searchConfig.sort = sort;
   }
 
   const aggregationPipeline: Record<string, any>[] = [
     {
-      $search: {
-        facet: {
-          operator,
-          facets,
-        },
-      },
+      $search: searchConfig,
     },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
@@ -402,23 +395,16 @@ export const searchWithMongoNoFacets = async ({
         });
       });
   }
-
-  if (sort) {
-    operator.compound.should.push({
-      near: {
-        path: Object.keys(sort)[0],
-        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
-        pivot: 2,
-        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
-      },
-    });
+  const searchConfig = {
+    ...operator,
+  };
+  if (sort && !sort.score) {
+    searchConfig.sort = sort;
   }
 
   const aggregationPipeline: Record<string, any>[] = [
     {
-      $search: {
-        ...operator,
-      },
+      $search: searchConfig,
     },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
@@ -737,7 +723,7 @@ export const searchWithMongoRelations = async ({
   } else if (_query && !sort) {
     operator.compound.must.push({
       text: {
-        path: ["title", "subtitle", "brand"],
+        path: ["title", "subtitle", "brand", "mpnCategories.name"],
         query: _query,
       },
     });
@@ -750,7 +736,7 @@ export const searchWithMongoRelations = async ({
     });
     operator.compound.should.push({
       text: {
-        path: ["subtitle", "brand", "offers.categories", "mpnCategories"],
+        path: ["subtitle", "brand", "offers.categories", "mpnCategories.name"],
         query: _query,
         score: { boost: { value: 1.5 } },
       },
@@ -769,34 +755,26 @@ export const searchWithMongoRelations = async ({
               "subtitle",
               "brand",
               "offers.categories",
-              "mpnCategories",
+              "mpnCategories.name",
             ],
             query: x,
           },
         });
       });
   }
-
-  if (sort) {
-    const path = Object.keys(sort)[0];
-    operator.compound.should.push({
-      near: {
-        path,
-        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
-        pivot: 2,
-        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
-      },
-    });
+  const searchConfig = {
+    facet: {
+      operator,
+      facets,
+    },
+  };
+  if (sort && !sort.score) {
+    searchConfig.sort = sort;
   }
 
   const aggregationPipeline: Record<string, any>[] = [
     {
-      $search: {
-        facet: {
-          operator,
-          facets,
-        },
-      },
+      $search: searchConfig,
     },
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
@@ -1040,24 +1018,16 @@ export const searchWithMongoRelationsNoFacets = async ({
         });
       });
   }
-
-  if (sort) {
-    const path = Object.keys(sort)[0];
-    operator.compound.should.push({
-      near: {
-        path,
-        origin: Object.values(sort)[0] === 1 ? -1e3 : 1e6 * 1,
-        pivot: 2,
-        score: { boost: { value: Number.MAX_SAFE_INTEGER } },
-      },
-    });
+  const searchConfig = {
+    ...operator,
+  };
+  if (sort && !sort.score) {
+    searchConfig.sort = sort;
   }
 
   const aggregationPipeline: Record<string, any>[] = [
     {
-      $search: {
-        ...operator,
-      },
+      $search: searchConfig,
     },
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
     { $limit: _limit }, // Will be incredibly slow when sorting if the results are many
@@ -1272,11 +1242,13 @@ export const searchWithMongoRelationsExtra = async ({
     relationsMatch._id = { $ne: new ObjectId(relationId) };
   }
 
+  const searchConfig = {
+    ...operator,
+  };
+
   const aggregationPipeline: Record<string, any>[] = [
     {
-      $search: {
-        ...operator,
-      },
+      $search: searchConfig,
     },
     { $match: relationsMatch },
     { $skip: (Math.max(page - 1, 0) || 0) * _limit },
