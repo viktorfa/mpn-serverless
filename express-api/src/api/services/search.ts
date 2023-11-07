@@ -173,6 +173,9 @@ export const searchWithMongo = async ({
   };
   if (sort && !sort.score) {
     searchConfig.sort = sort;
+    searchConfig.facet.operator.compound.filter.push({
+      exists: { path: Object.keys(sort)[0] },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -400,6 +403,9 @@ export const searchWithMongoNoFacets = async ({
   };
   if (sort && !sort.score) {
     searchConfig.sort = sort;
+    searchConfig.compound.filter.push({
+      exists: { path: Object.keys(sort)[0] },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -770,6 +776,9 @@ export const searchWithMongoRelations = async ({
   };
   if (sort && !sort.score) {
     searchConfig.sort = sort;
+    searchConfig.facet.operator.compound.filter.push({
+      exists: { path: Object.keys(sort)[0] },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -1023,6 +1032,9 @@ export const searchWithMongoRelationsNoFacets = async ({
   };
   if (sort && !sort.score) {
     searchConfig.sort = sort;
+    searchConfig.compound.filter.push({
+      exists: { path: Object.keys(sort)[0] },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
