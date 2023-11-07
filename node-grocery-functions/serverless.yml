@@ -39,8 +39,21 @@ provider:
     NHOST_ADMIN_SECRET: ${env:NHOST_ADMIN_SECRET}
     NHOST_SUBDOMAIN: ${env:NHOST_SUBDOMAIN}
     NHOST_REGION: ${env:NHOST_REGION}
+    NHOST_DB_USER: ${env:NHOST_DB_USER}
+    NHOST_DB_PW: ${env:NHOST_DB_PW}
+    NHOST_DB_HOST: ${env:NHOST_DB_HOST}
+    NHOST_DB_NAME: ${env:NHOST_DB_NAME}
+    JWT_SECRET: ${env:JWT_SECRET}
+    SENDGRID_API_KEY: ${env:SENDGRID_API_KEY}
+    ENDPOINT_URL: !Sub
+      - "https://#{ApiId}.execute-api.#{AWS::Region}.#{AWS::URLSuffix}"
+      - ApiId: !Ref "HttpApi"
 
   iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "ses:SendEmail"
+      Resource: "*"
     - Effect: "Allow"
       Action:
         - "s3:PutObject"
@@ -313,12 +326,29 @@ functions:
               - Stage: ${self:provider.stage}
   processOffersKeysTrigger:
     handler: offer-feed/handle-offers-fields.handlerTrigger
+
+  handleOffersForNotificationsSns:
+    handler: offer-notifications/handle-offers.handlerSns
+    events:
+      - sns:
+          topicName: ScraperFeedHandled
+          arn:
+            Fn::ImportValue: !Sub
+              - "#{Stage}-PricingFeedHandledTopicArn"
+              - Stage: ${self:provider.stage}
+  handleOffersForNotificationsTrigger:
+    handler: offer-notifications/handle-offers.handlerTrigger
+
   flagInactiveOffers:
     handler: crons/filter-active.flagInactiveOffers
     events:
       - schedule:
           rate: cron(0 2 ? * * *) # Every night 2 am
 
+  unsubscribeEvents:
+    handler: offer-notifications/unsubscribe.handle
+    events:
+      - httpApi: "GET /unsubscribe"
 plugins:
   - serverless-cloudformation-sub-variables
   - serverless-offline

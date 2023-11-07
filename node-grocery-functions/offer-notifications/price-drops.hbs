@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+  <head>
+    <title>{{nOffers}} varer har falt i pris</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  </head>
+  <body>
+    <div>
+      <h1>Allematpriser.no</h1>
+      <div>
+        {{#each offers}}
+        <p>
+          <strong>
+            {{this.title}} fra {{this.dealer}}
+          </strong> <br/>
+          -{{this.difference}} ({{this.differencePercentage}}%) <br/>
+          {{this.url}}
+        </p>
+         {{/each}}
+      </div>
+    </div>
+    <br/>
+    <br/>
+    <div>Innstillinger for dine varsler: https://allematpriser.no/app/profile</div>
+    <br/>
+    <div>Meld deg av alle varsler ved å klikke her: {{unsubscribeUrl}}</div>
+  </body>
+</html>
