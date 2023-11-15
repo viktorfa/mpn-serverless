@@ -198,6 +198,7 @@ const handleOffers = async ({
             offers: nots.map((x) => ({
               ...x,
               differencePercentage: x.differencePercentage.toFixed(2),
+              difference: x.difference.toFixed(2),
             })),
             lang: "no",
             unsubscribeUrl,
