@@ -58,6 +58,7 @@ export const searchWithMongo = async ({
     compound: {
       filter: [],
       must: [],
+      mustNot: [],
       should: [],
     },
   };
@@ -176,6 +177,9 @@ export const searchWithMongo = async ({
     searchConfig.facet.operator.compound.filter.push({
       exists: { path: Object.keys(sort)[0] },
     });
+    searchConfig.facet.operator.compound.mustNot.push({
+      equals: { path: Object.keys(sort)[0], value: null },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -291,6 +295,7 @@ export const searchWithMongoNoFacets = async ({
     compound: {
       filter: [],
       must: [],
+      mustNot: [],
       should: [],
     },
   };
@@ -405,6 +410,9 @@ export const searchWithMongoNoFacets = async ({
     searchConfig.sort = sort;
     searchConfig.compound.filter.push({
       exists: { path: Object.keys(sort)[0] },
+    });
+    searchConfig.compound.mustNot.push({
+      equals: { path: Object.keys(sort)[0], value: null },
     });
   }
 
@@ -573,6 +581,7 @@ export const searchWithMongoRelations = async ({
     compound: {
       filter: [{ text: { path: "relationType", query: "identical" } }],
       must: [],
+      mustNot: [],
       should: [],
     },
   };
@@ -779,6 +788,9 @@ export const searchWithMongoRelations = async ({
     searchConfig.facet.operator.compound.filter.push({
       exists: { path: Object.keys(sort)[0] },
     });
+    searchConfig.facet.operator.compound.mustNot.push({
+      equals: { path: Object.keys(sort)[0], value: null },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -910,6 +922,7 @@ export const searchWithMongoRelationsNoFacets = async ({
     compound: {
       filter: [{ text: { path: "relationType", query: "identical" } }],
       must: [],
+      mustNot: [],
       should: [],
     },
   };
@@ -1035,6 +1048,9 @@ export const searchWithMongoRelationsNoFacets = async ({
     searchConfig.compound.filter.push({
       exists: { path: Object.keys(sort)[0] },
     });
+    searchConfig.compound.mustNot.push({
+      equals: { path: Object.keys(sort)[0], value: null },
+    });
   }
 
   const aggregationPipeline: Record<string, any>[] = [
@@ -1157,6 +1173,7 @@ export const searchWithMongoRelationsExtra = async ({
     compound: {
       filter: [{ text: { path: "relationType", query: "identical" } }],
       must: [],
+      mustNot: [],
       should: [
         {
           moreLikeThis: {
