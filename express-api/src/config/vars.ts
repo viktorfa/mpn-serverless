@@ -1,7 +1,7 @@
 const dotenv = require("dotenv-safe");
 
 if (!process.env.LAMBDA_TASK_ROOT) {
-  let dotenvFileName = ".env.dev";
+  let dotenvFileName = ".env.local";
   switch (process.env.NODE_ENV) {
     case "production":
       dotenvFileName = ".env.prod";

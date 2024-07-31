@@ -53,15 +53,4 @@ _node_modules/
 artifact.zip
 .serverless-offline/
 
-# Yarn
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-
-.esbuild/
 out/
