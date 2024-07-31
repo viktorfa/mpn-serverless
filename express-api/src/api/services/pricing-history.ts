@@ -87,10 +87,6 @@ export const fillPricingHistory = ({
       counterPricing = pricingHistory[counterPricingIndex];
       result.push({ ...counterPricing });
     } else {
-      result.push({
-        ...counterPricing,
-        date: format(new Date(counterDate), "yyyy-MM-dd"),
-      });
     }
     counterDate = addDays(counterDate, 1);
   }

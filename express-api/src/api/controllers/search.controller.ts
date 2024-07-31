@@ -1,5 +1,5 @@
 import { filterIdenticalOffers } from "./../services/offers";
-import _ from "lodash";
+import _, { pick } from "lodash";
 import { Parser, Response, Route, route } from "typera-express";
 import * as t from "io-ts";
 import {
@@ -220,4 +220,113 @@ export const searchRelations: Route<
     //});
 
     return Response.ok(searchResults);
+  });
+export const searchRelationsCondensed: Route<
+  Response.Ok<MpnMongoRelationsSearchResponse> | Response.BadRequest<string>
+> = route
+  .get("/searchrelationscondensed")
+  .use(Parser.query(searchQueryParams))
+  .handler(async (request) => {
+    const {
+      query,
+      productCollection,
+      limit,
+      page,
+      dealers,
+      price,
+      value,
+      proteins,
+      carbs,
+      fats,
+      kcals,
+      processedScore,
+      categories,
+      brands,
+      vendors,
+      sort,
+      market,
+    } = request.query;
+    const _query = query.substring(0, 127) || "";
+
+    const _limit = getLimitFromQueryParam(limit, 6);
+
+    const _sort = sort ? sort.split(":") : null;
+    const sortField = _.get(_sort, [0], "");
+    const sortDirection = _.get(_sort, [1]) === "desc" ? -1 : 1;
+    const sortConfig: { [x: string]: 1 | -1 } = sortField
+      ? { [sortField]: sortDirection }
+      : null;
+
+    const searchArgs = {
+      dealers: dealers ? dealers.split(",") : null,
+      categories: categories ? categories.split(",") : null,
+      brands: brands ? brands.split(",") : null,
+      vendors: vendors ? vendors.split(",") : null,
+      sort: sortConfig,
+      price: null,
+      value: null,
+      page: Number.parseInt(page || "1"),
+    };
+    const _price = getRangeField({ field: price });
+    if (_price.from || _price.to) {
+      searchArgs.price = _price;
+    }
+    const _value = getRangeField({ field: value });
+    if (_value.from || _value.to) {
+      searchArgs.value = _value;
+    }
+    const _proteins = getRangeField({ field: proteins });
+    if (_proteins.from || _proteins.to) {
+      searchArgs.proteins = _proteins;
+    }
+    const _kcals = getRangeField({ field: kcals });
+    if (_kcals.from || _kcals.to) {
+      searchArgs.kcals = _kcals;
+    }
+    const _carbs = getRangeField({ field: carbs });
+    if (_carbs.from || _carbs.to) {
+      searchArgs.carbs = _carbs;
+    }
+    const _fats = getRangeField({ field: fats });
+    if (_fats.from || _fats.to) {
+      searchArgs.fats = _fats;
+    }
+    const _processedScore = getRangeField({ field: processedScore });
+    if (_processedScore.from || _processedScore.to) {
+      searchArgs.processedScore = _processedScore;
+    }
+
+    const searchResults = await searchWithMongoRelations({
+      query: _query,
+      productCollections: productCollection ? [productCollection] : null,
+      market,
+      limit: _limit,
+      ...searchArgs,
+      projection: { title: 1, imageUrl: 1 },
+    });
+
+    //searchResults.items = filterIdenticalOffers({
+    //  offers: searchResults.items,
+    //});
+
+    const condensedResponse = searchResults.items.map((item) => {
+      return pick(
+        {
+          ...item,
+          offers: item.offers.map((offer) =>
+            pick(offer, [
+              "href",
+              "ahref",
+              "subtitle",
+              "pricing",
+              "validThrough",
+              "dealerKey",
+            ]),
+          ),
+        },
+        ["offers", "title", "imageUrl"],
+      );
+    });
+
+    return Response.ok(condensedResponse);
   });

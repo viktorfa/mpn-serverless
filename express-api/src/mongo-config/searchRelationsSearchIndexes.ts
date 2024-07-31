@@ -5,9 +5,9 @@ const searchIndexMappings = {
   dynamic: false,
   fields: {
     brand: {
-      analyzer: "diacriticFolderKeyword",
+      analyzer: "diacriticFolderStandard",
       indexOptions: "positions",
-      searchAnalyzer: "diacriticFolderKeyword",
+      searchAnalyzer: "diacriticFolderStandard",
       store: false,
       type: "string",
     },
@@ -26,6 +26,11 @@ const searchIndexMappings = {
           indexOptions: "docs",
           norms: "omit",
           searchAnalyzer: "lucene.keyword",
+          store: false,
+          type: "string",
+        },
+        name: {
+          indexOptions: "positions",
           store: false,
           type: "string",
         },

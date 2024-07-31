@@ -3,6 +3,7 @@ import { Router } from "express";
 
 import {
   search,
+  searchRelationsCondensed,
   searchExtra,
   searchRelations,
 } from "@/api/controllers/search.controller";
@@ -16,6 +17,7 @@ import {
 
 const routes: Router = router(
   search,
+  searchRelationsCondensed,
   searchExtra,
   searchRelations,
   extra,

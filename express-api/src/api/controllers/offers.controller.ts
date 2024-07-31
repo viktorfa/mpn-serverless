@@ -1,4 +1,4 @@
-import _, { take, get, pick } from "lodash";
+import { take, get, pick, sortBy } from "lodash";
 import * as t from "io-ts";
 import { Parser, Response, Route, route } from "typera-express";
 import {
@@ -14,14 +14,12 @@ import {
 } from "@/api/services/offers";
 import {
   MongoSearchParams,
-  MongoSearchParamsRelations,
   MongoSearchParamsRelationsExtra,
   searchWithMongoNoFacets,
-  searchWithMongoRelations,
   searchWithMongoRelationsExtra,
 } from "@/api/services/search";
 import { defaultOfferProjection } from "../models/mpnOffer.model";
-import { getDaysAhead, getNowDate } from "../utils/helpers";
+import { getNowDate } from "../utils/helpers";
 import { getCollection } from "@/config/mongo";
 import { getStringList } from "./request-param-parsing";
 import { Filter } from "mongodb";
@@ -248,7 +246,7 @@ export const promoted: Route<
       result.push(...extraOffers.items);
     }
 
-    const limitedResult = _.take(result, _limit).filter(
+    const limitedResult = take(result, _limit).filter(
       // Filter this on server to avoid creating index
       (x) => x.isPromotionRestricted !== true,
     );
@@ -386,8 +384,13 @@ export const findV2: Route<
         );
       }
 
-      const identical = offerRelation.identical?.offers || [];
-      const interchangeable = offerRelation.interchangeable?.offers || [];
+      const identical = sortBy(offerRelation.identical?.offers || [], [
+        "pricing.price",
+      ]);
+      const interchangeable = sortBy(
+        offerRelation.interchangeable?.offers || [],
+        ["pricing.price"],
+      );
 
       const marketData = get(offerRelation, ["identical", `m:${market}`]);
       const relQuantity = get(offerRelation, ["identical", "quantity"]);

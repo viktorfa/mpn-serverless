@@ -4,21 +4,11 @@ import { mongoDatabase } from "../config/vars";
 const searchIndexMappings = {
   dynamic: false,
   fields: {
-    brand: {
-      indexOptions: "positions",
-      store: false,
-      type: "string",
-    },
     brandKey: {
       analyzer: "lucene.keyword",
       indexOptions: "docs",
       norms: "omit",
       searchAnalyzer: "lucene.keyword",
-      store: false,
-      type: "string",
-    },
-    categories: {
-      indexOptions: "positions",
       store: false,
       type: "string",
     },
@@ -62,11 +52,6 @@ const searchIndexMappings = {
           store: false,
           type: "string",
         },
-        text: {
-          indexOptions: "positions",
-          store: false,
-          type: "string",
-        },
       },
       type: "document",
     },
@@ -88,11 +73,6 @@ const searchIndexMappings = {
       indexOptions: "docs",
       norms: "omit",
       searchAnalyzer: "lucene.keyword",
-      store: false,
-      type: "string",
-    },
-    title: {
-      indexOptions: "positions",
       store: false,
       type: "string",
     },
@@ -126,6 +106,24 @@ const searchIndexMappings = {
     },
   },
 };
+
+const searchIndexAnalyzers = [
+  {
+    name: "diacriticFolderStandard",
+    charFilters: [],
+    tokenizer: {
+      type: "standard",
+      //maxGram: 6,
+      //minGram: 4,
+      //type: "nGram",
+    },
+    tokenFilters: [
+      {
+        type: "icuFolding",
+      },
+    ],
+  },
+];
 
 const offersWithRelationsCollections = [
   "mpnoffers_au",
@@ -190,6 +188,7 @@ const updateSearchIndex = async ({
             database: mongoDatabase,
             name: "default",
             mappings: searchIndexMappings,
+            analyzers: searchIndexAnalyzers,
           },
         },
       );
@@ -214,6 +213,7 @@ const updateSearchIndex = async ({
             database: mongoDatabase,
             name: "default",
             mappings: searchIndexMappings,
+            analyzers: searchIndexAnalyzers,
           },
         },
       );
