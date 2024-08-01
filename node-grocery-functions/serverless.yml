@@ -14,13 +14,14 @@ app: node-mpn-functions
 # Happy Coding!
 
 service: node-mpn-functions # NOTE: update this with your service name
+frameworkVersion: "3"
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs20.x
   region: eu-central-1
-  stage: ${self:custom.vars.stage, "dev"}
-  logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
+  logRetentionInDays: ${self:custom.logRetentionInDays.${sls:stage}, self:custom.logRetentionInDays.other}
   profile: serverless-mpn-admin
   timeout: 900
   memorySize: 2048
@@ -30,12 +31,12 @@ provider:
     MONGO_URI: ${env:MONGO_URI}
     BUCKET_NAME: !ImportValue StaticAssetsBucket
     CLOUD_FRONT_DISTRIBUTION_ID: !ImportValue StaticAssetsDistribution
-    STAGE: ${self:provider.stage}
+    STAGE: ${sls:stage}
     NODE_ENV: ${env:NODE_ENV}
     ELASTIC_URL: ${env:ELASTIC_URL}
     ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
     SENTRY_DSN: ${env:SENTRY_DSN}
-    SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
+    SENTRY_ENVIRONMENT: ${sls:stage}
     NHOST_ADMIN_SECRET: ${env:NHOST_ADMIN_SECRET}
     NHOST_SUBDOMAIN: ${env:NHOST_SUBDOMAIN}
     NHOST_REGION: ${env:NHOST_REGION}
@@ -77,6 +78,7 @@ functions:
     #        market: "no"
   getKavallProducts:
     handler: kavall_ean.getKavallCsv
+    timeout: 30
     events:
       - httpApi: "GET /kavall.csv"
 
@@ -292,7 +294,7 @@ functions:
           arn:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
-              - Stage: ${self:provider.stage}
+              - Stage: ${sls:stage}
   migrateOffersToElastic:
     handler: elastic/handler.handleTriggerMigrateEvent
   migrateOffersToElasticSns:
@@ -303,7 +305,7 @@ functions:
     #      arn:
     #        Fn::ImportValue: !Sub
     #          - "#{Stage}-ScraperFeedHandledTopicArn"
-    #          - Stage: ${self:provider.stage}
+    #          - Stage: ${sls:stage}
 
   processGroceryOffersSns:
     handler: tokens/handler.processGroceryOffersSns
@@ -313,7 +315,7 @@ functions:
     #      arn:
     #        Fn::ImportValue: !Sub
     #          - "#{Stage}-ScraperFeedHandledTopicArn"
-    #          - Stage: ${self:provider.stage}
+    #          - Stage: ${sls:stage}
 
   processOffersKeysSns:
     handler: offer-feed/handle-offers-fields.handlerSns
@@ -323,7 +325,7 @@ functions:
           arn:
             Fn::ImportValue: !Sub
               - "#{Stage}-ScraperFeedHandledTopicArn"
-              - Stage: ${self:provider.stage}
+              - Stage: ${sls:stage}
   processOffersKeysTrigger:
     handler: offer-feed/handle-offers-fields.handlerTrigger
 
@@ -335,7 +337,7 @@ functions:
           arn:
             Fn::ImportValue: !Sub
               - "#{Stage}-PricingFeedHandledTopicArn"
-              - Stage: ${self:provider.stage}
+              - Stage: ${sls:stage}
   handleOffersForNotificationsTrigger:
     handler: offer-notifications/handle-offers.handlerTrigger
 
@@ -347,6 +349,7 @@ functions:
 
   unsubscribeEvents:
     handler: offer-notifications/unsubscribe.handle
+    timeout: 30
     events:
       - httpApi: "GET /unsubscribe"
 plugins:
@@ -355,7 +358,9 @@ plugins:
   - serverless-esbuild
 
 custom:
-  vars: ${file(./sls-config.js)}
+  logRetentionInDays:
+    prod: 30
+    other: 1
   esbuild:
     bundle: true
     minify: true
