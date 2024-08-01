@@ -17,7 +17,7 @@ service: node-mpn-functions # NOTE: update this with your service name
 
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs20.x
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
@@ -352,6 +352,18 @@ functions:
 plugins:
   - serverless-cloudformation-sub-variables
   - serverless-offline
+  - serverless-esbuild
 
 custom:
   vars: ${file(./sls-config.js)}
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: true
+    target: node20
+    define:
+      "require.resolve": undefined
+    platform: node
+    concurrency: 10
+
+       
