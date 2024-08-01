@@ -286,6 +286,22 @@ def add_urtesenteret_no_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": new_href}
 
 
+def add_amoi_no_affiliate_link(product: dict) -> dict:
+    if "to.amoi.no" in product["href"]:
+        return product
+    escaped_original_href = encode_uri_component(product["href"])
+    new_href = f"https://to.amoi.no/t/t?a=1846807883&as=1532500672&t=2&tk=1&url={escaped_original_href}"
+    return {**product, "ahref": new_href}
+
+
+def add_morrisons_uk_affiliate_link(product: dict) -> dict:
+    if "www.linkbux.com" in product["href"]:
+        return product
+    escaped_original_href = encode_uri_component(product["href"])
+    new_href = f"https://www.linkbux.com/track?pid=LB00006527&mid=14214&url={escaped_original_href}"
+    return {**product, "ahref": new_href}
+
+
 def get_affiliate_handler(product: dict):
     if "byggmax.no" in product["href"]:
         return
@@ -345,6 +361,10 @@ def get_affiliate_handler(product: dict):
         return add_locamo_de_affiliate_link
     elif "urtesenteret.no" in product["href"]:
         return add_urtesenteret_no_affiliate_link
+    elif "amoi.no" in product["href"]:
+        return add_amoi_no_affiliate_link
+    elif "groceries.morrisons.com" in product["href"]:
+        return add_morrisons_uk_affiliate_link
 
 
 def add_affilite_link_to_product(product: dict) -> dict:
