@@ -65,7 +65,11 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     key = event["feed_key"]
     s3_object = get_s3_object(bucket, key)
     scrape_time = s3_object["LastModified"]
-    handle_config: HandleConfig = {**event, "scrape_time": scrape_time}
+    handle_config: HandleConfig = {
+        **event,
+        "scrape_time": scrape_time,
+        "scrapeBatchId": s3_object["VersionId"],
+    }
 
     for x in ["amazon", "shopgun", "computersalg", "cdon"]:
         if x in event["namespace"]:
@@ -127,7 +131,6 @@ def trigger_scraper_feed_pricing_with_history(event, context):
     try:
         key = event["feed_key"]
         provenance = key.split("/")[0]
-        lambda_client = boto3.client("lambda")  # type: botostubs.Lambda
         config = fetch_single_handle_config(provenance)
 
         if not config:
@@ -255,6 +258,9 @@ def handle_feed_with_config_for_pricing_series(
                                 "price365DaysMean",
                                 "difference365DaysMean",
                                 "difference365DaysMeanPercentage",
+                                "pricePrevYear90DaysMean",
+                                "differencePrevYear90DaysMean",
+                                "differencePrevYear90DaysPercentage",
                             ],
                         ),
                     },
@@ -279,12 +285,18 @@ def handle_feed_with_config_for_pricing_series(
 
     offer_collection = get_collection("mpnoffers")
 
+    result = None
+
     if os.getenv("STAGE") == "dev":
-        offer_collection.bulk_write(offer_updates[:512])
-        result = pricing_collection.bulk_write(updates[:512])
+        if len(offer_updates) > 0:
+            offer_collection.bulk_write(offer_updates[:512])
+        if len(updates) > 0:
+            result = pricing_collection.bulk_write(updates[:512])
     else:
-        offer_collection.bulk_write(offer_updates)
-        result = pricing_collection.bulk_write(updates)
+        if len(offer_updates) > 0:
+            offer_collection.bulk_write(offer_updates)
+        if len(updates) > 0:
+            result = pricing_collection.bulk_write(updates)
     handle_timer.time_log("wrote updates to db")
 
     logging.debug(result)

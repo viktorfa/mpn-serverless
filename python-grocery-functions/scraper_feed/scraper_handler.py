@@ -152,7 +152,12 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         return {"message": "No items in scraped feed"}
     try:
         result = handle_feed_with_config(
-            json.loads(file_content), {**event, "scrape_time": scrape_time}
+            json.loads(file_content),
+            {
+                **event,
+                "scrape_time": scrape_time,
+                "scrapeBatchId": s3_object["VersionId"],
+            },
         )
 
         return {

@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta
-import logging
-from pprint import pprint
+from datetime import timedelta
 from typing import List
 from amp_types.amp_product import HandleConfig, PriceHistoryForOffer, PriceHistoryRecord
-from statistics import StatisticsError, mean
+from statistics import mean
 
 from util.helpers import get_difference_percentage
 
@@ -16,13 +14,23 @@ def get_price_difference_update_set(
     scrape_time_minus_7_days = scrape_time - timedelta(days=7)
     scrape_time_minus_30_days = scrape_time - timedelta(days=30)
     scrape_time_minus_90_days = scrape_time - timedelta(days=90)
+    scrape_time_minus_180_days = scrape_time - timedelta(days=180)
     scrape_time_minus_365_days = scrape_time - timedelta(days=365)
+    scrape_time_minus_455_days = scrape_time - timedelta(days=455)
     scrape_time_minus_7_days_string = scrape_time_minus_7_days.strftime("%Y-%m-%d")
     scrape_time_minus_30_days_string = scrape_time_minus_30_days.strftime("%Y-%m-%d")
     scrape_time_minus_90_days_string = scrape_time_minus_90_days.strftime("%Y-%m-%d")
+    scrape_time_minus_180_days_string = scrape_time_minus_180_days.strftime("%Y-%m-%d")
     scrape_time_minus_365_days_string = scrape_time_minus_365_days.strftime("%Y-%m-%d")
+    scrape_time_minus_455_days_string = scrape_time_minus_455_days.strftime("%Y-%m-%d")
 
     sorted_price_history = sorted(price_history["history"], key=lambda x: x["date"])
+    prev_year_last_90_days_prices = list(
+        x
+        for x in sorted_price_history
+        if x["date"] >= scrape_time_minus_455_days_string
+        and x["date"] < scrape_time_minus_365_days_string
+    )
     last_365_days_prices = list(
         x
         for x in sorted_price_history
@@ -66,6 +74,9 @@ def get_price_difference_update_set(
         "price365DaysMean": 0,
         "difference365DaysMean": 0,
         "difference365DaysMeanPercentage": 0,
+        "pricePrevYear90DaysMean": 0,
+        "differencePrevYear90DaysMean": 0,
+        "differencePrevYear90DaysPercentage": 0,
     }
     if len(sorted_price_history) > 0:
         previous_pricing = sorted_price_history[-1]
@@ -79,6 +90,16 @@ def get_price_difference_update_set(
             update_set["difference"] = price_difference
             update_set["differencePercentage"] = price_difference_percentage
 
+            if len(prev_year_last_90_days_prices) > 0 and len(last_90_days_prices) > 0:
+                quarter_price = mean(x["price"] for x in last_90_days_prices)
+                differences = get_differences_for_series(
+                    prev_year_last_90_days_prices, quarter_price
+                )
+                update_set["pricePrevYear90DaysMean"] = differences["mean"]
+                update_set["differencePrevYear90DaysMean"] = differences["difference"]
+                update_set["differencePrevYear90DaysPercentage"] = differences[
+                    "differencePercentage"
+                ]
             if (
                 len(last_7_days_prices) > 0
                 and earliest_pricing["date"] <= scrape_time_minus_7_days_string
@@ -91,7 +112,6 @@ def get_price_difference_update_set(
                 update_set["difference7DaysMeanPercentage"] = differences[
                     "differencePercentage"
                 ]
-
             if (
                 len(last_30_days_prices) > 0
                 and earliest_pricing["date"] <= scrape_time_minus_30_days_string

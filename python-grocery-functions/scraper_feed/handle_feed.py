@@ -25,13 +25,15 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
         raise Exception("Config needs collection_name")
     if not config["scrape_time"]:
         raise Exception("Config needs scrape_time")
+    if not config["scrapeBatchId"]:
+        raise Exception("Config needs scrapeBatchId")
 
     start_time = datetime.now()
 
     sns_client = boto3.client("sns")  # type: botostubs.SNS
 
     products = handle_products(feed, config)
-    scrape_batch_id = str(uuid.uuid4())
+    scrape_batch_id = config["scrapeBatchId"]
     products = (
         {
             **product,
