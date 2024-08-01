@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      dotenv-safe:
-        specifier: ^9.1.0
-        version: 9.1.0(dotenv@16.4.5)
       serverless-cloudformation-sub-variables:
         specifier: ^0.2.1
         version: 0.2.1
@@ -885,11 +882,6 @@ packages:
   dotenv-expand@10.0.0:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
     engines: {node: '>=12'}
-
-  dotenv-safe@9.1.0:
-    resolution: {integrity: sha512-2qwVAnUN+EDpu41pIK1XiJpHXKHV9Dnti3cE1EnUXT1/BV5+B7xuSZtgZ/4LExkCpp5F6BGikraezQL+8hKCOA==}
-    peerDependencies:
-      dotenv: '>= 8.2.0'
 
   dotenv@16.4.5:
     resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
@@ -3745,7 +3737,7 @@ snapshots:
   buffer@4.9.2:
     dependencies:
       base64-js: 1.5.1
-      ieee754: 1.1.13
+      ieee754: 1.2.1
       isarray: 1.0.0
 
   buffer@5.7.1:
@@ -4046,10 +4038,6 @@ snapshots:
       path-type: 4.0.0
 
   dotenv-expand@10.0.0: {}
-
-  dotenv-safe@9.1.0(dotenv@16.4.5):
-    dependencies:
-      dotenv: 16.4.5
 
   dotenv@16.4.5: {}
 

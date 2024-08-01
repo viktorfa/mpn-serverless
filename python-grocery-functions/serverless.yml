@@ -14,13 +14,14 @@ app: python-sls-function
 # Happy Coding!
 
 service: python-mpn-functions # NOTE: update this with your service name
+frameworkVersion: "3"
+useDotenv: true
 
 provider:
   name: aws
   runtime: python3.11
   region: eu-central-1
-  stage: ${self:custom.vars.stage, "dev"}
-  logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
+  logRetentionInDays: ${self:custom.logRetentionInDays.${sls:stage}, self:custom.logRetentionInDays.other}
   profile: serverless-mpn-admin
   versionFunctions: false
 
@@ -30,22 +31,22 @@ provider:
   environment:
     MONGO_URI: ${env:MONGO_URI}
     MONGO_DATABASE: ${env:MONGO_DATABASE}
-    STAGE: ${self:provider.stage}
+    STAGE: ${sls:stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
     SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
     PRICING_FEED_HANDLED_TOPIC_ARN: !Ref PricingFeedHandledTopic
     BOOK_FEED_HANDLED_TOPIC_ARN: !Ref BookFeedHandledTopic
     SENTRY_DSN: ${env:SENTRY_DSN}
-    SENTRY_ENVIRONMENT: ${self:custom.vars.stage, "dev"}
-    HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
-    HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME: "${self:service}-${self:provider.stage}-scraperFeedWithConfigTriggerForPricing"
+    SENTRY_ENVIRONMENT: ${sls:stage}
+    HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTrigger"
+    HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
 
   iamRoleStatements:
     - Effect: Allow
       Action:
         - "lambda:InvokeFunction"
       Resource:
-        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:mpn-crawler-${self:provider.stage}-scrape"
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:mpn-crawler-${sls:stage}-scrape"
     - Effect: "Allow"
       Action:
         - "s3:GetObject"
@@ -78,12 +79,12 @@ provider:
       Action:
         - "lambda:InvokeFunction"
       Resource:
-        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-scraperFeedWithConfigTrigger"
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTrigger"
     - Effect: Allow
       Action:
         - "lambda:InvokeFunction"
       Resource:
-        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-scraperFeedWithConfigTriggerForPricing"
+        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
 
 package:
   include:
@@ -183,21 +184,24 @@ functions:
 
   handleHttpOptions:
     handler: scraper_management.handler.handle_options
+    timeout: 30
     events:
       - http:
           path: "{proxy+}"
           method: options
   invokeScrapeHttp:
+    timeout: 30
     environment:
-      SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-scrape
+      SCRAPE_FUNCTION_NAME: mpn-crawler-${sls:stage}-scrape
     handler: scraper_management.handler.handle_scrape
     events:
       - http:
           path: scrape/{id}
           method: post
   invokeHandleHttp:
+    timeout: 30
     environment:
-      SCRAPE_FUNCTION_NAME: mpn-crawler-${self:provider.stage}-handle
+      SCRAPE_FUNCTION_NAME: mpn-crawler-${sls:stage}-handle
     handler: scraper_management.handler.handle_feed
     events:
       - http:
@@ -220,7 +224,9 @@ plugins:
   - serverless-cloudformation-sub-variables
 
 custom:
-  vars: ${file(./sls-config.js)}
+  logRetentionInDays:
+    prod: 30
+    other: 1
   pythonRequirements:
     # dockerizePip: true # Had some problem with C libs in python if using no-linux
     # slim: true # Omits tests, __pycache__, *.pyc etc from dependencies

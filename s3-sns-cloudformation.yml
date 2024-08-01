@@ -40,26 +40,26 @@ Outputs:
     Value:
       Ref: ScraperFeedHandledTopic
     Export:
-      Name: ${self:provider.stage}-ScraperFeedHandledTopicArn
+      Name: ${sls:stage}-ScraperFeedHandledTopicArn
   PricingFeedHandledTopic:
     Value:
       Ref: PricingFeedHandledTopic
     Export:
-      Name: ${self:provider.stage}-PricingFeedHandledTopicArn
+      Name: ${sls:stage}-PricingFeedHandledTopicArn
   BookFeedHandledTopicArn:
     Value:
       Ref: BookFeedHandledTopic
     Export:
-      Name: ${self:provider.stage}-BookFeedHandledTopicArn
+      Name: ${sls:stage}-BookFeedHandledTopicArn
   ScraperFeedBucket:
     Value:
       Ref: ScraperFeedBucket
     Export:
-      Name: ${self:provider.stage}-ScraperFeedBucket
+      Name: ${sls:stage}-ScraperFeedBucket
   ScraperFeedBucketArn:
     Value:
       Fn::GetAtt:
         - ScraperFeedBucket
         - Arn
     Export:
-      Name: ${self:provider.stage}-ScraperFeedBucketArn
+      Name: ${sls:stage}-ScraperFeedBucketArn
