@@ -1,10 +1,14 @@
 const lunr = require("lunr");
-const AWS = require("aws-sdk");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  CloudFrontClient,
+  CreateInvalidationCommand,
+} = require("@aws-sdk/client-cloudfront");
 
 const { preprocessHeading, getTokens, getBigrams } = require("./tokens");
 
-const cloudfront = new AWS.CloudFront();
-const s3 = new AWS.S3();
+const s3 = new S3Client(); // specify your AWS region
+const cloudfront = new CloudFrontClient(); // specify your AWS region
 
 const createProductObjects = (products, key = "uri") => {
   const result = {};
@@ -15,16 +19,15 @@ const createProductObjects = (products, key = "uri") => {
 };
 
 const saveToS3 = async (Bucket, Key, Body) => {
-  try {
-    const result = await s3
-      .putObject({
-        Bucket,
-        Key,
-        Body,
-        ContentType: "application/json",
-      })
-      .promise();
+  const command = new PutObjectCommand({
+    Bucket,
+    Key,
+    Body,
+    ContentType: "application/json",
+  });
 
+  try {
+    const result = await s3.send(command);
     return {
       ok: true,
       data: result,
@@ -38,16 +41,15 @@ const saveToS3 = async (Bucket, Key, Body) => {
 };
 
 const getLunrIndex = (products, fields = ["title"], ref = "uri") => {
-  const index = lunr(function() {
-    const lunrContext = this;
-    lunrContext.pipeline.remove(lunr.stemmer);
-    lunrContext.pipeline.remove(lunr.stopWordFilter);
+  return lunr(function () {
+    this.pipeline.remove(lunr.stemmer);
+    this.pipeline.remove(lunr.stopWordFilter);
     fields.forEach((field) => {
-      lunrContext.field(field);
+      this.field(field);
     });
-    lunrContext.ref(ref);
+    this.ref(ref);
     products.forEach((product) => {
-      lunrContext.add({
+      this.add({
         [ref]: product[ref],
         ...fields.reduce(
           (acc, field) => ({ ...acc, [field]: product[field] }),
@@ -56,8 +58,6 @@ const getLunrIndex = (products, fields = ["title"], ref = "uri") => {
       });
     });
   });
-
-  return index;
 };
 
 const getAutocompleteData = (products) => {
@@ -79,7 +79,7 @@ const getAutocompleteData = (products) => {
 };
 
 const invalidateCloudFrontDistribution = async (paths, DistributionId) => {
-  const params = {
+  const command = new CreateInvalidationCommand({
     DistributionId,
     InvalidationBatch: {
       CallerReference: new Date().getTime().toString(),
@@ -88,9 +88,10 @@ const invalidateCloudFrontDistribution = async (paths, DistributionId) => {
         Items: paths,
       },
     },
-  };
+  });
+
   try {
-    const response = await cloudfront.createInvalidation(params).promise();
+    const response = await cloudfront.send(command);
     return {
       ok: true,
       data: response,

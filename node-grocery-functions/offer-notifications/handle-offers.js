@@ -5,7 +5,7 @@ const Handlebars = require("handlebars");
 const { getMessageFromSnsEvent } = require("../utils");
 const { getCollection } = require("../config/mongo");
 const { groupBy } = require("lodash");
-const Ses = require("aws-sdk/clients/ses");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const { client: pgClient } = require("../config/postgres");
 const sgMail = require("@sendgrid/mail");
 
@@ -204,7 +204,7 @@ const handleOffers = async ({
             unsubscribeUrl,
           });
 
-          if (false) {
+          if (true) {
             return sendWithSes({
               to: email,
               from: fromEmail,
@@ -245,28 +245,27 @@ const handleOffers = async ({
  * @returns {Promise}
  */
 const sendWithSes = async ({ to, from, fromName, html, text, subject }) => {
-  const sesClient = new Ses();
-
-  return sesClient
-    .sendEmail({
-      Destination: {
-        ToAddresses: [to],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: "UTF-8",
-            Data: html,
-          },
-        },
-        Subject: {
+  const sesClient = new SESClient();
+  const sesCommand = new SendEmailCommand({
+    Destination: {
+      ToAddresses: [to],
+    },
+    Message: {
+      Body: {
+        Html: {
           Charset: "UTF-8",
-          Data: subject,
+          Data: html,
         },
       },
-      Source: `${fromName} <${from}>`,
-    })
-    .promise();
+      Subject: {
+        Charset: "UTF-8",
+        Data: subject,
+      },
+    },
+    Source: `${fromName} <${from}>`,
+  });
+
+  return sesClient.send(sesCommand);
 };
 
 /**

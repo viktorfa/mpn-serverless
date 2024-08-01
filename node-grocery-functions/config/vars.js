@@ -1,19 +1,3 @@
-const path = require("path");
-const dotenv = require("dotenv-safe");
-
-let dotenvFileName = ".env.development";
-switch (process.env.NODE_ENV) {
-  case "production":
-    dotenvFileName = ".env.production";
-    break;
-  case "test":
-    dotenvFileName = ".env.test";
-    break;
-}
-dotenv.config({
-  path: dotenvFileName,
-});
-
 module.exports = {
   mongoUri: process.env.MONGO_URI,
   mongoDatabase: process.env.MONGO_DATABASE,
