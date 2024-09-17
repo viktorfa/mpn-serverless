@@ -58,6 +58,16 @@ const serverlessConfiguration: AWS = {
     apiGateway: {
       minimumCompressionSize: 1024,
     },
+    iamRoleStatements: [
+      {
+        Effect: "Allow",
+        Action: ["s3:GetObject"],
+        Resource: [
+          "arn:aws:s3:::python-mpn-functions-prod-scrapertempbucket-k1kiykofyopu/*",
+          "arn:aws:s3:::python-mpn-functions-dev-scrapertempbucket-el8y3gu4d9pg/*",
+        ],
+      },
+    ],
   },
   functions,
   custom: {
