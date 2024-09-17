@@ -70,7 +70,7 @@ gtins_table = Table(
     "gtins",
     metadata,
     Column("gtin", Text, primary_key=True),
-    Column("gtin_product_id", UUID, ForeignKey("gtin_products.id"), nullable=False),
+    Column("product_id", UUID, ForeignKey("products.id"), nullable=False),
 )
 
 offer_has_gtin_table = Table(
@@ -84,7 +84,7 @@ offer_has_gtin_table = Table(
 )
 
 products_table = Table(
-    "gtin_products",
+    "products",
     metadata,
     Column("id", UUID, primary_key=True),
 )
