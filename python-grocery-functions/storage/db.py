@@ -88,6 +88,8 @@ def get_single_handle_config(provenance: str):
 
 
 def store_handle_run(handle_run_config):
+    logging.info("Storing handle run config")
+    logging.info(handle_run_config)
     collection = get_collection("handleruns")
     return collection.insert_one(handle_run_config)
 

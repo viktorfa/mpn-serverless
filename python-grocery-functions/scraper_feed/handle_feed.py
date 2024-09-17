@@ -47,6 +47,7 @@ def handle_feed_with_config(feed: list, config: HandleConfig) -> BulkWriteResult
     products = list(products)
 
     if len(products) == 0:
+        logging.info("No offers to save")
         return {"message": "No offers to save"}
 
     result = {}

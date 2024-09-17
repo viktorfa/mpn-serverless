@@ -19,11 +19,12 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: python3.8
+  runtime: python3.9
   region: eu-central-1
   stage: ${self:custom.vars.stage, "dev"}
   logRetentionInDays: ${self:custom.vars.logRetentionInDays, 1}
   profile: serverless-mpn-admin
+  versionFunctions: false
 
   memorySize: 3008
   timeout: 900
@@ -67,11 +68,11 @@ functions:
 
   createModelsTrigger:
     handler: handler.create_models_trigger
-    events:
-      - schedule:
-          rate: rate(1 day)
-          input:
-            collection_name: groceryoffers
+    #events:
+    #  - schedule:
+    #      rate: rate(1 day)
+    #      input:
+    #        collection_name: groceryoffers
 
   # addSimilarOffers:
   #   handler: handler.add_similar_offers_sns
@@ -88,13 +89,13 @@ functions:
 
   addIdenticalOffers:
     handler: handler.add_identical_offers_sns
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Fn::ImportValue: !Sub
-              - "#{Stage}-ScraperFeedHandledTopicArn"
-              - Stage: ${self:provider.stage}
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Fn::ImportValue: !Sub
+    #          - "#{Stage}-ScraperFeedHandledTopicArn"
+    #          - Stage: ${self:provider.stage}
 
   addIdenticalOffersTrigger:
     handler: handler.add_identical_offers_trigger

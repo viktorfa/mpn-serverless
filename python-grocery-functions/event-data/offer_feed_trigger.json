@@ -1,6 +1,5 @@
 {
   "collection_name": "byggoffers",
-  "provenance": "byggmax.no",
-  "target_collection_name": "byggproducts",
-  "relation_collection_name": "bygg_producthasoffer"
+  "provenance": "lampegiganten_feed",
+  "namespace": "lampegiganten"
 }
