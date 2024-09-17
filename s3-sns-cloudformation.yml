@@ -1,4 +1,13 @@
 Resources:
+  ScraperTempBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteAfterOneWeek
+            Status: Enabled
+            ExpirationInDays: 7
+      
   ScraperFeedBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -63,3 +72,16 @@ Outputs:
         - Arn
     Export:
       Name: ${sls:stage}-ScraperFeedBucketArn
+      
+  ScraperTempBucket:
+    Value:
+      Ref: ScraperTempBucket
+    Export:
+      Name: ${sls:stage}-ScraperTempBucket
+  ScraperTempBucketArn:
+    Value:
+      Fn::GetAtt:
+        - ScraperTempBucket
+        - Arn
+    Export:
+      Name: ${sls:stage}-ScraperTempBucketArn
