@@ -8,10 +8,12 @@ from amp_types.amp_product import ScraperOffer, PricingField
 
 def get_product_pricing(product: ScraperOffer) -> PricingField:
     currency = product.get("priceCurrency") or product.get("currency") or ""
+    price = product.get("price")
+    pre_price = product.get("prePrice")
     return dict(
-        price=product.get("price"),
+        price=float(price) if price else None,
         currency=currency,
-        prePrice=product.get("prePrice"),
+        prePrice=float(pre_price) if pre_price else None,
         priceUnit=product.get("priceUnit", "pcs"),
     )
 

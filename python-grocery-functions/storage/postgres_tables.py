@@ -15,6 +15,22 @@ from sqlalchemy.schema import PrimaryKeyConstraint, UniqueConstraint
 
 metadata = MetaData()
 
+scrape_batches_table = Table(
+    "scrape_batches",
+    metadata,
+    Column("id", UUID, primary_key=True),
+    Column("scrape_time", TIMESTAMP, nullable=False),
+    Column("status", Text, nullable=False, default="INITIAL"),
+    Column("scrape_batch_id", Text, nullable=False),
+    Column("config_id", UUID, nullable=True),
+    Column("categories_v", Integer, nullable=False),
+    Column("ingredients_v", Integer, nullable=False),
+    Column("nutrition_v", Integer, nullable=False),
+    Column("properties_v", Integer, nullable=False),
+    Column("stock_v", Integer, nullable=False),
+    Column("quantity_v", Integer, nullable=False),
+)
+
 # Define the offers table using SQLAlchemy Core
 offers_table = Table(
     "offers",
@@ -43,6 +59,7 @@ offers_table = Table(
     Column("value_standard_amount", Numeric),
     Column("brand", String),
     Column("description", Text),
+    Column("short_description", Text),
     Column("item_condition", String),
     Column("mpn", String),
     Column("upc", String),
@@ -53,6 +70,7 @@ offers_table = Table(
     Column("scrape_batch_id", String),
     Column("brand_key", String),
     Column("vendor_key", String),
+    Column("product_id", UUID, ForeignKey("products.id"), nullable=False),
     keep_existing=True,
 )
 
@@ -97,7 +115,7 @@ product_market_info_table = Table(
     Column("title", Text, nullable=False),
     Column("description", Text),
     PrimaryKeyConstraint(
-        "product_id", "market", name="uq_product_market"
+        "product_id", "market", name="product_market_infos_pkey"
     ),  # One entry per product per market
 )
 

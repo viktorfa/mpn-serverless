@@ -1,14 +1,16 @@
 from datetime import datetime
 import logging
-from typing import List, Mapping, Sequence, Set
+from typing import List, Sequence, Set, Optional, Dict, Tuple, TypedDict
 import re
 from string import capwords
-from uuid import uuid4
+from uuid_extensions import uuid7, uuid7str
 
+import pydash
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import create_engine, select, update
+from sqlalchemy import create_engine, select, update, case
+from sqlalchemy.engine import Result, RowMapping
 
-from amp_types.amp_product import ProcessedMpnOffer
+from amp_types.amp_product import HandleConfig, ProcessedMpnOffer
 from storage.postgres_tables import (
     brands_table,
     dealers_table,
@@ -19,6 +21,15 @@ from storage.postgres_tables import (
     vendors_table,
     products_table,
     product_market_info_table,
+    scrape_batches_table,
+)
+from scraper_feed.filters import (
+    mpn_categories_version,
+    mpn_ingredients_version,
+    mpn_nutrition_version,
+    mpn_properties_version,
+    mpn_stock_version,
+    mpn_quantity_version,
 )
 
 # Define database URL
@@ -28,8 +39,53 @@ DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/local"
 engine = create_engine(DATABASE_URL)
 
 
+def execute_statement(stmt):
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        try:
+            result = connection.execute(stmt)
+            transaction.commit()
+            return result
+        except Exception as e:
+            transaction.rollback()
+            print(f"An error occurred: {e}")
+            raise e
+
+
+def insert_scrape_batch(config: HandleConfig):
+    stmt = (
+        insert(scrape_batches_table)
+        .values(
+            dict(
+                scrape_time=config["scrape_time"],
+                status="PROCESSING",
+                scrape_batch_id=config["scrapeBatchId"],
+                # config_id=config["id"],
+                categories_v=mpn_categories_version,
+                ingredients_v=mpn_ingredients_version,
+                nutrition_v=mpn_nutrition_version,
+                properties_v=mpn_properties_version,
+                stock_v=mpn_stock_version,
+                quantity_v=mpn_quantity_version,
+            )
+        )
+        .returning(scrape_batches_table.c.id)
+    )
+    return execute_statement(stmt)
+
+
+def update_scrape_batch_status(scrape_batch_id: str, status: str):
+    stmt = (
+        update(scrape_batches_table)
+        .where(scrape_batches_table.c.scrape_batch_id == scrape_batch_id)
+        .values(status=status)
+    )
+    return execute_statement(stmt)
+
+
 def processed_offer_to_pg_offer(offer: ProcessedMpnOffer):
     uri = f"{offer['namespace']}:{offer['provenanceId']}"
+
     return {
         "uri": uri,
         "dealer_key": offer.get("dealer"),
@@ -42,17 +98,21 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer):
         "price_unit": offer["pricing"].get("priceUnit"),
         "provenance": offer["provenance"],
         "provenance_id": offer["provenanceId"],
-        "quantity_unit": offer["quantity"].get("unit"),
-        "quantity_amount": offer["quantity"].get("amount"),
-        "quantity_standard_amount": offer["quantity"].get("standardAmount"),
+        "quantity_unit": pydash.get(offer, ["quantity", "size", "unit", "symbol"]),
+        "quantity_amount": pydash.get(offer, ["quantity", "size", "amount", "max"]),
+        "quantity_standard_amount": pydash.get(
+            offer, ["quantity", "size", "standard", "max"]
+        ),
         "site_collection": offer["siteCollection"],
         "subtitle": offer.get("subtitle"),
         "title": offer["title"],
         "valid_from": offer["validFrom"],
         "valid_through": offer["validThrough"],
-        "value_unit": offer["value"].get("unit"),
-        "value_amount": offer["value"].get("amount"),
-        "value_standard_amount": offer["value"].get("standardAmount"),
+        "value_unit": pydash.get(offer, ["value", "size", "unit", "symbol"]),
+        "value_amount": pydash.get(offer, ["value", "size", "amount", "max"]),
+        "value_standard_amount": pydash.get(
+            offer, ["value", "size", "standard", "max"]
+        ),
         "brand": offer.get("brand"),
         "description": offer.get("description"),
         "item_condition": offer.get("itemCondition"),
@@ -81,10 +141,10 @@ def get_offer_price_object_from_processed_offer(
 
 # Union-Find data structure for grouping GTINs
 class UnionFind:
-    def __init__(self):
-        self.parent = {}
+    def __init__(self) -> None:
+        self.parent: Dict[str, str] = {}
 
-    def find(self, x):
+    def find(self, x: str) -> str:
         # Path compression
         if x not in self.parent:
             self.parent[x] = x
@@ -93,9 +153,9 @@ class UnionFind:
             x = self.parent[x]
         return x
 
-    def union(self, x, y):
-        xroot = self.find(x)
-        yroot = self.find(y)
+    def union(self, x: str, y: str) -> None:
+        xroot: str = self.find(x)
+        yroot: str = self.find(y)
         if xroot != yroot:
             self.parent[yroot] = xroot
 
@@ -127,180 +187,311 @@ def handle_store_offer_batch(
     handle_gtins_for_offers(offers)
 
 
-def handle_gtins_for_offers(offers: Sequence[ProcessedMpnOffer]):
-    with engine.connect() as connection:
-        offer_gtins: Set[str] = set()
-        offer_has_gtin_list: List[dict] = []
-        gtin_offer_map: Mapping[str, str] = {}
+class MarketInfo(TypedDict):
+    market: str
+    title: str
+    description: Optional[str]
 
-        uf = UnionFind()  # Initialize UnionFind
 
-        # Prepare GTIN and offer maps
-        for offer in offers:
-            uri_string = f"{offer['namespace']}:{offer['provenanceId']}"
-            gtin_list: List[str] = []
+class DbMarketInfo(MarketInfo):
+    product_id: str
 
-            for key, value in offer.get("gtins", {}).items():
-                gtin_string = f"{key}:{value}"
-                offer_gtins.add(gtin_string)
-                gtin_offer_map[gtin_string] = uri_string
-                gtin_list.append(gtin_string)
 
-                offer_has_gtin_list.append(
-                    {
-                        "offer_uri": uri_string,
-                        "gtin": gtin_string,
-                        "match_type": "auto",
-                    }
+def handle_gtins_for_offers(offers: Sequence[ProcessedMpnOffer]) -> None:
+    offer_gtins: Set[str] = set()
+    offer_has_gtin_list: List[Dict[str, str]] = []
+    gtin_offer_map: Dict[str, Set[str]] = {}  # Map GTIN to set of offer URIs
+    gtin_market_info_map: Dict[str, MarketInfo] = {}
+    offer_to_gtins: Dict[str, List[str]] = {}  # Map offer URI to list of GTINs
+
+    uf = UnionFind()  # Initialize UnionFind
+
+    # Prepare GTIN and offer maps
+    for offer in offers:
+        uri_string: str = f"{offer['namespace']}:{offer['provenanceId']}"
+        gtin_list: List[str] = []
+        internal_gtin_string = f"_mpn:{uri_string}"
+        gtin_list.append(internal_gtin_string)
+        offer_gtins.add(internal_gtin_string)
+        gtin_offer_map.setdefault(internal_gtin_string, set()).add(uri_string)
+        offer_has_gtin_list.append(
+            {
+                "offer_uri": uri_string,
+                "gtin": internal_gtin_string,
+                "match_type": "copy",
+            }
+        )
+
+        for key, value in offer.get("gtins", {}).items():
+            gtin_string: str = f"{key}:{value}"
+            offer_gtins.add(gtin_string)
+            gtin_offer_map.setdefault(gtin_string, set()).add(uri_string)
+            gtin_list.append(gtin_string)
+
+            offer_has_gtin_list.append(
+                {
+                    "offer_uri": uri_string,
+                    "gtin": gtin_string,
+                    "match_type": "auto",
+                }
+            )
+
+        offer_to_gtins[uri_string] = gtin_list
+
+        if len(gtin_list) > 1:
+            # Union all GTINs in the offer
+            first_gtin: str = gtin_list[0]
+            for gtin in gtin_list[1:]:
+                uf.union(first_gtin, gtin)
+
+        # Collect market info for each GTIN
+        market_info: MarketInfo = {
+            "market": offer["market"],
+            "title": offer["title"],
+            "description": offer.get("description"),
+        }
+
+        for gtin in gtin_list:
+            if gtin not in gtin_market_info_map:
+                gtin_market_info_map[gtin] = market_info
+
+    if offer_gtins:
+        with engine.connect() as connection:
+            transaction = connection.begin()
+            try:
+                # 1. Find Existing GTINs
+                stmt = select(gtins_table.c.gtin, gtins_table.c.product_id).where(
+                    gtins_table.c.gtin.in_(offer_gtins)
                 )
+                result: Result = connection.execute(stmt)
+                existing_gtin_rows = result.mappings().all()
 
-            if len(gtin_list) > 1:
-                # Union all GTINs in the offer
-                first_gtin = gtin_list[0]
-                for gtin in gtin_list[1:]:
-                    uf.union(first_gtin, gtin)
+                # Log found existing GTINs
+                print(f"Found {len(existing_gtin_rows)} existing GTINs.")
 
-        if len(offer_gtins) > 0:
-            with engine.connect() as connection:
-                transaction = connection.begin()
-                try:
-                    # 1. Find Existing GTINs
-                    stmt = select(gtins_table.c.gtin, gtins_table.c.product_id).where(
-                        gtins_table.c.gtin.in_(offer_gtins)
-                    )
-                    result = connection.execute(stmt)
-                    existing_gtin_rows = result.mappings().all()
+                # Create a map of GTIN to product_id for existing GTINs
+                gtin_to_product_map: Dict[str, str] = {
+                    row["gtin"]: str(row["product_id"])
+                    for row in existing_gtin_rows
+                    if row["product_id"]
+                }
 
-                    # Log found existing GTINs
-                    print(f"Found {len(existing_gtin_rows)} existing GTINs.")
+                existing_gtins: Set[str] = set(gtin_to_product_map.keys())
+                new_gtins: Set[str] = offer_gtins - existing_gtins
 
-                    # Create a map of GTIN to product_id for existing GTINs
-                    gtin_to_product_map: Mapping[str, str] = {
-                        row["gtin"]: row["product_id"]
-                        for row in existing_gtin_rows
-                        if row["product_id"]
-                    }
+                # Build root_to_gtins mapping
+                root_to_gtins: Dict[str, Set[str]] = {}
+                for gtin in offer_gtins:
+                    root: str = uf.find(gtin)
+                    if root not in root_to_gtins:
+                        root_to_gtins[root] = set()
+                    root_to_gtins[root].add(gtin)
 
-                    existing_gtins = set(gtin_to_product_map.keys())
-                    new_gtins = offer_gtins - existing_gtins
+                # Now, for each component (root), determine the product_id to use
+                component_product_id: Dict[str, str] = {}  # Map from root to product_id
+                new_products: List[Dict[str, str]] = []
+                gtins_to_update: List[
+                    Dict[str, str]
+                ] = []  # GTINs needing product_id updates
 
-                    # Build root_to_gtins mapping
-                    root_to_gtins: Mapping[str, Set[str]] = {}
-                    for gtin in offer_gtins:
-                        root = uf.find(gtin)
-                        if root not in root_to_gtins:
-                            root_to_gtins[root] = set()
-                        root_to_gtins[root].add(gtin)
+                for root, component_gtins in root_to_gtins.items():
+                    # Collect product_ids associated with GTINs in the component
+                    product_ids_in_component: Set[str] = set()
+                    for gtin in component_gtins:
+                        if gtin in gtin_to_product_map:
+                            product_ids_in_component.add(gtin_to_product_map[gtin])
 
-                    # Now, for each component (root), determine the product_id to use
-                    component_product_id: Mapping[
-                        str, str
-                    ] = {}  # Map from root to product_id
-                    new_products = []
-                    gtins_to_update = []  # List of GTINs needing product_id updates
+                    if not product_ids_in_component:
+                        # No existing product_id, create new product
+                        new_product_id: str = str(uuid7str())
+                        new_products.append({"id": new_product_id})
+                        component_product_id[root] = new_product_id
+                    else:
+                        # Existing product_ids found
+                        selected_product_id: str = min(
+                            product_ids_in_component
+                        )  # Choose one product_id
+                        component_product_id[root] = selected_product_id
 
-                    for root, component_gtins in root_to_gtins.items():
-                        # Collect product_ids associated with GTINs in the component
-                        product_ids_in_component: Set[str] = set()
-                        for gtin in component_gtins:
-                            if gtin in gtin_to_product_map:
-                                product_ids_in_component.add(gtin_to_product_map[gtin])
-
-                        if len(product_ids_in_component) == 0:
-                            # No existing product_id, create new product
-                            new_product_id = str(uuid4())
-                            new_products.append({"id": new_product_id})
-                            component_product_id[root] = new_product_id
-                        else:
-                            # Existing product_ids found
-                            selected_product_id = min(
-                                product_ids_in_component
-                            )  # Choose one product_id
-                            component_product_id[root] = selected_product_id
-
-                            if len(product_ids_in_component) > 1:
-                                # Need to merge products
-                                other_product_ids = product_ids_in_component - {
-                                    selected_product_id
-                                }
-                                print(
-                                    f"Merging products {other_product_ids} into {selected_product_id}"
-                                )
-                                # Update GTINs to use the selected product_id
-                                for gtin in component_gtins:
-                                    existing_product_id = gtin_to_product_map.get(gtin)
-                                    if (
-                                        existing_product_id
-                                        and existing_product_id != selected_product_id
-                                    ):
-                                        gtins_to_update.append(
-                                            {
-                                                "gtin": gtin,
-                                                "product_id": selected_product_id,
-                                            }
-                                        )
-                                        gtin_to_product_map[gtin] = selected_product_id
-
-                        # Update gtin_to_product_map for all GTINs in component
-                        for gtin in component_gtins:
-                            gtin_to_product_map[gtin] = component_product_id[root]
-
-                    # 3. Insert New Products
-                    if new_products:
-                        products_stmt = insert(products_table).values(new_products)
-                        connection.execute(products_stmt)
-                        print(f"Inserted {len(new_products)} new products.")
-
-                    # 4. Insert New GTINs
-                    gtins_to_insert = []
-                    for gtin in new_gtins:
-                        gtins_to_insert.append(
-                            {
-                                "gtin": gtin,
-                                "product_id": gtin_to_product_map[gtin],
+                        if len(product_ids_in_component) > 1:
+                            # Need to merge products
+                            other_product_ids: Set[str] = product_ids_in_component - {
+                                selected_product_id
                             }
-                        )
-                    if gtins_to_insert:
-                        gtin_insert_stmt = (
-                            insert(gtins_table)
-                            .values(gtins_to_insert)
-                            .on_conflict_do_nothing(index_elements=["gtin"])
-                        )
-                        connection.execute(gtin_insert_stmt)
-                        print(f"Inserted {len(gtins_to_insert)} new GTINs.")
-
-                    # 5. Update Existing GTINs' product_id if necessary
-                    if gtins_to_update:
-                        for gtin_entry in gtins_to_update:
-                            update_stmt = (
-                                update(gtins_table)
-                                .where(gtins_table.c.gtin == gtin_entry["gtin"])
-                                .values(product_id=gtin_entry["product_id"])
+                            print(
+                                f"Merging products {other_product_ids} into {selected_product_id}"
                             )
-                            connection.execute(update_stmt)
-                        print(
-                            f"Updated {len(gtins_to_update)} GTINs to new product IDs."
-                        )
+                            # Update GTINs to use the selected product_id
+                            for gtin in component_gtins:
+                                existing_product_id: Optional[str] = (
+                                    gtin_to_product_map.get(gtin)
+                                )
+                                if (
+                                    existing_product_id
+                                    and existing_product_id != selected_product_id
+                                ):
+                                    gtins_to_update.append(
+                                        {
+                                            "gtin": gtin,
+                                            "product_id": selected_product_id,
+                                        }
+                                    )
+                                    gtin_to_product_map[gtin] = selected_product_id
 
-                    # 6. Insert into offer_has_gtin_table
-                    if offer_has_gtin_list:
-                        offer_has_gtin_stmt = (
-                            insert(offer_has_gtin_table)
-                            .values(offer_has_gtin_list)
-                            .on_conflict_do_nothing(
-                                index_elements=["offer_uri", "gtin"]
+                    # Update gtin_to_product_map for all GTINs in component
+                    for gtin in component_gtins:
+                        gtin_to_product_map[gtin] = component_product_id[root]
+
+                # 3. Insert New Products
+                if new_products:
+                    products_stmt = insert(products_table).values(new_products)
+                    connection.execute(products_stmt)
+                    print(f"Inserted {len(new_products)} new products.")
+
+                # 4. Insert New GTINs
+                if new_gtins:
+                    gtins_to_insert = [
+                        {
+                            "gtin": gtin,
+                            "product_id": gtin_to_product_map[gtin],
+                        }
+                        for gtin in new_gtins
+                    ]
+                    gtin_insert_stmt = (
+                        insert(gtins_table)
+                        .values(gtins_to_insert)
+                        .on_conflict_do_nothing(index_elements=["gtin"])
+                    )
+                    connection.execute(gtin_insert_stmt)
+                    print(f"Inserted {len(gtins_to_insert)} new GTINs.")
+
+                # 5. Bulk Update Existing GTINs' product_id if necessary
+                if gtins_to_update:
+                    # Prepare data for bulk update
+                    gtin_update_mapping = {
+                        item["gtin"]: item["product_id"] for item in gtins_to_update
+                    }
+                    gtins_to_update_list = list(gtin_update_mapping.keys())
+
+                    # Build a CASE statement for bulk update
+                    case_stmt = case(
+                        *[
+                            (gtins_table.c.gtin == gtin, gtin_update_mapping[gtin])
+                            for gtin in gtins_to_update_list
+                        ],
+                        else_=gtins_table.c.product_id,
+                    )
+
+                    update_stmt = (
+                        gtins_table.update()
+                        .where(gtins_table.c.gtin.in_(gtins_to_update_list))
+                        .values(product_id=case_stmt)
+                    )
+                    connection.execute(update_stmt)
+                    print(f"Updated {len(gtins_to_update)} GTINs to new product IDs.")
+
+                # 6. Insert into offer_has_gtin_table
+                if offer_has_gtin_list:
+                    offer_has_gtin_stmt = (
+                        insert(offer_has_gtin_table)
+                        .values(offer_has_gtin_list)
+                        .on_conflict_do_nothing(index_elements=["offer_uri", "gtin"])
+                    )
+                    connection.execute(offer_has_gtin_stmt)
+                    print(
+                        f"Upserted {len(offer_has_gtin_list)} offer_has_gtin entries."
+                    )
+
+                # 7. Insert into product_market_info_table
+                # Collect product market info entries
+                product_market_info_entries: List[DbMarketInfo] = []
+                for root, component_gtins in root_to_gtins.items():
+                    product_id: str = component_product_id[root]
+                    # Get market info from one of the GTINs in the component
+                    for gtin in component_gtins:
+                        market_info_entry: Optional[MarketInfo] = (
+                            gtin_market_info_map.get(gtin)
+                        )
+                        if market_info_entry:
+                            entry: DbMarketInfo = {
+                                "product_id": product_id,
+                                "market": market_info_entry["market"],
+                                "title": market_info_entry["title"],
+                                "description": market_info_entry.get("description"),
+                            }
+                            product_market_info_entries.append(entry)
+                            break  # Use the first available market info
+                if product_market_info_entries:
+                    # Remove duplicates based on (product_id, market)
+                    unique_entries_dict: Dict[Tuple[str, str], DbMarketInfo] = {
+                        (e["product_id"], e["market"]): e
+                        for e in product_market_info_entries
+                    }
+                    unique_entries: List[DbMarketInfo] = list(
+                        unique_entries_dict.values()
+                    )
+                    product_market_info_stmt = (
+                        insert(product_market_info_table)
+                        .values(unique_entries)
+                        .on_conflict_do_nothing(index_elements=["product_id", "market"])
+                    )
+                    connection.execute(product_market_info_stmt)
+                    print(
+                        f"Inserted {len(unique_entries)} new product market info entries."
+                    )
+
+                # 8. Bulk Update product_id in offers table
+                if offer_to_gtins:
+                    offer_product_updates: List[Dict[str, str]] = []
+                    for offer_uri, gtin_list in offer_to_gtins.items():
+                        # Get the product_id from any GTIN in the gtin_list
+                        product_id = None
+                        for gtin in gtin_list:
+                            product_id = gtin_to_product_map.get(gtin)
+                            if product_id:
+                                break
+                        if product_id:
+                            offer_product_updates.append(
+                                {
+                                    "uri": offer_uri,
+                                    "product_id": product_id,
+                                }
                             )
+                        else:
+                            print(f"No product_id found for offer {offer_uri}")
+
+                    if offer_product_updates:
+                        # Prepare data for bulk update
+                        offer_update_mapping = {
+                            item["uri"]: item["product_id"]
+                            for item in offer_product_updates
+                        }
+                        offer_uris = list(offer_update_mapping.keys())
+
+                        # Build a CASE statement for bulk update
+                        case_stmt = case(
+                            *[
+                                (offers_table.c.uri == uri, offer_update_mapping[uri])
+                                for uri in offer_uris
+                            ],
+                            else_=offers_table.c.product_id,
                         )
-                        connection.execute(offer_has_gtin_stmt)
+
+                        update_stmt = (
+                            offers_table.update()
+                            .where(offers_table.c.uri.in_(offer_uris))
+                            .values(product_id=case_stmt)
+                        )
+                        connection.execute(update_stmt)
                         print(
-                            f"Upserted {len(offer_has_gtin_list)} offer_has_gtin entries."
+                            f"Updated {len(offer_product_updates)} offers with product_id."
                         )
 
-                    transaction.commit()
+                transaction.commit()
 
-                except Exception as e:
-                    print(f"An error occurred: {e}")
-                    transaction.rollback()
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                transaction.rollback()
 
 
 def upsert_brands_postgres(offers: Sequence[ProcessedMpnOffer]):

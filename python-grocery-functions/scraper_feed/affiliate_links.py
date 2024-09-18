@@ -1,6 +1,8 @@
 from typing import Iterable
 from urllib.parse import quote
 
+from amp_types.amp_product import MpnOffer
+
 
 def encode_uri_component(x: str) -> str:
     return quote(x, safe="")
@@ -302,7 +304,7 @@ def add_morrisons_uk_affiliate_link(product: dict) -> dict:
     return {**product, "ahref": new_href}
 
 
-def get_affiliate_handler(product: dict):
+def get_affiliate_handler(product: MpnOffer):
     if "byggmax.no" in product["href"]:
         return
     # elif "byggmax.no" in product["href"]:
@@ -367,7 +369,7 @@ def get_affiliate_handler(product: dict):
         return add_morrisons_uk_affiliate_link
 
 
-def add_affilite_link_to_product(product: dict) -> dict:
+def add_affilite_link_to_product(product: MpnOffer) -> MpnOffer:
     if not not product.get("ahref"):
         return product
     handler = get_affiliate_handler(product)
@@ -377,5 +379,5 @@ def add_affilite_link_to_product(product: dict) -> dict:
         return handler(product)
 
 
-def add_affiliate_links(products: Iterable) -> Iterable:
+def add_affiliate_links(products: Iterable[MpnOffer]) -> Iterable[MpnOffer]:
     return (add_affilite_link_to_product(product) for product in products)

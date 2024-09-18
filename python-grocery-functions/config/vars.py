@@ -2,7 +2,7 @@ import os
 
 from dotenv import load_dotenv
 
-dotenv_path = ".env.production" if os.getenv("STAGE") == "prod" else ".env.development"
+dotenv_path = ".env.prod" if os.getenv("STAGE") == "prod" else ".env.dev"
 load_dotenv(dotenv_path=dotenv_path)
 
 MONGO_URI = os.environ["MONGO_URI"]

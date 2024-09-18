@@ -4,7 +4,7 @@ from unittest import TestCase
 from pprint import pprint
 
 from scraper_feed.handle_config import generate_handle_config
-from scraper_feed.handle_products import handle_products
+from scraper_feed.filters import transform_and_filter_offers
 
 
 class TestWithConfig(TestCase):
@@ -52,7 +52,7 @@ class TestWithConfig(TestCase):
             ],
         }
 
-        actual = handle_products(self.obsbygg_products, config)
+        actual = transform_and_filter_offers(self.obsbygg_products, config)
 
         self.assertEqual(len(actual), 24, "Should be 24 offers with target category")
 
@@ -78,7 +78,7 @@ class TestWithConfig(TestCase):
             ],
         }
 
-        actual = handle_products(self.obsbygg_products, config)
+        actual = transform_and_filter_offers(self.obsbygg_products, config)
 
         self.assertEqual(len(actual), 54, "Should be 54 offers price higher than 200")
 
@@ -105,7 +105,7 @@ class TestWithConfig(TestCase):
                 ],
             }
         )
-        actual = handle_products(self.meny_products, config)
+        actual = transform_and_filter_offers(self.meny_products, config)
         pprint(actual[-1])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.meny_products))
@@ -177,7 +177,7 @@ class TestWithConfig(TestCase):
                 ],
             }
         )
-        actual = handle_products(self.kolonial_products, config)
+        actual = transform_and_filter_offers(self.kolonial_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.kolonial_products))
@@ -210,7 +210,7 @@ class TestWithConfig(TestCase):
                 ],
             }
         )
-        actual = handle_products(self.europris_products, config)
+        actual = transform_and_filter_offers(self.europris_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.europris_products))
@@ -229,7 +229,7 @@ class TestWithConfig(TestCase):
                 "collection_name": "groceryoffers",
             }
         )
-        actual = handle_products(self.shopgun_products, config)
+        actual = transform_and_filter_offers(self.shopgun_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.shopgun_products))
@@ -248,7 +248,7 @@ class TestWithConfig(TestCase):
                 "collection_name": "groceryoffers",
             }
         )
-        actual = handle_products(self.swecandy_products, config)
+        actual = transform_and_filter_offers(self.swecandy_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.swecandy_products))
@@ -268,7 +268,7 @@ class TestWithConfig(TestCase):
                 "collection_name": "groceryoffers",
             }
         )
-        actual = handle_products(self.gottebiten_products, config)
+        actual = transform_and_filter_offers(self.gottebiten_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.gottebiten_products))
@@ -295,7 +295,7 @@ class TestWithConfig(TestCase):
                 ],
             }
         )
-        actual = handle_products(self.iherb_products, config)
+        actual = transform_and_filter_offers(self.iherb_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.iherb_products))
@@ -316,7 +316,7 @@ class TestWithConfig(TestCase):
                 "collection_name": "byggoffers",
             }
         )
-        actual = handle_products(self.obsbygg_products, config)
+        actual = transform_and_filter_offers(self.obsbygg_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.obsbygg_products))
@@ -336,7 +336,7 @@ class TestWithConfig(TestCase):
                 "collection_name": "byggoffers",
             }
         )
-        actual = handle_products(self.byggmax_products, config)
+        actual = transform_and_filter_offers(self.byggmax_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.byggmax_products))
@@ -363,7 +363,7 @@ class TestWithConfig(TestCase):
                 ],
             }
         )
-        actual = handle_products(self.monter_products, config)
+        actual = transform_and_filter_offers(self.monter_products, config)
         pprint(actual[0])
         self.assertIsInstance(actual, list)
         self.assertEqual(len(actual), len(self.monter_products))
@@ -418,7 +418,7 @@ class TestWithConfig(TestCase):
             "priceCurrency": "NOK",
             "collection_name": "groceryoffers",
         }
-        result = handle_products([scraper_offer], config)
+        result = transform_and_filter_offers([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 39.9)
 
@@ -462,7 +462,7 @@ class TestWithConfig(TestCase):
             "priceCurrency": "NOK",
             "collection_name": "groceryoffers",
         }
-        result = handle_products([scraper_offer], config)
+        result = transform_and_filter_offers([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["value"]["size"]["standard"]["min"], 25.0)
 
@@ -509,7 +509,7 @@ class TestWithConfig(TestCase):
             "provenanceId": "9054481",
         }
 
-        result = handle_products([scraper_offer], config)
+        result = transform_and_filter_offers([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         self.assertEqual(result[0]["quantity"]["size"]["standard"]["min"], 2.4)
         self.assertEqual(result[0]["quantity"]["size"]["unit"]["symbol"], "m")
@@ -558,7 +558,7 @@ class TestWithConfig(TestCase):
         )
         scraper_offer = self.kolonial_products[0]
 
-        result = handle_products([scraper_offer], config)
+        result = transform_and_filter_offers([scraper_offer], config)
         # 39.9 if parsing the value string. 37.5 if inferring it from the quantity..
         logging.debug("kolonial product:")
         logging.debug(json.dumps(result, default=str))

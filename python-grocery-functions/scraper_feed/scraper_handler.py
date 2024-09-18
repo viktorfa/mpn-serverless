@@ -6,8 +6,9 @@ from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
 import botostubs
+import botocore.response
 
-from amp_types.amp_product import EventHandleConfig, HandleConfig
+from amp_types.amp_product import EventHandleConfig
 import aws_config
 from scraper_feed.handle_feed import handle_feed_with_config
 from storage.s3 import get_s3_object
@@ -135,6 +136,7 @@ def trigger_scraper_feed(event, context):
 def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
     logging.info("event")
     logging.info(event)
+    logging.info(type(event))
     aws_config.lambda_context = context
 
     try:
@@ -142,17 +144,19 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         key = event["feed_key"]
         s3_object = get_s3_object(bucket, key)
         scrape_time = s3_object["LastModified"]
-        file_content = s3_object["Body"].read().decode()
+        file_content_stream: botocore.response.StreamingBody = s3_object["Body"]
     except Exception as e:
         logging.error(e)
         log_traceback(e)
-        return {"message": f"Could not read s3 file", "error": str(e)}
-    if not file_content:
-        logging.warn("No items in scraper feed")
+        raise e
+
+    if not file_content_stream:
+        logging.warning("No items in scraper feed")
         return {"message": "No items in scraped feed"}
+
     try:
         result = handle_feed_with_config(
-            json.loads(file_content),
+            file_content_stream,
             {
                 **event,
                 "scrape_time": scrape_time,
@@ -162,8 +166,6 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
 
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",
-            "event": event,
-            "result": json.dumps(result, default=str),
         }
     except Exception as e:
         logging.error(e)

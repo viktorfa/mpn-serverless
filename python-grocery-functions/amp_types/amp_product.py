@@ -6,10 +6,10 @@ from amp_types.quantity_types import ItemsField, Quantity, QuantityField
 
 
 class PricingField(TypedDict):
-    price: float
+    price: Optional[float]
     priceText: str
     currency: str
-    prePrice: float
+    prePrice: Optional[float]
     priceUnit: str
     validFrom: datetime
     validThrough: datetime
@@ -33,7 +33,6 @@ class MpnOffer(TypedDict):
     image: list
     imageUrl: str
     pieces: Quantity
-    size: Quantity
     value: QuantityField
     quantity: QuantityField
     items: ItemsField
@@ -55,9 +54,15 @@ class MpnOffer(TypedDict):
     categories: List[str]
     categories2: List[str]
     gtin: str
-    gtins: List[Mapping[str, str]]
+    gtins: Mapping[str, str]
     market: str
     isPartner: bool
+
+
+class ProcessedMpnOffer(MpnOffer):
+    siteCollection: str
+    scrapeBatchId: str
+    namespace: str
 
 
 class ScraperOffer(TypedDict):

@@ -1,12 +1,11 @@
-from typing import List, Mapping, Iterable
+from typing import List, Mapping
 import pydash
 import logging
 from datetime import datetime, timedelta
 from slugify import slugify
 
-from storage.db import get_collection
 from storage.models import mpn_offer_store_fields
-from parsing.ingredients_extraction import get_ingredients_data, sort_db_ingredient_key
+from parsing.ingredients_extraction import get_ingredients_data
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
     extract_dimensions,
@@ -25,11 +24,7 @@ from parsing.quantity_extraction import (
     standardize_quantity,
     parse_explicit_quantity,
 )
-from amp_types.amp_product import (
-    HandleConfig,
-    MpnOffer,
-    ScraperOffer,
-)
+from amp_types.amp_product import HandleConfig, MpnOffer, ScraperOffer
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
     get_gtins,
@@ -291,16 +286,6 @@ def transform_product(
 def transform_and_filter_offers(
     offers: List[ScraperOffer], config: HandleConfig
 ) -> List[MpnOffer]:
-    ingredients_data: Mapping[str, IngredientType] = {}
-    if (
-        config["collection_name"] in ["groceryoffers"]
-        and len(config.get("extractIngredientsFields", [])) > 0
-    ):
-        ingredients_collection = get_collection("ingredients")
-        db_ingredients: Iterable[IngredientType] = ingredients_collection.find({})
-        for x in sorted(db_ingredients, key=sort_db_ingredient_key):
-            ingredients_data[x["key"]] = x
-
     transformed_offers = (
         transform_product(
             x,
