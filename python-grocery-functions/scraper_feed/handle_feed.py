@@ -69,75 +69,83 @@ def handle_feed_with_config(
     total_offers = 0
     total_filtered_offers = 0
 
-    for offer in ijson.items(feed_json_stream, "item"):
-        total_offers += 1
-        offer: ScraperOffer = offer
-        transformed_offer = transform_product(
-            offer=offer, config=config, ingredients_data=ingredients_data
-        )
-        should_keep = filter_product(product=transformed_offer, filters=filters)
-        if not should_keep:
-            continue
-        total_filtered_offers += 1
+    try:
+        for offer in ijson.items(feed_json_stream, "item"):
+            total_offers += 1
+            offer: ScraperOffer = offer
+            transformed_offer = transform_product(
+                offer=offer, config=config, ingredients_data=ingredients_data
+            )
+            should_keep = filter_product(product=transformed_offer, filters=filters)
+            if not should_keep:
+                continue
+            total_filtered_offers += 1
 
-        processed_offer: ProcessedMpnOffer = {
-            **add_affilite_link_to_product(transformed_offer),
-            "siteCollection": config["collection_name"],
-            "scrapeBatchId": scrape_batch_id,
-            "namespace": config["namespace"],
-        }
-
-        if is_book_offers:
-            book_offer = {
-                **processed_offer,
-                "gtins": get_book_gtins(processed_offer),
-                "uri": processed_offer["book_uri"],
-                "ahref": processed_offer.get("trackingUrl"),
+            processed_offer: ProcessedMpnOffer = {
+                **add_affilite_link_to_product(transformed_offer),
+                "siteCollection": config["collection_name"],
+                "scrapeBatchId": scrape_batch_id,
+                "namespace": config["namespace"],
             }
-            offer_batch.append(book_offer)
-            if len(example_items) < 20:
-                example_items.append(book_offer)
-        else:
-            offer_batch.append(processed_offer)
-            if len(example_items) < 20:
-                example_items.append(processed_offer)
 
-        if os.getenv("STAGE") == "dev":
-            if len(offer_batch) == 512:
-                break
-
-        if len(offer_batch) == 1000:
-            logging.info(f"Saving {len(offer_batch)} offers")
             if is_book_offers:
-                save_book_offers(offer_batch)
+                book_offer = {
+                    **processed_offer,
+                    "gtins": get_book_gtins(processed_offer),
+                    "uri": processed_offer["book_uri"],
+                    "ahref": processed_offer.get("trackingUrl"),
+                }
+                offer_batch.append(book_offer)
+                if len(example_items) < 20:
+                    example_items.append(book_offer)
             else:
-                # save_scraped_offers(offer_batch)
-                handle_store_offer_batch(
-                    offers=offer_batch, scrape_time=config["scrape_time"]
-                )
-            offer_batch = []
+                offer_batch.append(processed_offer)
+                if len(example_items) < 20:
+                    example_items.append(processed_offer)
+
+            if os.getenv("STAGE") == "dev":
+                if len(offer_batch) == 512:
+                    break
+
+            if len(offer_batch) == 1000:
+                logging.info(f"Saving {len(offer_batch)} offers")
+                if is_book_offers:
+                    save_book_offers(offer_batch)
+                else:
+                    save_scraped_offers(offer_batch)
+                    # handle_store_offer_batch(
+                    #    offers=offer_batch, scrape_time=config["scrape_time"]
+                    # )
+                offer_batch = []
+    except IncompleteJSONError as e:
+        logging.error(e)
+        logging.error("Incomplete JSON error")
+        return {
+            "message": "Incomplete JSON error",
+            "error": str(e),
+        }
 
     if len(offer_batch) > 0:
         logging.info(f"Saving last {len(offer_batch)} offers")
         if is_book_offers:
             save_book_offers(offer_batch)
         else:
-            # save_scraped_offers(offer_batch)
+            save_scraped_offers(offer_batch)
             # handle_store_offer_batch(
             #    offers=offer_batch, scrape_time=config["scrape_time"]
             # )
-            with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:
-                json.dump(offer_batch[:12], f, default=str)
+            # with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:
+            #    json.dump(offer_batch[:12], f, default=str)
 
     else:
         logging.info("No offers to save")
 
     # update_scrape_batch_status(inserted_scrape_batch, "COMPLETED")
 
-    return {
-        "items_handled": total_offers,
-        "n_filtered_offers": total_filtered_offers,
-    }
+    # return {
+    #    "items_handled": total_offers,
+    #    "n_filtered_offers": total_filtered_offers,
+    # }
 
     sns_client = boto3.client("sns")  # type: botostubs.SNS
 
