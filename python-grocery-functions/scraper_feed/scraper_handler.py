@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from scraper_feed.handle_config import fetch_handle_configs
+from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
@@ -110,6 +111,24 @@ def trigger_scraper_feed(event, context):
                     default=str,
                 )
             )
+            if os.getenv("STAGE") == "dev":
+                invocations.append(
+                    json.dumps(
+                        lambda_client.invoke(
+                            InvocationType="Event",
+                            FunctionName=os.environ[
+                                "HANDLE_SCRAPER_FEED_FUNCTION_NAME"
+                            ],
+                            Payload=bytes(
+                                json.dumps(
+                                    {**config, "feed_key": key, "use_postgres": True}
+                                ),
+                                "utf-8",
+                            ),
+                        ),
+                        default=str,
+                    )
+                )
             invocations.append(
                 json.dumps(
                     lambda_client.invoke(
@@ -155,14 +174,24 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         return {"message": "No items in scraped feed"}
 
     try:
-        result = handle_feed_with_config(
-            file_content_stream,
-            {
-                **event,
-                "scrape_time": scrape_time,
-                "scrapeBatchId": s3_object["VersionId"],
-            },
-        )
+        if event["use_postgres"]:
+            result = handle_feed_with_config_postgres(
+                file_content_stream,
+                {
+                    **event,
+                    "scrape_time": scrape_time,
+                    "scrapeBatchId": s3_object["VersionId"],
+                },
+            )
+        else:
+            result = handle_feed_with_config(
+                file_content_stream,
+                {
+                    **event,
+                    "scrape_time": scrape_time,
+                    "scrapeBatchId": s3_object["VersionId"],
+                },
+            )
 
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",

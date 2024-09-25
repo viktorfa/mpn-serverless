@@ -40,6 +40,7 @@ provider:
     SENTRY_ENVIRONMENT: ${sls:stage}
     HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTrigger"
     HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
+    POSTGRES_URL: "${env:POSTGRES_URL}"
 
   iamRoleStatements:
     - Effect: Allow

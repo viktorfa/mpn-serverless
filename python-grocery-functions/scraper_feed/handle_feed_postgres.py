@@ -3,17 +3,13 @@ from datetime import datetime
 import os
 from typing import Iterable, Mapping
 
-import boto3
 import botostubs
-import json
 import pydash
 import ijson
 from ijson.common import IncompleteJSONError
 import botocore.response
 
-import aws_config
-from storage.db import save_scraped_offers, store_handle_run, save_book_offers
-from util.helpers import json_handler
+from storage.db import save_book_offers
 from amp_types.amp_product import (
     HandleConfig,
     IngredientType,
@@ -26,9 +22,14 @@ from scraper_feed.helpers import get_book_gtins
 from scraper_feed.filters import filter_product, transform_product
 from parsing.ingredients_extraction import sort_db_ingredient_key
 from storage.db import get_collection
+from storage.postgres import (
+    handle_store_offer_batch,
+    insert_scrape_batch,
+    update_scrape_batch_status,
+)
 
 
-def handle_feed_with_config(
+def handle_feed_with_config_postgres(
     feed_json_stream: botocore.response.StreamingBody, config: HandleConfig
 ):
     if not config["namespace"]:
@@ -41,6 +42,10 @@ def handle_feed_with_config(
         raise Exception("Config needs scrapeBatchId")
 
     start_time = datetime.now()
+
+    # inserted_scrape_batch: str = insert_scrape_batch(
+    #    config=config,
+    # )
 
     ingredients_data: Mapping[str, IngredientType] = {}
     if (
@@ -105,8 +110,9 @@ def handle_feed_with_config(
                 if is_book_offers:
                     save_book_offers(offer_batch)
                 else:
-                    save_scraped_offers(offer_batch)
-
+                    handle_store_offer_batch(
+                        offers=offer_batch, scrape_time=config["scrape_time"]
+                    )
                 offer_batch = []
     except IncompleteJSONError as e:
         logging.error(e)
@@ -123,61 +129,16 @@ def handle_feed_with_config(
         if is_book_offers:
             save_book_offers(offer_batch)
         else:
-            save_scraped_offers(offer_batch)
-
+            handle_store_offer_batch(
+                offers=offer_batch, scrape_time=config["scrape_time"]
+            )
             # with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:
             #    json.dump(offer_batch[:12], f, default=str)
 
     else:
         logging.info("No offers to save")
 
-    sns_client = boto3.client("sns")  # type: botostubs.SNS
-
-    sns_message_data = {
-        **config,
-        "collection_name": config["collection_name"],
-        "scrapeBatchId": scrape_batch_id,
-    }
-    if is_book_offers:
-        sns_message_data = {
-            "namespace": config["namespace"],
-            "scrapeBatchId": scrape_batch_id,
-        }
-
-    sns_message = json.dumps(
-        {"default": json.dumps(sns_message_data, default=json_handler)}
-    )
-
-    if is_book_offers:
-        sns_client.publish(
-            Message=sns_message,
-            MessageStructure="json",
-            TargetArn=BOOK_FEED_HANDLED_TOPIC_ARN,
-        )
-    else:
-        sns_client.publish(
-            Message=sns_message,
-            MessageStructure="json",
-            TargetArn=SCRAPER_FEED_HANDLED_TOPIC_ARN,
-        )
-
-    end_time = datetime.now()
-
-    handle_run = {
-        **config,
-        "example_items": example_items,
-        "time_elapsed_seconds": (end_time - start_time).total_seconds(),
-        "items_handled": total_offers,
-        "n_filtered_offers": total_filtered_offers,
-        "createdAt": end_time,
-        "updatedAt": end_time,
-        "logs": aws_config.get_log_group_url(),
-        "scrapeBatchId": scrape_batch_id,
-    }
-    if os.getenv("IS_LOCAL"):
-        logging.info({**handle_run, "example_items": example_items[:1]})
-    else:
-        store_handle_run(handle_run)
+    # update_scrape_batch_status(inserted_scrape_batch, "COMPLETED")
 
     return {
         "items_handled": total_offers,

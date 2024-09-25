@@ -3,7 +3,8 @@ import logging
 from typing import List, Sequence, Set, Optional, Dict, Tuple, TypedDict
 import re
 from string import capwords
-from uuid_extensions import uuid7, uuid7str
+from uuid_extensions import uuid7str
+
 
 import pydash
 from sqlalchemy.dialects.postgresql import insert
@@ -31,9 +32,11 @@ from scraper_feed.filters import (
     mpn_stock_version,
     mpn_quantity_version,
 )
+from util.timer import Timer
+from config.vars import POSTGRES_URL
 
 # Define database URL
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/local"
+DATABASE_URL = POSTGRES_URL
 
 # Create an engine and metadata
 engine = create_engine(DATABASE_URL)
@@ -163,9 +166,15 @@ class UnionFind:
 def handle_store_offer_batch(
     offers: Sequence[ProcessedMpnOffer], scrape_time: datetime
 ):
+    timer = Timer()
+    timer.start("Save batch")
+    timer.start("Upsert offers")
     # Upsert offers to the database
     logging.info(f"Upserting {len(offers)} offers")
     upsert_offers_postgres(offers)
+    timer.stop("Upsert offers")
+
+    timer.start("Insert prices")
 
     # Extract offer prices from the offers
     offer_prices = [
@@ -177,14 +186,20 @@ def handle_store_offer_batch(
     # Upsert offer prices to the database
     logging.info(f"Upserting {len(offer_prices)} offer prices")
     upsert_offer_prices_batch(offer_prices)
+    timer.stop("Insert prices")
 
     # Extract and upsert brands, vendors, and dealers
     logging.info("Upserting brands, vendors, and dealers")
+    timer.start("Upsert misc")
     upsert_brands_postgres(offers)
     upsert_vendors_postgres(offers)
     upsert_dealers_postgres(offers)
+    timer.stop("Upsert misc")
 
+    timer.start("Insert gtins")
     handle_gtins_for_offers(offers)
+    timer.stop("Insert gtins")
+    timer.stop("Save batch")
 
 
 class MarketInfo(TypedDict):
@@ -303,7 +318,7 @@ def handle_gtins_for_offers(offers: Sequence[ProcessedMpnOffer]) -> None:
 
                     if not product_ids_in_component:
                         # No existing product_id, create new product
-                        new_product_id: str = str(uuid7str())
+                        new_product_id: str = uuid7str()
                         new_products.append({"id": new_product_id})
                         component_product_id[root] = new_product_id
                     else:
