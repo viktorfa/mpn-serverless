@@ -105,6 +105,9 @@ products_table = Table(
     "products",
     metadata,
     Column("id", UUID, primary_key=True),
+    Column("quantity_unit", Text),
+    Column("quantity_amount", Numeric),
+    Column("quantity_standard_amount", Numeric),
 )
 
 product_market_info_table = Table(
@@ -114,6 +117,10 @@ product_market_info_table = Table(
     Column("market", Text, nullable=False),  # Locale or market, e.g., 'NO', 'SE', 'US'
     Column("title", Text, nullable=False),
     Column("description", Text),
+    Column("subtitle", Text),
+    Column("short_description", Text),
+    Column("brand_key", Text),
+    Column("vendor_key", Text),
     PrimaryKeyConstraint(
         "product_id", "market", name="product_market_infos_pkey"
     ),  # One entry per product per market
