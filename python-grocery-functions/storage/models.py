@@ -25,6 +25,7 @@ mpn_offer_store_fields = [
     "mpnStock",
     "mpnNutrition",
     "mpnProperties",
+    "rawIngredients",
     "mpnIngredients",
     "mpnCategories",
     "validFrom",

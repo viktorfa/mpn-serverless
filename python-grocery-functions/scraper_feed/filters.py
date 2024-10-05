@@ -5,7 +5,10 @@ from datetime import datetime, timedelta
 from slugify import slugify
 
 from storage.models import mpn_offer_store_fields
-from parsing.ingredients_extraction import get_ingredients_data
+from parsing.ingredients_extraction import (
+    get_ingredients_data,
+    get_raw_ingredients_list,
+)
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
     extract_dimensions,
@@ -243,6 +246,8 @@ def transform_product(
         result["brandKey"] = brand_key
 
     result["mpnProperties"] = standardize_additional_properties(offer, config)
+
+    result["rawIngredients"] = get_raw_ingredients_list(offer, config)
     if config["collection_name"] in ["groceryoffers"]:
         result["mpnIngredients"] = get_ingredients_data(offer, config, ingredients_data)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)

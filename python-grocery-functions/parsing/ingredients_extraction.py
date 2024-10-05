@@ -6,6 +6,7 @@ import pydash
 from typing import Iterable, List
 from typing import Mapping
 
+from storage.migrate.migrate_ingredients import IngredientsTable
 from transform.offer import get_field_from_scraper_offer
 from amp_types.amp_product import HandleConfig, ScraperOffer, IngredientType
 
@@ -61,22 +62,40 @@ def get_extracted_ingredients(
     return result
 
 
+def get_extracted_ingredients_postgres(
+    raw_ingredients: Iterable[str], ingredients_data: List[IngredientsTable]
+) -> List[IngredientsTable]:
+    result: List[IngredientsTable] = []
+    for string in raw_ingredients:
+        e_number = extract_e_number(string)
+        if e_number:
+            database_e_number = next(
+                (x for x in ingredients_data if str(x.e_number) == e_number),
+                None,
+            )
+            if not database_e_number:
+                continue
+            result.append(database_e_number)
+            continue
+        for db_ingredient in ingredients_data:
+            for pattern in (
+                db_ingredient.patterns if bool(db_ingredient.patterns) else []
+            ):
+                if re.findall(re.compile(str(pattern), re.IGNORECASE), string):
+                    result.append(db_ingredient)
+                    break
+    return result
+
+
 def get_ingredients_data(
     offer: ScraperOffer,
     config: HandleConfig,
     ingredients_data: Mapping[str, IngredientType],
 ):
-    raw_ingredients_fields: List[str] = []
-    for key in config["extractIngredientsFields"]:
-        raw_ingredients = get_field_from_scraper_offer(offer, key)
-        if raw_ingredients and type(raw_ingredients) is str:
-            raw_ingredients_fields.append(raw_ingredients)
-    if len(raw_ingredients_fields) == 0:
-        return None
+    raw_ingredients_values: List[str] = get_raw_ingredients_list(offer, config)
 
-    raw_ingredients_values: List[str] = []
-    for raw_ingredients in raw_ingredients_fields:
-        raw_ingredients_values.extend(extract_individual_ingredients(raw_ingredients))
+    if not raw_ingredients_values:
+        return None
 
     extracted_ingredients = get_extracted_ingredients(
         raw_ingredients_values, ingredients_data
@@ -92,3 +111,19 @@ def get_ingredients_data(
         ingredient["name"] = ingredient_data["name"]
 
     return {"ingredients": extracted_ingredients, "processedScore": processed_score}
+
+
+def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> List[str]:
+    raw_ingredients_fields: List[str] = []
+    for key in config["extractIngredientsFields"]:
+        raw_ingredients = get_field_from_scraper_offer(offer, key)
+        if raw_ingredients and type(raw_ingredients) is str:
+            raw_ingredients_fields.append(raw_ingredients)
+    if len(raw_ingredients_fields) == 0:
+        return []
+
+    raw_ingredients_values: List[str] = []
+    for raw_ingredients in raw_ingredients_fields:
+        raw_ingredients_values.extend(extract_individual_ingredients(raw_ingredients))
+
+    return raw_ingredients_values

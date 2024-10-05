@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, Mapping, Any, TypedDict, Optional
+from typing import Any, List, Literal, Mapping, TypedDict, Optional
 from datetime import datetime
 from enum import Enum
 
@@ -51,6 +51,7 @@ class MpnOffer(TypedDict):
     availability: str
     additionalProperties: Mapping[str, AdditionalProperty]
     mpnProperties: Mapping[str, AdditionalProperty]
+    rawIngredients: List[str]
     categories: List[str]
     categories2: List[str]
     gtin: str
@@ -63,6 +64,7 @@ class ProcessedMpnOffer(MpnOffer):
     siteCollection: str
     scrapeBatchId: str
     namespace: str
+    context: str
 
 
 class ScraperOffer(TypedDict):
@@ -125,6 +127,7 @@ class OfferFilterConfig(TypedDict):
 
 
 class DbHandleConfig(TypedDict):
+    id: str
     fieldMapping: List[MappingConfigField]
     filters: List[OfferFilterConfig]
     extractQuantityFields: List[str]
@@ -141,6 +144,7 @@ class DbHandleConfig(TypedDict):
 
 class EventHandleConfig(DbHandleConfig):
     feed_key: str
+    use_postgres: bool
 
 
 class HandleConfig(EventHandleConfig):
