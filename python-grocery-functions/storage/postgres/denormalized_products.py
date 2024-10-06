@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import func, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from storage.postgres.common import get_pg_engine
@@ -17,7 +18,7 @@ from storage.postgres.postgres_tables import (
 )
 
 
-def update_denormalized_products(affected_product_ids: List[str]):
+def update_denormalized_products(affected_product_ids: List[UUID]):
     # Set up your engine and session
 
     with Session(get_pg_engine()) as session:
@@ -151,6 +152,8 @@ def update_denormalized_products(affected_product_ids: List[str]):
                 .having(func.count(OffersTable.uri) > 0)
                 .all()
             )
+
+            print("aggregated_data", aggregated_data)
 
             for data in aggregated_data:
                 print("data.ingredients", data.ingredients)

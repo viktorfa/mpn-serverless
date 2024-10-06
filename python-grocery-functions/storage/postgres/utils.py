@@ -1,5 +1,7 @@
 from typing import Dict
 
+from amp_types.amp_product import ProcessedMpnOffer
+
 
 # Union-Find data structure for grouping GTINs
 class UnionFind:
@@ -20,3 +22,9 @@ class UnionFind:
         yroot: str = self.find(y)
         if xroot != yroot:
             self.parent[yroot] = xroot
+
+
+def get_offer_from_gtin(
+    gtin_offer_object_map: Dict[str, ProcessedMpnOffer], gtin: str
+) -> ProcessedMpnOffer:
+    return gtin_offer_object_map[gtin]
