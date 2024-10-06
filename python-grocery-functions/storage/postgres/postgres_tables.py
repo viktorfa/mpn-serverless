@@ -100,7 +100,7 @@ class OffersTable(Base):
     quantity_unit = Column(String)
     quantity_amount = Column(Numeric)
     quantity_standard_amount = Column(Numeric)
-    site_collection = Column(String, nullable=False)
+    context = Column(String, nullable=False)
     subtitle = Column(Text)
     title = Column(Text, nullable=False)
     valid_from = Column(TIMESTAMP, nullable=False)

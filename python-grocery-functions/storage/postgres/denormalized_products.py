@@ -19,8 +19,6 @@ from storage.postgres.postgres_tables import (
 
 
 def update_denormalized_products(affected_product_ids: List[UUID]):
-    # Set up your engine and session
-
     with Session(get_pg_engine()) as session:
         try:
             # Query to aggregate data for affected products
@@ -153,68 +151,55 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
                 .all()
             )
 
-            print("aggregated_data", aggregated_data)
-
+            # Collect all insert data into a list
+            insert_data_list = []
             for data in aggregated_data:
-                print("data.ingredients", data.ingredients)
+                insert_data = {
+                    "product_id": data.product_id,
+                    "market": data.market,
+                    "image_url": data.image_url,
+                    "title": data.title,
+                    "subtitle": data.subtitle,
+                    "description": data.description,
+                    "short_description": data.short_description,
+                    "brand_key": data.brand_key,
+                    "vendor_key": data.vendor_key,
+                    "gtins": data.gtins,
+                    "ingredients": data.ingredients,
+                    "nutrition": data.nutrition,
+                    "quantity_unit": data.quantity_unit,
+                    "quantity_amount": data.quantity_amount,
+                    "offers": data.offers,
+                    "price_min": data.price_min,
+                    "price_max": data.price_max,
+                    "value_min": data.value_min,
+                    "value_max": data.value_max,
+                    "valid_through": data.valid_through,
+                    "context": data.context,
+                    "category_key": data.category_key,
+                    "dealer_keys": data.dealer_keys,
+                    # 'created_at' and 'updated_at' will be set automatically
+                }
+                insert_data_list.append(insert_data)
+
+            # Perform bulk insert with on_conflict_do_update
+            if insert_data_list:
                 insert_stmt = pg_insert(DenormalizedProductsTable).values(
-                    product_id=data.product_id,
-                    market=data.market,
-                    image_url=data.image_url,
-                    title=data.title,
-                    subtitle=data.subtitle,
-                    description=data.description,
-                    short_description=data.short_description,
-                    brand_key=data.brand_key,
-                    vendor_key=data.vendor_key,
-                    gtins=data.gtins,
-                    ingredients=data.ingredients,
-                    nutrition=data.nutrition,
-                    quantity_unit=data.quantity_unit,
-                    quantity_amount=data.quantity_amount,
-                    offers=data.offers,
-                    price_min=data.price_min,
-                    price_max=data.price_max,
-                    value_min=data.value_min,
-                    value_max=data.value_max,
-                    valid_through=data.valid_through,
-                    context=data.context,
-                    category_key=data.category_key,
-                    dealer_keys=data.dealer_keys,
-                    # created_at and updated_at will be set automatically
+                    insert_data_list
+                )
+                update_columns = {
+                    # Exclude primary keys from update
+                    key: getattr(insert_stmt.excluded, key)
+                    for key in insert_data_list[0].keys()
+                    if key not in ["product_id", "market"]
+                }
+
+                on_conflict_stmt = insert_stmt.on_conflict_do_update(
+                    index_elements=["product_id", "market"], set_=update_columns
                 )
 
-                update_stmt = insert_stmt.on_conflict_do_update(
-                    index_elements=["product_id", "market"],
-                    set_={
-                        "image_url": insert_stmt.excluded.image_url,
-                        "title": insert_stmt.excluded.title,
-                        "subtitle": insert_stmt.excluded.subtitle,
-                        "description": insert_stmt.excluded.description,
-                        "short_description": insert_stmt.excluded.short_description,
-                        "brand_key": insert_stmt.excluded.brand_key,
-                        "vendor_key": insert_stmt.excluded.vendor_key,
-                        "gtins": insert_stmt.excluded.gtins,
-                        "ingredients": insert_stmt.excluded.ingredients,
-                        "nutrition": insert_stmt.excluded.nutrition,
-                        "quantity_unit": insert_stmt.excluded.quantity_unit,
-                        "quantity_amount": insert_stmt.excluded.quantity_amount,
-                        "offers": insert_stmt.excluded.offers,
-                        "price_min": insert_stmt.excluded.price_min,
-                        "price_max": insert_stmt.excluded.price_max,
-                        "value_min": insert_stmt.excluded.value_min,
-                        "value_max": insert_stmt.excluded.value_max,
-                        "valid_through": insert_stmt.excluded.valid_through,
-                        "context": insert_stmt.excluded.context,
-                        "category_key": insert_stmt.excluded.category_key,
-                        "dealer_keys": insert_stmt.excluded.dealer_keys,
-                        # 'updated_at' will be updated by the trigger
-                    },
-                )
-
-                session.execute(update_stmt)
-
-            session.commit()
+                session.execute(on_conflict_stmt)
+                session.commit()
         except Exception as e:
             session.rollback()
             raise e

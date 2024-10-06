@@ -89,7 +89,7 @@ class PgOffer(BaseModel):
     quantity_unit: Optional[str]
     quantity_amount: Optional[float]
     quantity_standard_amount: Optional[float]
-    site_collection: str
+    context: str
     subtitle: Optional[str]
     title: str
     valid_from: datetime

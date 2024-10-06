@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Sequence
+from typing import Dict, Sequence
 import re
 from string import capwords
+from uuid import UUID
 from sqlalchemy.orm import Session
 import pydash
 
@@ -15,6 +16,7 @@ from storage.postgres.postgres_tables import (
     OffersTable,
     VendorsTable,
 )
+from util.mappings import get_offer_context_from_site_collection
 
 pg_engine = get_pg_engine()
 
@@ -39,7 +41,7 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
         quantity_standard_amount=pydash.get(
             offer, ["quantity", "size", "standard", "max"]
         ),
-        site_collection=offer["siteCollection"],
+        context=get_offer_context_from_site_collection(offer["siteCollection"]),
         subtitle=offer.get("subtitle"),
         title=offer["title"],
         valid_from=offer["validFrom"],
@@ -205,7 +207,9 @@ def upsert_dealers_postgres(offers: Sequence[ProcessedMpnOffer]):
         return len(dealer_entries)
 
 
-def upsert_offers_postgres(offers: Sequence[ProcessedMpnOffer]) -> int:
+def upsert_offers_postgres(
+    offers: Sequence[ProcessedMpnOffer], offer_to_product_id: Dict[str, UUID]
+) -> int:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     pg_offers = [processed_offer_to_pg_offer(offer) for offer in offers]
@@ -214,7 +218,10 @@ def upsert_offers_postgres(offers: Sequence[ProcessedMpnOffer]) -> int:
         try:
             # Prepare the insert statement with the list of offers
             stmt = pg_insert(OffersTable.__table__).values(
-                [offer.model_dump() for offer in pg_offers]
+                [
+                    {**offer.model_dump(), "product_id": offer_to_product_id[offer.uri]}
+                    for offer in pg_offers
+                ]
             )
 
             # Define the `ON CONFLICT` clause

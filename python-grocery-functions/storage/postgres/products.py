@@ -177,7 +177,6 @@ def handle_gtins_for_offers(
                 gtin_to_product_map,
             )
 
-            # update_gtins(session, gtins_to_update)
             upsert_offer_has_gtin(session, prepared_data.offer_has_gtin_list)
             product_market_info_entries = collect_product_market_info_entries(
                 session,
@@ -187,12 +186,7 @@ def handle_gtins_for_offers(
                 prepared_data.gtin_market_info_map,
                 prepared_data.gtin_offer_object_map,
             )
-            # populate_market_info_with_categories(
-            #    session=session,
-            #    context=context,
-            #    product_market_info_entries=product_market_info_entries,
-            #    gtin_offer_object_map=prepared_data.gtin_offer_object_map,
-            # )
+
             upsert_product_has_ingredient(
                 session=session,
                 gtin_product_map=prepared_data.gtin_product_map,

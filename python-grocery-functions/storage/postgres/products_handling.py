@@ -2,7 +2,7 @@ from typing import List, Set, Dict, Tuple, TypedDict
 from uuid import UUID
 from sqlalchemy.orm import Session
 from uuid_extensions import uuid7
-from sqlalchemy import case
+from sqlalchemy import bindparam
 
 from parsing.ingredients_extraction import get_extracted_ingredients_postgres
 from storage.postgres.pydantic_models import DbProductInfo, NutritionType, ProductInfo
@@ -46,26 +46,20 @@ def update_offers_with_product_id(
 
         if offer_product_updates:
             # Prepare data for bulk update
-            offer_update_mapping = {
-                item["uri"]: item["product_id"] for item in offer_product_updates
-            }
-            offer_uris = list(offer_update_mapping.keys())
+            update_values = [
+                {"b_uri": item["uri"], "b_product_id": item["product_id"]}
+                for item in offer_product_updates
+            ]
 
-            # Build a CASE statement for bulk update
-            case_stmt = case(
-                *[
-                    (OffersTable.uri == uri, offer_update_mapping[uri])
-                    for uri in offer_uris
-                ],
-                else_=OffersTable.product_id,
-            )
-
-            update_stmt = (
+            stmt = (
                 OffersTable.__table__.update()
-                .where(OffersTable.uri.in_(offer_uris))
-                .values(product_id=case_stmt)
+                .where(OffersTable.uri == bindparam("b_uri"))
+                .values(product_id=bindparam("b_product_id"))
             )
-            session.execute(update_stmt)
+
+            # Execute the bulk update
+            session.execute(stmt, update_values)
+
             print(f"Updated {len(offer_product_updates)} offers with product_id.")
 
 
@@ -142,21 +136,21 @@ def update_products(
                 product_updates[product_id] = merged_product_info
 
     if product_updates:
-        update_stmt = (
-            pg_insert(ProductsTable.__table__)
-            .values([dict(id=k, **v.model_dump()) for k, v in product_updates.items()])
-            .on_conflict_do_update(
-                index_elements=["id"],
-                set_={
-                    "quantity_unit": pg_insert.excluded.quantity_unit,
-                    "quantity_amount": pg_insert.excluded.quantity_amount,
-                    "quantity_standard_amount": pg_insert.excluded.quantity_standard_amount,
-                    "nutrition": pg_insert.excluded.nutrition,
-                    "merged_to": pg_insert.excluded.merged_to,
-                },
-            )
+        update_stmt = pg_insert(ProductsTable.__table__).values(
+            [dict(id=k, **v.model_dump()) for k, v in product_updates.items()]
         )
-        session.execute(update_stmt)
+        update_stmt_on_conflict = update_stmt.on_conflict_do_update(
+            index_elements=["id"],
+            set_={
+                "quantity_unit": update_stmt.excluded.quantity_unit,
+                "quantity_amount": update_stmt.excluded.quantity_amount,
+                "quantity_standard_amount": update_stmt.excluded.quantity_standard_amount,
+                "nutrition": update_stmt.excluded.nutrition,
+                "merged_to": update_stmt.excluded.merged_to,
+            },
+        )
+
+        session.execute(update_stmt_on_conflict)
         print(f"Updated {len(product_updates)} products.")
 
 

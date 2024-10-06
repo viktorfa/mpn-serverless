@@ -1,9 +1,19 @@
 from datetime import datetime
 import logging
-from typing import Sequence
+from typing import Dict, Sequence
+from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import update
 from storage.postgres.denormalized_products import update_denormalized_products
+from storage.postgres.gtins import (
+    find_existing_gtins,
+    insert_new_gtins,
+    upsert_offer_has_gtin,
+)
+from storage.postgres.market_infos import (
+    collect_product_market_info_entries,
+    upsert_product_market_info,
+)
 from storage.postgres.offer_pricing import update_offer_pricing
 from storage.postgres.offers import (
     get_offer_price_object_from_processed_offer,
@@ -13,7 +23,14 @@ from storage.postgres.offers import (
     upsert_offers_postgres,
     upsert_vendors_postgres,
 )
-from storage.postgres.products import handle_gtins_for_offers
+from storage.postgres.products import build_root_to_gtins, prepare_offer_data
+from storage.postgres.products_handling import (
+    determine_product_ids,
+    insert_products,
+    update_offers_with_product_id,
+    update_products,
+    upsert_product_has_ingredient,
+)
 from util.timer import Timer
 
 from storage.postgres.common import execute_statement, get_pg_engine
@@ -96,25 +113,6 @@ def handle_store_offer_batch(
 ):
     timer = Timer()
     timer.start("Save batch")
-    timer.start("Upsert offers")
-    # Upsert offers to the database
-    logging.info(f"Upserting {len(offers)} offers")
-    upsert_offers_postgres(offers)
-    timer.stop("Upsert offers")
-
-    timer.start("Insert prices")
-
-    # Extract offer prices from the offers
-    offer_prices = [
-        get_offer_price_object_from_processed_offer(offer, scrape_time)
-        for offer in offers
-        if offer["pricing"].get("price") is not None
-    ]
-
-    # Upsert offer prices to the database
-    logging.info(f"Upserting {len(offer_prices)} offer prices")
-    upsert_offer_prices_batch(offer_prices)
-    timer.stop("Insert prices")
 
     # Extract and upsert brands, vendors, and dealers
     logging.info("Upserting brands, vendors, and dealers")
@@ -124,9 +122,90 @@ def handle_store_offer_batch(
     upsert_dealers_postgres(offers)
     timer.stop("Upsert misc")
 
-    timer.start("Insert gtins")
-    product_ids = handle_gtins_for_offers(offers, context)
-    timer.stop("Insert gtins")
+    prepared_data, uf = prepare_offer_data(offers)
+    with Session(get_pg_engine()) as session:
+        try:
+            timer.start("Insert gtins")
+            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(
+                session, prepared_data.offer_gtins
+            )
+            root_to_gtins = build_root_to_gtins(uf, prepared_data.offer_gtins)
+            component_product_id, new_products, products_to_update = (
+                determine_product_ids(
+                    root_to_gtins,
+                    gtin_to_product_map,
+                    prepared_data.gtin_product_map,
+                )
+            )
+            insert_products(session, new_products)
+
+            insert_new_gtins(session, new_gtins, gtin_to_product_map)
+
+            update_products(
+                session,
+                products_to_update,
+                root_to_gtins,
+                prepared_data.gtin_product_map,
+                existing_gtins,
+                gtin_to_product_map,
+            )
+
+            # After determining gtin_to_product_map and offer_to_gtins
+            offer_to_product_id: Dict[str, UUID] = {}
+            for offer_uri, gtins in prepared_data.offer_to_gtins.items():
+                for gtin in gtins:
+                    product_id = gtin_to_product_map.get(gtin)
+                    if product_id:
+                        offer_to_product_id[offer_uri] = product_id
+                        break  # Stop after finding the first valid product_id
+
+            timer.start("Upsert offers")
+            # Upsert offers to the database
+            logging.info(f"Upserting {len(offers)} offers")
+            upsert_offers_postgres(offers, offer_to_product_id)
+            timer.stop("Upsert offers")
+            timer.start("Insert prices")
+            # Extract offer prices from the offers
+            offer_prices = [
+                get_offer_price_object_from_processed_offer(offer, scrape_time)
+                for offer in offers
+                if offer["pricing"].get("price") is not None
+            ]
+
+            # Upsert offer prices to the database
+            logging.info(f"Upserting {len(offer_prices)} offer prices")
+            upsert_offer_prices_batch(offer_prices)
+            timer.stop("Insert prices")
+
+            upsert_offer_has_gtin(session, prepared_data.offer_has_gtin_list)
+            product_market_info_entries = collect_product_market_info_entries(
+                session,
+                context,
+                root_to_gtins,
+                gtin_to_product_map,
+                prepared_data.gtin_market_info_map,
+                prepared_data.gtin_offer_object_map,
+            )
+
+            upsert_product_has_ingredient(
+                session=session,
+                gtin_product_map=prepared_data.gtin_product_map,
+                gtin_offer_object_map=prepared_data.gtin_offer_object_map,
+                gtin_to_product_map=gtin_to_product_map,
+            )
+            upsert_product_market_info(
+                session, list(product_market_info_entries.values())
+            )
+
+            product_ids = list(gtin_to_product_map.values())
+
+            session.commit()
+            timer.stop("Insert gtins")
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            session.rollback()
+            raise
 
     if not product_ids:
         print("No product ids found")
