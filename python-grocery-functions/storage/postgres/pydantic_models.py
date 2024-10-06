@@ -1,3 +1,4 @@
+from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, Set, List, Dict, Any
 from datetime import datetime
@@ -39,13 +40,13 @@ class MarketInfoFieldsMixin(BaseModel):
 
 class ProductInfo(QuantityFieldsMixin):
     nutrition: Optional[NutritionType]
-    merged_to: Optional[str]
+    merged_to: Optional[UUID]
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class DbProductInfo(ProductInfo):
-    id: str
+    id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,7 +59,7 @@ class MarketInfo(MarketInfoFieldsMixin):
 
 
 class DbMarketInfo(MarketInfo):
-    product_id: str
+    product_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 

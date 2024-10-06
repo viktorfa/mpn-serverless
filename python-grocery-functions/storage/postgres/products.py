@@ -1,12 +1,14 @@
 import logging
-from typing import List, Sequence, Set, Optional, Dict, Tuple
+from typing import List, Sequence, Set, Optional, Dict, Tuple, TypedDict
+from uuid import UUID
 from sqlalchemy.orm import Session
-from uuid_extensions import uuid7str
+from uuid_extensions import uuid7
 import pydash
 from sqlalchemy import case
 
 from parsing.ingredients_extraction import get_extracted_ingredients_postgres
 from parsing.nutrition_extraction import extract_nutritional_data_new
+from storage.migrate.migrate_categories import CategoriesTable
 from storage.postgres.common import get_pg_engine
 from storage.postgres.pydantic_models import (
     DbMarketInfo,
@@ -18,6 +20,7 @@ from storage.postgres.pydantic_models import (
 )
 from amp_types.amp_product import ProcessedMpnOffer
 from storage.postgres.postgres_tables import (
+    CategoryMappingsTable,
     OfferHasGtinTable,
     OffersTable,
     ProductHasIngredientTable,
@@ -151,15 +154,15 @@ def merge_product_info(existing: ProductInfo, new: ProductInfo) -> ProductInfo:
 
 def find_existing_gtins(
     session: Session, offer_gtins: Set[str]
-) -> Tuple[Dict[str, str], Set[str], Set[str]]:
+) -> Tuple[Dict[str, UUID], Set[str], Set[str]]:
     existing_gtin_rows = (
         session.query(GtinsTable).filter(GtinsTable.gtin.in_(offer_gtins)).all()
     )
 
     print(f"Found {len(existing_gtin_rows)} existing GTINs.")
 
-    gtin_to_product_map: Dict[str, str] = {
-        row.gtin: str(row.product_id)
+    gtin_to_product_map: Dict[str, UUID] = {
+        row.gtin: UUID(str(row.product_id))
         for row in existing_gtin_rows
         if bool(row.product_id)
     }
@@ -170,6 +173,16 @@ def find_existing_gtins(
 
 
 def build_root_to_gtins(uf: UnionFind, offer_gtins: Set[str]) -> Dict[str, Set[str]]:
+    """
+    Builds a dictionary mapping each root GTIN to a set of GTINs that share the same root.
+
+    Args:
+        uf (UnionFind): An instance of the UnionFind data structure used to find the root of each GTIN.
+        offer_gtins (Set[str]): A set of GTINs (Global Trade Item Numbers) to be processed.
+
+    Returns:
+        Dict[str, Set[str]]: A dictionary where each key is a root GTIN and each value is a set of GTINs that share the same root.
+    """
     root_to_gtins: Dict[str, Set[str]] = {}
     for gtin in offer_gtins:
         root: str = uf.find(gtin)
@@ -181,22 +194,20 @@ def build_root_to_gtins(uf: UnionFind, offer_gtins: Set[str]) -> Dict[str, Set[s
 
 def determine_product_ids(
     root_to_gtins: Dict[str, Set[str]],
-    gtin_to_product_map: Dict[str, str],
+    gtin_to_product_map: Dict[str, UUID],
     gtin_product_map: Dict[str, ProductInfo],
 ) -> Tuple[
-    Dict[str, str],
+    Dict[str, UUID],
     List[DbProductInfo],
-    Dict[str, DbProductInfo],
-    List[Dict[str, str]],
+    Dict[UUID, DbProductInfo],
 ]:
-    component_product_id: Dict[str, str] = {}  # Map from root to product_id
+    component_product_id: Dict[str, UUID] = {}  # Map from root to product_id
     new_products: List[DbProductInfo] = []
-    products_to_update: Dict[str, DbProductInfo] = {}
-    gtins_to_update: List[Dict[str, str]] = []
+    products_to_update: Dict[UUID, DbProductInfo] = {}
 
     for root, component_gtins in root_to_gtins.items():
         # Collect product_ids associated with GTINs in the component
-        product_ids_in_component: Set[str] = set()
+        product_ids_in_component: Set[UUID] = set()
         for gtin in component_gtins:
             if gtin in gtin_to_product_map:
                 product_ids_in_component.add(gtin_to_product_map[gtin])
@@ -230,143 +241,133 @@ def determine_product_ids(
                         )
                         if new_n_filled_keys > old_n_filled_keys:
                             setattr(product_data, key, new_value)
-
                     elif new_value and not old_value:
                         setattr(product_data, key, new_value)
 
         if not product_ids_in_component:
             # No existing product_id, create new product
-            new_product_id: str = uuid7str()
+            new_product_id: UUID = uuid7()
             product_data = DbProductInfo(id=new_product_id, **product_data.model_dump())
             new_products.append(product_data)
             component_product_id[root] = new_product_id
+
         else:
             # Existing product_ids found
-            selected_product_id = get_product_to_merge_to(
-                product_ids=list(product_ids_in_component),
-                root_to_gtins=root_to_gtins,
-                gtin_to_product_map=gtin_to_product_map,
-                gtin_product_map=gtin_product_map,
-            )
-            component_product_id[root] = selected_product_id
-
-            other_product_ids: Set[str] = product_ids_in_component - {
-                selected_product_id
-            }
-
-            for product_id in other_product_ids:
-                product_data = DbProductInfo(
-                    id=product_id,
-                    merged_to=selected_product_id,
-                    quantity_amount=None,
-                    quantity_standard_amount=None,
-                    nutrition=None,
-                    quantity_unit=None,
+            for product_id in product_ids_in_component:
+                products_to_update[product_id] = DbProductInfo(
+                    id=product_id, **product_data.model_dump()
                 )
-                products_to_update[product_id] = product_data
 
-            # Prepare product data for update
-            product_data = DbProductInfo(
-                id=selected_product_id, **product_data.model_dump()
-            )
-            products_to_update[selected_product_id] = product_data
-
-            if len(product_ids_in_component) > 1:
-                # Need to merge products
-
-                print(
-                    f"Merging products {other_product_ids} into {selected_product_id}"
-                )
-                # Update GTINs to use the selected product_id
-                for gtin in component_gtins:
-                    existing_product_id: Optional[str] = gtin_to_product_map.get(gtin)
-                    if (
-                        existing_product_id
-                        and existing_product_id != selected_product_id
-                    ):
-                        gtins_to_update.append(
-                            {
-                                "gtin": gtin,
-                                "product_id": selected_product_id,
-                            }
-                        )
-                        gtin_to_product_map[gtin] = selected_product_id
-
-        # Update gtin_to_product_map for all GTINs in component
-        for gtin in component_gtins:
-            gtin_to_product_map[gtin] = component_product_id[root]
-
-    return component_product_id, new_products, products_to_update, gtins_to_update
+    return component_product_id, new_products, products_to_update
 
 
-def get_product_to_merge_to(
-    product_ids: Sequence[str],
-    root_to_gtins: Dict[str, Set[str]],
-    gtin_to_product_map: Dict[str, str],
-    gtin_product_map: Dict[str, ProductInfo],
-) -> str:
-    # Get the product with the lowest ID
-    result = min(product_ids)
-    return result
-
-
-def upsert_products(
-    session: Session,
-    new_products: List[DbProductInfo],
-    products_to_update: Dict[str, DbProductInfo],
-) -> None:
+def insert_products(session: Session, new_products: List[DbProductInfo]) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
-    from sqlalchemy import case
 
-    products_entries = [product.model_dump() for product in new_products] + [
-        product.model_dump() for product in products_to_update.values()
-    ]
+    products_entries = [product.model_dump() for product in new_products]
 
     for pe in products_entries:
         pe["nutrition"] = {k: v for k, v in pe["nutrition"].items() if v is not None}
 
     if products_entries:
-        products_stmt = pg_insert(ProductsTable.__table__).values(products_entries)
-        # Define the update columns with conditional expressions
-        update_columns = {
-            "quantity_unit": case(
-                (
-                    ProductsTable.quantity_unit == None,
-                    products_stmt.excluded.quantity_unit,
-                ),
-                else_=ProductsTable.quantity_unit,
-            ),
-            "quantity_amount": case(
-                (
-                    ProductsTable.quantity_amount == None,
-                    products_stmt.excluded.quantity_amount,
-                ),
-                else_=ProductsTable.quantity_amount,
-            ),
-            "quantity_standard_amount": case(
-                (
-                    ProductsTable.quantity_standard_amount == None,
-                    products_stmt.excluded.quantity_standard_amount,
-                ),
-                else_=ProductsTable.quantity_standard_amount,
-            ),
-            "nutrition": case(
-                (
-                    ProductsTable.nutrition == None,
-                    products_stmt.excluded.nutrition,
-                ),
-                else_=ProductsTable.nutrition,
-            ),
-        }
-        upsert_stmt = products_stmt.on_conflict_do_update(
-            index_elements=["id"], set_=update_columns
+        insert_stmt = pg_insert(ProductsTable.__table__).values(products_entries)
+        session.execute(insert_stmt)
+        print(f"Inserted {len(products_entries)} new products.")
+
+
+def update_products(
+    session: Session,
+    products_to_update: Dict[UUID, DbProductInfo],
+    root_to_gtins: Dict[str, Set[str]],
+    gtin_to_product_map: Dict[str, ProductInfo],
+    existing_gtins: Set[str],
+    gtin_to_product_id_map: Dict[str, UUID],
+) -> None:
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+
+    existing_products = (
+        session.query(ProductsTable)
+        .filter(ProductsTable.id.in_(products_to_update))
+        .all()
+    )
+    product_updates: Dict[UUID, ProductInfo] = {}
+    for gtin, component_gtins in root_to_gtins.items():
+        if gtin not in existing_gtins:
+            continue
+        merged_product_info = ProductInfo(
+            quantity_unit=None,
+            quantity_amount=None,
+            quantity_standard_amount=None,
+            nutrition=NutritionType(),
+            merged_to=None,
         )
-        session.execute(upsert_stmt)
-        print(f"Upserted {len(products_entries)} products.")
+        for component_gtin in component_gtins:
+            product_id = gtin_to_product_id_map[component_gtin]
+            new_product_info = gtin_to_product_map[gtin]
+            existing_product_info_row = next(
+                (p for p in existing_products if UUID(str(p.id)) == product_id),
+                None,
+            )
+            if existing_product_info_row is None:
+                raise Exception(
+                    f"Product with ID {product_id} not found in existing products."
+                )
+            existing_product_info = ProductInfo(
+                quantity_unit=str(existing_product_info_row.quantity_unit),
+                quantity_amount=float(existing_product_info_row.quantity_amount)
+                if existing_product_info_row.quantity_amount
+                else None,
+                quantity_standard_amount=float(
+                    existing_product_info_row.quantity_standard_amount
+                )
+                if existing_product_info_row.quantity_standard_amount
+                else None,
+                nutrition=NutritionType(**existing_product_info_row.nutrition),
+                merged_to=UUID(str(existing_product_info_row.merged_to))
+                if existing_product_info_row.merged_to
+                else None,
+            )
+            merged_product_info = merge_product_info(
+                existing_product_info, new_product_info
+            )
+
+        if len(component_gtins) > 1:
+            product_to_merge_to = min(
+                [gtin_to_product_id_map[gtin] for gtin in component_gtins]
+            )
+            merged_product_info.merged_to = product_to_merge_to
+            for component_gtin in component_gtins:
+                product_id = gtin_to_product_id_map[component_gtin]
+                product_updates[product_id] = ProductInfo(
+                    **merged_product_info.model_dump()
+                )
+        else:
+            if merged_product_info == existing_product_info:
+                continue
+            else:
+                product_updates[product_id] = merged_product_info
+
+    if product_updates:
+        update_stmt = (
+            pg_insert(ProductsTable.__table__)
+            .values([dict(id=k, **v.model_dump()) for k, v in product_updates.items()])
+            .on_conflict_do_update(
+                index_elements=["id"],
+                set_={
+                    "quantity_unit": ProductsTable.quantity_unit,
+                    "quantity_amount": ProductsTable.quantity_amount,
+                    "quantity_standard_amount": ProductsTable.quantity_standard_amount,
+                    "nutrition": ProductsTable.nutrition,
+                    "merged_to": ProductsTable.merged_to,
+                },
+            )
+        )
+        session.execute(update_stmt)
+        print(f"Updated {len(product_updates)} products.")
 
 
 def insert_new_gtins(
-    session: Session, new_gtins: Set[str], gtin_to_product_map: Dict[str, str]
+    session: Session, new_gtins: Set[str], gtin_to_product_map: Dict[str, UUID]
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -413,25 +414,111 @@ def update_gtins(session: Session, gtins_to_update: List[Dict[str, str]]) -> Non
         print(f"Updated {len(gtins_to_update)} GTINs to new product IDs.")
 
 
+def merge_market_info(existing: MarketInfo, new: MarketInfo) -> MarketInfo:
+    return MarketInfo(
+        market=existing.market,
+        title=existing.title or new.title,
+        description=existing.description or new.description,
+        subtitle=existing.subtitle or new.subtitle,
+        short_description=existing.short_description or new.short_description,
+        brand_key=existing.brand_key or new.brand_key,
+        vendor_key=existing.vendor_key or new.vendor_key,
+        context=existing.context,
+        category_key=existing.category_key or new.category_key,
+    )
+
+
 def collect_product_market_info_entries(
+    session: Session,
+    context: str,
     root_to_gtins: Dict[str, Set[str]],
-    component_product_id: Dict[str, str],
+    component_product_id: Dict[str, UUID],
     gtin_market_info_map: Dict[str, MarketInfo],
+    gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
 ) -> Dict[str, DbMarketInfo]:
     product_market_info_entries: Dict[str, DbMarketInfo] = {}
-    for root, component_gtins in root_to_gtins.items():
-        product_id: str = component_product_id[root]
-        # Get market info from one of the GTINs in the component
-        for gtin in component_gtins:
-            market_info_entry: Optional[MarketInfo] = gtin_market_info_map.get(gtin)
-            if market_info_entry:
-                entry = DbMarketInfo(
-                    product_id=product_id,
-                    **market_info_entry.model_dump(),
-                )
 
-                product_market_info_entries[gtin] = entry
-                break  # Use the first available market info
+    existing_market_infos = (
+        session.query(ProductMarketInfoTable)
+        .filter(ProductMarketInfoTable.context == context)
+        .filter(ProductMarketInfoTable.product_id.in_(component_product_id.values()))
+        .all()
+    )
+
+    category_mappings = (
+        session.query(CategoryMappingsTable, CategoriesTable)
+        .join(
+            CategoriesTable,
+            (CategoryMappingsTable.context == CategoriesTable.context)
+            & (CategoryMappingsTable.target == CategoriesTable.key),
+        )
+        .filter(CategoryMappingsTable.context == context)
+        .all()
+    )
+
+    for root, component_gtins in root_to_gtins.items():
+        product_id = component_product_id[root]
+        # Get market info from one of the GTINs in the component
+        new_market_info = MarketInfo(
+            market="",
+            title="",
+            description=None,
+            subtitle=None,
+            short_description=None,
+            brand_key=None,
+            vendor_key=None,
+            context=context,
+            category_key=None,
+        )
+        for gtin in component_gtins:
+            existing_market_info = next(
+                (
+                    mi
+                    for mi in existing_market_infos
+                    if UUID(str(mi.product_id)) == product_id
+                ),
+                None,
+            )
+            market_info_entry: Optional[MarketInfo] = gtin_market_info_map.get(gtin)
+            if not market_info_entry:
+                raise Exception(f"Market info not found for GTIN {gtin}")
+
+            if category_mappings:
+                offer = get_offer_from_gtin(gtin_offer_object_map, gtin)
+                offer_cats = offer.get("categories")
+                if offer_cats:
+                    matched_categories: List[
+                        Tuple[CategoryMappingsTable, CategoriesTable]
+                    ] = []
+                    for cat in offer_cats:
+                        for mapping, category in category_mappings:
+                            if cat in mapping.source:
+                                matched_categories.append((mapping, category))
+                                break
+                    if matched_categories:
+                        highest_level_matched_category = max(
+                            matched_categories, key=lambda x: x[1].level
+                        )
+
+                        market_info_entry.category_key = str(
+                            highest_level_matched_category[0].target
+                        )
+                        logging.debug(
+                            f"Found category {market_info_entry.category_key} for GTIN {gtin}"
+                        )
+
+            new_market_info = merge_market_info(new_market_info, market_info_entry)
+            entry = DbMarketInfo(
+                product_id=product_id,
+                **new_market_info.model_dump(),
+            )
+
+            if existing_market_info:
+                if entry == existing_market_info:
+                    continue
+
+            product_market_info_entries[gtin] = entry
+
     return product_market_info_entries
 
 
@@ -450,13 +537,18 @@ def upsert_offer_has_gtin(
         print(f"Upserted {len(offer_has_gtin_list)} offer_has_gtin entries.")
 
 
+class OfferProductUpdate(TypedDict):
+    uri: str
+    product_id: UUID
+
+
 def update_offers_with_product_id(
     session: Session,
     offer_to_gtins: Dict[str, List[str]],
-    gtin_to_product_map: Dict[str, str],
+    gtin_to_product_map: Dict[str, UUID],
 ) -> None:
     if offer_to_gtins:
-        offer_product_updates: List[Dict[str, str]] = []
+        offer_product_updates: List[OfferProductUpdate] = []
         for offer_uri, gtin_list in offer_to_gtins.items():
             # Get the product_id from any GTIN in the gtin_list
             product_id = None
@@ -506,7 +598,7 @@ def upsert_product_market_info(
 
     if product_market_info_entries:
         # Remove duplicates based on (product_id, market)
-        unique_entries_dict: Dict[Tuple[str, str], DbMarketInfo] = {
+        unique_entries_dict: Dict[Tuple[UUID, str], DbMarketInfo] = {
             (e.product_id, e.market): e for e in product_market_info_entries
         }
         unique_entries: List[DbMarketInfo] = list(unique_entries_dict.values())
@@ -534,7 +626,7 @@ def upsert_product_market_info(
 
 def handle_gtins_for_offers(
     offers: Sequence[ProcessedMpnOffer], context: str
-) -> List[str] | None:
+) -> List[UUID] | None:
     prepared_data, uf = prepare_offer_data(offers)
 
     with Session(get_pg_engine()) as session:
@@ -543,28 +635,41 @@ def handle_gtins_for_offers(
                 session, prepared_data.offer_gtins
             )
             root_to_gtins = build_root_to_gtins(uf, prepared_data.offer_gtins)
-            component_product_id, new_products, products_to_update, gtins_to_update = (
+            component_product_id, new_products, products_to_update = (
                 determine_product_ids(
                     root_to_gtins,
                     gtin_to_product_map,
                     prepared_data.gtin_product_map,
                 )
             )
-            upsert_products(session, new_products, products_to_update)
+            insert_products(session, new_products)
             insert_new_gtins(session, new_gtins, gtin_to_product_map)
-            update_gtins(session, gtins_to_update)
+
+            update_products(
+                session,
+                products_to_update,
+                root_to_gtins,
+                prepared_data.gtin_product_map,
+                existing_gtins,
+                gtin_to_product_map,
+            )
+
+            # update_gtins(session, gtins_to_update)
             upsert_offer_has_gtin(session, prepared_data.offer_has_gtin_list)
             product_market_info_entries = collect_product_market_info_entries(
+                session,
+                context,
                 root_to_gtins,
-                component_product_id,
+                gtin_to_product_map,
                 prepared_data.gtin_market_info_map,
+                prepared_data.gtin_offer_object_map,
             )
-            populate_market_info_with_categories(
-                session=session,
-                context=context,
-                product_market_info_entries=product_market_info_entries,
-                gtin_offer_object_map=prepared_data.gtin_offer_object_map,
-            )
+            # populate_market_info_with_categories(
+            #    session=session,
+            #    context=context,
+            #    product_market_info_entries=product_market_info_entries,
+            #    gtin_offer_object_map=prepared_data.gtin_offer_object_map,
+            # )
             upsert_product_has_ingredient(
                 session=session,
                 gtin_product_map=prepared_data.gtin_product_map,
@@ -579,7 +684,7 @@ def handle_gtins_for_offers(
             )
 
             session.commit()
-            return list(component_product_id.values())
+            return list(gtin_to_product_map.values())
         except Exception as e:
             print(f"An error occurred: {e}")
             log_traceback(e)
@@ -592,8 +697,6 @@ def populate_market_info_with_categories(
     product_market_info_entries: Dict[str, DbMarketInfo],
     gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
 ) -> None:
-    from storage.postgres.postgres_tables import CategoryMappingsTable
-
     category_mappings = (
         session.query(CategoryMappingsTable)
         .filter(CategoryMappingsTable.context == context)
@@ -629,7 +732,7 @@ def upsert_product_has_ingredient(
     session: Session,
     gtin_product_map: Dict[str, ProductInfo],
     gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
-    gtin_to_product_map: Dict[str, str],
+    gtin_to_product_map: Dict[str, UUID],
 ) -> None:
     from storage.postgres.postgres_tables import IngredientsTable
     from sqlalchemy.dialects.postgresql import insert as pg_insert
