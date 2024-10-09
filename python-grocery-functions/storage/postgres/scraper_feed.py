@@ -27,7 +27,6 @@ from storage.postgres.products import build_root_to_gtins, prepare_offer_data
 from storage.postgres.products_handling import (
     determine_product_ids,
     insert_products,
-    update_offers_with_product_id,
     update_products,
     upsert_product_has_ingredient,
 )
@@ -141,6 +140,9 @@ def handle_store_offer_batch(
 
             insert_new_gtins(session, new_gtins, gtin_to_product_map)
 
+            print("products_to_update")
+            print(products_to_update)
+
             update_products(
                 session,
                 products_to_update,
@@ -162,7 +164,7 @@ def handle_store_offer_batch(
             timer.start("Upsert offers")
             # Upsert offers to the database
             logging.info(f"Upserting {len(offers)} offers")
-            upsert_offers_postgres(offers, offer_to_product_id)
+            upsert_offers_postgres(session, offers, offer_to_product_id)
             timer.stop("Upsert offers")
             timer.start("Insert prices")
             # Extract offer prices from the offers
@@ -174,7 +176,7 @@ def handle_store_offer_batch(
 
             # Upsert offer prices to the database
             logging.info(f"Upserting {len(offer_prices)} offer prices")
-            upsert_offer_prices_batch(offer_prices)
+            upsert_offer_prices_batch(session, offer_prices)
             timer.stop("Insert prices")
 
             upsert_offer_has_gtin(session, prepared_data.offer_has_gtin_list)

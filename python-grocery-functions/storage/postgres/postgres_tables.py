@@ -12,7 +12,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB, INTEGER, BOOLEAN, ARRAY, TEXT
-from sqlalchemy.orm import Mapped, mapped_column, declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, declarative_base, relationship
 
 
 Base = declarative_base()
@@ -60,7 +60,7 @@ class HandleConfigsTable(Base):
     additional_config = Column(JSONB)
     field_mapping = Column(JSONB, nullable=True)
     extract_quantity_fields = Column(JSONB, nullable=True)
-    site_collection = Column(String)
+    context = Column(String)
     namespace = Column(String)
     is_partner = Column(Boolean, default=False)
     market = Column(String)
@@ -123,6 +123,8 @@ class OffersTable(Base):
     vendor_key = Column(String)
     product_id = Column(UUID, ForeignKey("products.id"), nullable=False)
 
+    product = relationship("ProductsTable", backref="offers")
+
     # New fields for price differences
     difference_7_days_mean = Column(Numeric)
     difference_7_days_mean_percentage = Column(Numeric)
@@ -172,6 +174,7 @@ class ProductMarketInfoTable(Base):
     vendor_key = Column(Text)
     context = Column(Text, nullable=False)
     category_key = Column(Text)
+    category_keys = Column(ARRAY(TEXT))
 
 
 class BrandsTable(Base):
@@ -210,13 +213,13 @@ class CategoryMappingsTable(Base):
     source = Column(ARRAY(TEXT))
     target = Column(TEXT)
 
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ["context", "target"],
-            ["public.categories.context", "public.categories.target"],
-            name="category_mappings_context_target_fkey",
-        ),
-    )
+    # __table_args__ = (
+    #    ForeignKeyConstraint(
+    #        ["context", "target"],
+    #        ["public.categories.context", "public.categories.target"],
+    #        name="category_mappings_context_target_fkey",
+    #    ),
+    # )
 
 
 class CategoriesTable(Base):
@@ -289,3 +292,4 @@ class DenormalizedProductsTable(Base):
     dealer_keys = Column(ARRAY(String))
     created_at = Column(TIMESTAMP, server_default=text("now()"))
     updated_at = Column(TIMESTAMP, server_default=text("now()"))
+    category_keys = Column(ARRAY(TEXT))

@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import create_engine
 from config.vars import POSTGRES_URL
 
@@ -6,7 +7,9 @@ from config.vars import POSTGRES_URL
 engine = create_engine(POSTGRES_URL)
 
 
-def get_pg_engine():
+def get_pg_engine(db_url: Optional[str] = None):
+    if db_url:
+        return create_engine(db_url)
     return engine
 
 

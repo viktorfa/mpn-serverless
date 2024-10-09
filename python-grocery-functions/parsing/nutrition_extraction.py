@@ -4,7 +4,7 @@ import logging
 
 from storage.postgres.pydantic_models import NutritionType
 from transform.offer import get_field_from_scraper_offer
-from amp_types.amp_product import HandleConfig, ScraperOffer
+from amp_types.amp_product import HandleConfig, NutritionalData, ScraperOffer
 from parsing.parsing import extract_number_unit_pairs, extract_number
 
 macro_names = [
@@ -96,10 +96,6 @@ def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
     return result
 
 
-class NutritionalData(TypedDict):
-    value: float
-
-
 new_macro_names = [
     "fats",
     "carbohydrates",
@@ -123,9 +119,8 @@ def extract_nutritional_data_new(
 
     for key, value in nutrition_data.items():
         if key in new_macro_names:
-            if key == "energyKcal":
-                data["kcals"] = value["value"]
-            else:
-                data[key] = value["value"]
+            data[key] = value["value"]
+        elif key == "energyKcal":
+            data["kcals"] = value["value"]
 
     return NutritionType(**data)

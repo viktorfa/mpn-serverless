@@ -11,6 +11,7 @@ from typing import Iterable, TypedDict
 
 from storage.db import chunked_iterable, get_collection
 from amp_types.amp_product import HandleConfig, MpnOffer
+from util.mappings import get_offer_context_from_site_collection
 from util.utils import log_traceback
 from util.logging import configure_lambda_logging
 from util.helpers import is_null_or_empty
@@ -55,42 +56,6 @@ def offer_feed_trigger_for_categories(event, context):
         log_traceback(e)
         result.append({"message": str(e)})
     return result
-
-
-def get_offer_context_from_site_collection(site_collection: str) -> Optional[str]:
-    if site_collection == "groceryoffers":
-        return "amp-no"
-    elif site_collection == "degroceryoffers":
-        return "amp-de"
-    elif site_collection == "dkgroceryoffers":
-        return "amp-dk"
-    elif site_collection == "segroceryoffers":
-        return "amp-se"
-    elif site_collection == "figroceryoffers":
-        return "amp-fi"
-    elif site_collection == "plgroceryoffers":
-        return "amp-pl"
-    elif site_collection == "nlgroceryoffers":
-        return "amp-nl"
-    elif site_collection == "frgroceryoffers":
-        return "amp-fr"
-    elif site_collection == "esgroceryoffers":
-        return "amp-es"
-    elif site_collection == "ukgroceryoffers":
-        return "amp-uk"
-    elif site_collection == "itgroceryoffers":
-        return "amp-it"
-    elif site_collection == "byggoffers":
-        return "bygg-no"
-    elif site_collection == "debyggoffers":
-        return "bygg-de"
-    elif site_collection == "dkbyggoffers":
-        return "bygg-dk"
-    elif site_collection == "sebyggoffers":
-        return "bygg-se"
-    elif site_collection == "beautyoffers":
-        return "beauty-no"
-    return None
 
 
 def get_mpn_categories_for_meny_offer(offer: MpnOffer, target_cat_map):

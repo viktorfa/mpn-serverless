@@ -4,7 +4,6 @@ import os
 from typing import Iterable, Mapping
 
 import boto3
-import botostubs
 import json
 import pydash
 import ijson

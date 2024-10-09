@@ -14,6 +14,10 @@ from storage.postgres.utils import get_offer_from_gtin
 
 
 def merge_market_info(existing: MarketInfo, new: MarketInfo) -> MarketInfo:
+    category_keys = existing.category_keys or []
+    if new.category_keys and len(new.category_keys) > len(category_keys):
+        category_keys = new.category_keys
+
     return MarketInfo(
         market=existing.market or new.market,
         title=existing.title or new.title,
@@ -24,6 +28,7 @@ def merge_market_info(existing: MarketInfo, new: MarketInfo) -> MarketInfo:
         vendor_key=existing.vendor_key or new.vendor_key,
         context=existing.context or new.context,
         category_key=existing.category_key or new.category_key,
+        category_keys=category_keys,
     )
 
 
@@ -31,7 +36,7 @@ def collect_product_market_info_entries(
     session: Session,
     context: str,
     root_to_gtins: Dict[str, Set[str]],
-    component_product_id: Dict[str, UUID],
+    gtin_to_product_map: Dict[str, UUID],
     gtin_market_info_map: Dict[str, MarketInfo],
     gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
 ) -> Dict[str, DbMarketInfo]:
@@ -40,7 +45,7 @@ def collect_product_market_info_entries(
     existing_market_infos = (
         session.query(ProductMarketInfoTable)
         .filter(ProductMarketInfoTable.context == context)
-        .filter(ProductMarketInfoTable.product_id.in_(component_product_id.values()))
+        .filter(ProductMarketInfoTable.product_id.in_(gtin_to_product_map.values()))
         .all()
     )
 
@@ -56,7 +61,7 @@ def collect_product_market_info_entries(
     )
 
     for root, component_gtins in root_to_gtins.items():
-        product_id = component_product_id[root]
+        product_id = gtin_to_product_map[root]
         # Get market info from one of the GTINs in the component
         new_market_info = MarketInfo(
             market="",
@@ -68,6 +73,7 @@ def collect_product_market_info_entries(
             vendor_key=None,
             context=context,
             category_key=None,
+            category_keys=None,
         )
         for gtin in component_gtins:
             existing_market_info = next(
@@ -99,12 +105,37 @@ def collect_product_market_info_entries(
                             matched_categories, key=lambda x: x[1].level
                         )
 
-                        market_info_entry.category_key = str(
-                            highest_level_matched_category[0].target
+                        category_keys = []
+                        highest_category = next(
+                            (
+                                category
+                                for mapping, category in category_mappings
+                                if category.key
+                                == highest_level_matched_category[0].target
+                            ),
+                            None,
                         )
-                        logging.debug(
-                            f"Found category {market_info_entry.category_key} for GTIN {gtin}"
-                        )
+
+                        if not highest_category:
+                            raise Exception(
+                                f"Category not found for GTIN {gtin} with category key {highest_level_matched_category[0].target}"
+                            )
+
+                        market_info_entry.category_key = str(highest_category.key)
+                        while True and highest_category:
+                            category_keys.insert(0, highest_category.key)
+                            highest_category = next(
+                                (
+                                    category
+                                    for mapping, category in category_mappings
+                                    if category.key == highest_category.parent
+                                ),
+                                None,
+                            )
+                            if not highest_category:
+                                break
+
+                        market_info_entry.category_keys = category_keys
 
             new_market_info = merge_market_info(new_market_info, market_info_entry)
             entry = DbMarketInfo(
@@ -117,6 +148,10 @@ def collect_product_market_info_entries(
                     continue
 
             product_market_info_entries[gtin] = entry
+
+    logging.info(
+        f"Collected {len(product_market_info_entries)} product market info entries."
+    )
 
     return product_market_info_entries
 
@@ -145,6 +180,7 @@ def upsert_product_market_info(
             "vendor_key": product_market_info_stmt.excluded.vendor_key,
             "context": product_market_info_stmt.excluded.context,
             "category_key": product_market_info_stmt.excluded.category_key,
+            "category_keys": product_market_info_stmt.excluded.category_keys,
         }
         upsert_stmt = product_market_info_stmt.on_conflict_do_update(
             index_elements=["product_id", "market"], set_=update_columns
@@ -167,7 +203,10 @@ def populate_market_info_with_categories(
     )
 
     if not category_mappings:
+        logging.info(f"No category mappings found for context {context}")
         return
+
+    n_categories_found = 0
 
     for gtin, market_info in product_market_info_entries.items():
         offer = get_offer_from_gtin(gtin_offer_object_map, gtin)
@@ -186,6 +225,8 @@ def populate_market_info_with_categories(
         highest_level_matched_category = matched_categories[0]
 
         market_info.category_key = str(highest_level_matched_category.target)
-        logging.debug(f"Found category {market_info.category_key} for GTIN {gtin}")
+        n_categories_found += 1
+
+    logging.info(f"Found {n_categories_found} categories for market info entries.")
 
     return

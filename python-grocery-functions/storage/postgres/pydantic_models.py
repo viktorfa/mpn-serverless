@@ -54,12 +54,35 @@ class DbProductInfo(ProductInfo):
 class MarketInfo(MarketInfoFieldsMixin):
     context: str
     category_key: Optional[str]
+    category_keys: Optional[List[str]]
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class DbMarketInfo(MarketInfo):
     product_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MpnGtin(BaseModel):
+    gtin: str
+    product_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MpnBrand(BaseModel):
+    key: str
+    title: str
+    market: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProductHasIngredient(BaseModel):
+    product_id: UUID
+    ingredient_id: UUID
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -99,6 +122,7 @@ class PgOffer(BaseModel):
     value_standard_amount: Optional[float]
     brand: Optional[str]
     description: Optional[str]
+    short_description: Optional[str]
     item_condition: Optional[str]
     mpn: Optional[str]
     upc: Optional[str]
@@ -117,7 +141,7 @@ class PydanticHandleConfig(BaseModel):
     id: str
     provenance: str
     namespace: str
-    collection_name: str
+    context: str
     market: str
     is_partner: bool = False
     categoriesLimits: List[int] = Field(default_factory=list)

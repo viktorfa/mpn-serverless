@@ -1,9 +1,5 @@
 import re
-import json
-import os
-import logging
-import pydash
-from typing import Iterable, List
+from typing import List, Sequence
 from typing import Mapping
 
 from storage.migrate.migrate_ingredients import IngredientsTable
@@ -34,7 +30,7 @@ def extract_individual_ingredients(raw_ingredients: str) -> List[str]:
 
 
 def get_extracted_ingredients(
-    raw_ingredients: Iterable[str], ingredients_data: Mapping[str, IngredientType]
+    raw_ingredients: Sequence[str], ingredients_data: Mapping[str, IngredientType]
 ):
     result = {}
     for string in raw_ingredients:
@@ -63,7 +59,7 @@ def get_extracted_ingredients(
 
 
 def get_extracted_ingredients_postgres(
-    raw_ingredients: Iterable[str], ingredients_data: List[IngredientsTable]
+    raw_ingredients: Sequence[str], ingredients_data: List[IngredientsTable]
 ) -> List[IngredientsTable]:
     result: List[IngredientsTable] = []
     for string in raw_ingredients:
@@ -122,8 +118,12 @@ def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> List[
     if len(raw_ingredients_fields) == 0:
         return []
 
-    raw_ingredients_values: List[str] = []
-    for raw_ingredients in raw_ingredients_fields:
-        raw_ingredients_values.extend(extract_individual_ingredients(raw_ingredients))
+    return get_raw_ingredients_from_strings(raw_ingredients_fields)
 
-    return raw_ingredients_values
+
+def get_raw_ingredients_from_strings(raw_ingredients: List[str]) -> List[str]:
+    result: List[str] = []
+    for raw_ingredient_string in raw_ingredients:
+        result.extend(extract_individual_ingredients(raw_ingredient_string))
+
+    return result

@@ -102,8 +102,8 @@ def generate_handle_config_postgres(config: HandleConfigsTable) -> PydanticHandl
     result["id"] = str(config.id)
     result["provenance"] = config.provenance
     result["namespace"] = config.namespace
-    result["collection_name"] = (
-        config.site_collection
+    result["context"] = (
+        config.context
     )  # Assuming `collection_name` is stored as `site_collection`
     result["market"] = config.market
     result["is_partner"] = config.is_partner

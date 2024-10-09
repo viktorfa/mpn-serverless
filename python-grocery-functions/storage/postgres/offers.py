@@ -1,8 +1,10 @@
+import logging
 from datetime import datetime
 from typing import Dict, Sequence
 import re
 from string import capwords
 from uuid import UUID
+from slugify import slugify
 from sqlalchemy.orm import Session
 import pydash
 
@@ -16,17 +18,19 @@ from storage.postgres.postgres_tables import (
     OffersTable,
     VendorsTable,
 )
-from util.mappings import get_offer_context_from_site_collection
 
 pg_engine = get_pg_engine()
 
 
 def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
     uri = f"{offer['namespace']}:{offer['provenanceId']}"
-
+    dealer_key = slugify(offer["dealer"], separator="_")
     return PgOffer(
         uri=uri,
-        dealer_key=offer.get("dealer"),
+        dealer_key=dealer_key,
+        brand=offer.get("brand"),
+        brand_key=offer.get("brandKey"),
+        vendor_key=offer.get("vendorKey"),
         href=offer["href"],
         image=offer.get("imageUrl"),
         mpn_stock=offer.get("mpn"),
@@ -41,7 +45,7 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
         quantity_standard_amount=pydash.get(
             offer, ["quantity", "size", "standard", "max"]
         ),
-        context=get_offer_context_from_site_collection(offer["siteCollection"]),
+        context=offer["context"],
         subtitle=offer.get("subtitle"),
         title=offer["title"],
         valid_from=offer["validFrom"],
@@ -49,18 +53,16 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
         value_unit=pydash.get(offer, ["value", "size", "unit", "symbol"]),
         value_amount=pydash.get(offer, ["value", "size", "amount", "max"]),
         value_standard_amount=pydash.get(offer, ["value", "size", "standard", "max"]),
-        brand=offer.get("brand"),
         description=offer.get("description"),
+        short_description=offer.get("short_description"),
         item_condition=offer.get("itemCondition"),
         mpn=offer.get("mpn"),
-        upc=offer.get("gtin"),
+        upc=offer.get("upc"),
         ahref=offer.get("ahref"),
         is_partner=offer.get("isPartner"),
         market=offer["market"],
         is_promotion_restricted=offer.get("isPromoted"),
         scrape_batch_id=offer["scrapeBatchId"],
-        brand_key=offer.get("brandKey"),
-        vendor_key=offer.get("vendorKey"),
     )
 
 
@@ -152,6 +154,7 @@ def upsert_vendors_postgres(offers: Sequence[ProcessedMpnOffer]):
 def get_dealer_title(dealer: str) -> str:
     # Remove "www."
     dealer = re.sub(r"www\.", "", dealer)
+    dealer = re.sub(r"www_", "", dealer)
 
     # Remove country code suffixes preceded by an underscore
     dealer = re.sub(r"_(no|se|de|dk|fi|us|uk|sg|th|nl|fr|es|it|pl|au)$", "", dealer)
@@ -170,11 +173,11 @@ def upsert_dealers_postgres(offers: Sequence[ProcessedMpnOffer]):
     dealer_keys = set()
 
     for offer in offers:
-        dealer_key = offer["dealer"]
+        dealer_key = slugify(offer["dealer"], separator="_")
         dealer_title = get_dealer_title(dealer_key)
 
         market = offer["market"]
-        is_partner = offer.get("isPartner")
+        is_partner = offer.get("isPartner", False) or False
 
         if dealer_key and dealer_key not in dealer_keys:
             dealer_keys.add(dealer_key)
@@ -208,45 +211,40 @@ def upsert_dealers_postgres(offers: Sequence[ProcessedMpnOffer]):
 
 
 def upsert_offers_postgres(
-    offers: Sequence[ProcessedMpnOffer], offer_to_product_id: Dict[str, UUID]
+    session: Session,
+    offers: Sequence[ProcessedMpnOffer],
+    offer_to_product_id: Dict[str, UUID],
 ) -> int:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     pg_offers = [processed_offer_to_pg_offer(offer) for offer in offers]
 
-    with Session(pg_engine) as session:
-        try:
-            # Prepare the insert statement with the list of offers
-            stmt = pg_insert(OffersTable.__table__).values(
-                [
-                    {**offer.model_dump(), "product_id": offer_to_product_id[offer.uri]}
-                    for offer in pg_offers
-                ]
-            )
+    # Prepare the insert statement with the list of offers
+    stmt = pg_insert(OffersTable.__table__).values(
+        [
+            {**offer.model_dump(), "product_id": offer_to_product_id[offer.uri]}
+            for offer in pg_offers
+        ]
+    )
 
-            # Define the `ON CONFLICT` clause
-            update_fields = {
-                field: getattr(stmt.excluded, field)
-                for field in PgOffer.model_fields.keys()
-                if field != "uri"  # Exclude the primary key field
-            }
+    # Define the `ON CONFLICT` clause
+    update_fields = {
+        field: getattr(stmt.excluded, field)
+        for field in PgOffer.model_fields.keys()
+        if field != "uri"  # Exclude the primary key field
+    }
 
-            stmt = stmt.on_conflict_do_update(
-                index_elements=["uri"],  # Columns to check for conflict
-                set_=update_fields,
-            )
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["uri"],  # Columns to check for conflict
+        set_=update_fields,
+    )
 
-            result = session.execute(stmt)
-            session.commit()
-            print(f"Upserted {result.rowcount} offers")
-            return result.rowcount
-        except Exception as e:
-            session.rollback()  # Roll back in case of an error
-            print(f"An error occurred: {e}")
-            raise  # Re-raise the exception after rollback
+    result = session.execute(stmt)
+    print(f"Upserted {result.rowcount} offers")
+    return result.rowcount
 
 
-def upsert_offer_prices_batch(offer_prices_batch):
+def upsert_offer_prices_batch(session: Session, offer_prices_batch):
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     # Create the upsert (insert on conflict) statement
@@ -255,12 +253,6 @@ def upsert_offer_prices_batch(offer_prices_batch):
         .values(offer_prices_batch)
         .on_conflict_do_nothing(index_elements=["uri", "recorded_at"])
     )
+    session.execute(stmt)
 
-    with Session(pg_engine) as session:
-        try:
-            # Execute the statement
-            session.execute(stmt)
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            print(f"Error occurred during upsert: {e}")
+    logging.info(f"Upserted {len(offer_prices_batch)} offer prices")

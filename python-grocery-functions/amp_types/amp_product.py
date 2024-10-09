@@ -5,6 +5,10 @@ from enum import Enum
 from amp_types.quantity_types import ItemsField, Quantity, QuantityField
 
 
+class NutritionalData(TypedDict):
+    value: float
+
+
 class PricingField(TypedDict):
     price: Optional[float]
     priceText: str
@@ -29,32 +33,31 @@ class AdditionalProperty(TypedDict):
 class MpnOffer(TypedDict):
     title: str
     pricing: PricingField
+    subtitle: str
+    shortDescription: str
     description: str
-    image: list
     imageUrl: str
     pieces: Quantity
     value: QuantityField
     quantity: QuantityField
     items: ItemsField
-    likes: list
-    reports: list
     validFrom: datetime
     validThrough: datetime
     href: str
     provenance: str
-    brand: str
+    brand: Optional[str]
+    brandKey: Optional[str]
+    vendor: Optional[str]
+    vendorKey: Optional[str]
+    dealer: str
     uri: str
     provenanceId: str
-    dealer: str
-    selectMethod: str
-    isPromoted: bool
     availability: str
     additionalProperties: Mapping[str, AdditionalProperty]
     mpnProperties: Mapping[str, AdditionalProperty]
+    mpnNutrition: Mapping[str, NutritionalData]
     rawIngredients: List[str]
     categories: List[str]
-    categories2: List[str]
-    gtin: str
     gtins: Mapping[str, str]
     market: str
     isPartner: bool
@@ -89,7 +92,6 @@ class ScraperOffer(TypedDict):
     additionalProperties: List[AdditionalProperty]
     additionalPropertyDict: Mapping[str, AdditionalProperty]
     categories: List[str]
-    categories2: List[str]
     gtin: str
     gtin8: str
     gtin12: str
@@ -150,6 +152,12 @@ class EventHandleConfig(DbHandleConfig):
 class HandleConfig(EventHandleConfig):
     scrape_time: datetime
     scrapeBatchId: str
+
+
+class HandleConfigNew(EventHandleConfig):
+    scrape_time: datetime
+    scrapeBatchId: str
+    context: str
 
 
 class PriceHistoryRecord(TypedDict):

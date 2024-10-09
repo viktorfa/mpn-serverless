@@ -203,7 +203,7 @@ def transform_product(
         if extra_quantity_string:
             parse_quantity_strings.append(extra_quantity_string)
 
-        safe_unit_list = ["l", "kg"] if "grocery" in config["collection_name"] else None
+        safe_unit_list = ["l", "kg"] if "amp" in config["context"] else None
 
         parsed_quantity = parse_quantity(
             list(x for x in parse_quantity_strings if x), safe_unit_list
@@ -248,7 +248,7 @@ def transform_product(
     result["mpnProperties"] = standardize_additional_properties(offer, config)
 
     result["rawIngredients"] = get_raw_ingredients_list(offer, config)
-    if config["collection_name"] in ["groceryoffers"]:
+    if config["context"] in ["amp-no"]:
         result["mpnIngredients"] = get_ingredients_data(offer, config, ingredients_data)
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
 

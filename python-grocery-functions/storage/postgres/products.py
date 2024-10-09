@@ -1,3 +1,4 @@
+import logging
 from typing import List, Sequence, Set, Dict, Tuple
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -90,6 +91,7 @@ def prepare_offer_data(
             vendor_key=offer.get("vendorKey"),
             context=offer["context"],
             category_key=None,
+            category_keys=None,
         )
 
         product_info = ProductInfo(
@@ -201,9 +203,9 @@ def handle_gtins_for_offers(
             )
 
             session.commit()
-            print("gtin_to_product_map.values()", gtin_to_product_map.values())
+
             return list(gtin_to_product_map.values())
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logging.error(f"An error occurred: {e}")
             log_traceback(e)
             session.rollback()

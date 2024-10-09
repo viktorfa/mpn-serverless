@@ -3,7 +3,6 @@ from datetime import datetime
 import os
 from typing import Iterable, Mapping
 
-import botostubs
 import pydash
 import ijson
 from ijson.common import IncompleteJSONError
@@ -13,6 +12,7 @@ from util.mappings import get_offer_context_from_site_collection
 from storage.db import save_book_offers
 from amp_types.amp_product import (
     HandleConfig,
+    HandleConfigNew,
     IngredientType,
     ProcessedMpnOffer,
     ScraperOffer,
@@ -30,18 +30,18 @@ from storage.postgres.scraper_feed import (
 
 
 def handle_feed_with_config_postgres(
-    feed_json_stream: botocore.response.StreamingBody, config: HandleConfig
+    feed_json_stream: botocore.response.StreamingBody, config: HandleConfigNew
 ):
     if not config["namespace"]:
         raise Exception("Config needs namespace")
-    if not config["collection_name"]:
-        raise Exception("Config needs collection_name")
+    if not config["context"]:
+        raise Exception("Config needs context")
     if not config["scrape_time"]:
         raise Exception("Config needs scrape_time")
     if not config["scrapeBatchId"]:
         raise Exception("Config needs scrapeBatchId")
 
-    offer_context = get_offer_context_from_site_collection(config["collection_name"])
+    offer_context = config["context"]
 
     start_time = datetime.now()
 
@@ -51,7 +51,7 @@ def handle_feed_with_config_postgres(
 
     ingredients_data: Mapping[str, IngredientType] = {}
     if (
-        config["collection_name"] in ["groceryoffers"]
+        config["context"] in ["amp-no"]
         and len(config.get("extractIngredientsFields", [])) > 0
     ):
         ingredients_collection = get_collection("ingredients")
@@ -61,8 +61,6 @@ def handle_feed_with_config_postgres(
 
     scrape_batch_id = config["scrapeBatchId"]
     filters = pydash.get(config, ["filters"], [])
-
-    is_book_offers = config["collection_name"] == "bookoffers"
 
     offer_batch = []
     example_items = []
@@ -83,28 +81,15 @@ def handle_feed_with_config_postgres(
 
             processed_offer: ProcessedMpnOffer = {
                 **add_affilite_link_to_product(transformed_offer),
-                "siteCollection": config["collection_name"],
+                "context": config["context"],
                 "scrapeBatchId": scrape_batch_id,
                 "namespace": config["namespace"],
-                "context": get_offer_context_from_site_collection(
-                    config["collection_name"]
-                ),
+                "context": config["context"],
             }
 
-            if is_book_offers:
-                book_offer = {
-                    **processed_offer,
-                    "gtins": get_book_gtins(processed_offer),
-                    "uri": processed_offer["book_uri"],
-                    "ahref": processed_offer.get("trackingUrl"),
-                }
-                offer_batch.append(book_offer)
-                if len(example_items) < 20:
-                    example_items.append(book_offer)
-            else:
-                offer_batch.append(processed_offer)
-                if len(example_items) < 20:
-                    example_items.append(processed_offer)
+            offer_batch.append(processed_offer)
+            if len(example_items) < 20:
+                example_items.append(processed_offer)
 
             if os.getenv("STAGE") == "dev":
                 if len(offer_batch) == 512:
@@ -112,14 +97,11 @@ def handle_feed_with_config_postgres(
 
             if len(offer_batch) == 1000:
                 logging.info(f"Saving {len(offer_batch)} offers")
-                if is_book_offers:
-                    save_book_offers(offer_batch)
-                else:
-                    handle_store_offer_batch(
-                        offers=offer_batch,
-                        scrape_time=config["scrape_time"],
-                        context=offer_context,
-                    )
+                handle_store_offer_batch(
+                    offers=offer_batch,
+                    scrape_time=config["scrape_time"],
+                    context=offer_context,
+                )
                 offer_batch = []
     except IncompleteJSONError as e:
         logging.error(e)
@@ -133,16 +115,14 @@ def handle_feed_with_config_postgres(
 
     if len(offer_batch) > 0:
         logging.info(f"Saving last {len(offer_batch)} offers")
-        if is_book_offers:
-            save_book_offers(offer_batch)
-        else:
-            handle_store_offer_batch(
-                offers=offer_batch,
-                scrape_time=config["scrape_time"],
-                context=offer_context,
-            )
-            # with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:
-            #    json.dump(offer_batch[:12], f, default=str)
+
+        handle_store_offer_batch(
+            offers=offer_batch,
+            scrape_time=config["scrape_time"],
+            context=offer_context,
+        )
+    # with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:
+    #    json.dump(offer_batch[:12], f, default=str)
 
     else:
         logging.info("No offers to save")

@@ -54,14 +54,14 @@ def scraper_feed_sns(event, context):
         invocations = []
 
         for config in configs:
-            if is_online:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                        Payload={**config.model_dump(), "feed_key": key},
-                        InvocationType="Event",
-                    )
-                )
+            # if is_online:
+            #    invocations.append(
+            #        invoke_function(
+            #            FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
+            #            Payload={**config.model_dump(), "feed_key": key},
+            #            InvocationType="Event",
+            #        )
+            #    )
             if os.getenv("STAGE") in ["local", "dev"]:
                 invocations.append(
                     invoke_function(
@@ -74,16 +74,16 @@ def scraper_feed_sns(event, context):
                         InvocationType="Event",
                     )
                 )
-            if is_online:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ[
-                            "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
-                        ],
-                        Payload={**config.model_dump(), "feed_key": key},
-                        InvocationType="Event",
-                    )
-                )
+            # if is_online:
+            #    invocations.append(
+            #        invoke_function(
+            #            FunctionName=os.environ[
+            #                "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
+            #            ],
+            #            Payload={**config.model_dump(), "feed_key": key},
+            #            InvocationType="Event",
+            #        )
+            #    )
         return f"Invoked {len(invocations)} lambda functions"
     except Exception as e:
         logging.error(e)
@@ -120,14 +120,14 @@ def trigger_scraper_feed(event, context):
     try:
         invocations = []
         for config in configs:
-            if is_online:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                        Payload={**config.model_dump(), "feed_key": key},
-                        InvocationType="Event",
-                    )
-                )
+            # if is_online:
+            #    invocations.append(
+            #        invoke_function(
+            #            FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
+            #            Payload={**config.model_dump(), "feed_key": key},
+            #            InvocationType="Event",
+            #        )
+            #    )
             if os.getenv("STAGE") in ["local", "dev"]:
                 invocations.append(
                     invoke_function(
@@ -140,16 +140,16 @@ def trigger_scraper_feed(event, context):
                         InvocationType="Event",
                     )
                 )
-            if is_online:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ[
-                            "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
-                        ],
-                        Payload={**config.model_dump(), "feed_key": key},
-                        InvocationType="Event",
-                    )
-                )
+            # if is_online:
+            #    invocations.append(
+            #        invoke_function(
+            #            FunctionName=os.environ[
+            #                "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
+            #            ],
+            #            Payload={**config.model_dump(), "feed_key": key},
+            #            InvocationType="Event",
+            #        )
+            #    )
 
         return f"Invoked {len(invocations)} lambda functions"
 

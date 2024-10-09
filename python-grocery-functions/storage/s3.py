@@ -1,6 +1,5 @@
 import json
 import boto3
-import botostubs
 from typing import Optional
 
 s3 = boto3.client("s3")  # type: botostubs.S3

@@ -28,6 +28,9 @@ provider:
   memorySize: 2048
   timeout: 900
 
+  layers:
+    - !Ref CommonLambdaLayer
+
   environment:
     MONGO_URI: ${env:MONGO_URI}
     MONGO_DATABASE: ${env:MONGO_DATABASE}
@@ -88,20 +91,7 @@ provider:
         - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
 
 package:
-  include:
-    - aws_config.py
-    - offer_feed/**
-    - scraper_feed/**
-    - book_feed/**
-    - scraper_management/**
-    - storage/**
-    - util/**
-    - parsing/**
-    - config/**
-    - amp_types/**
-    - transform/**
-  exclude:
-    - ./**
+  artifact: serverless_artifact.zip
 
 functions:
   scraperFeedSns:
@@ -221,18 +211,23 @@ resources:
   - ${file(../s3-sns-cloudformation.yml)}
 
 plugins:
-  - serverless-python-requirements
+  #- serverless-python-requirements
   - serverless-cloudformation-sub-variables
+  - serverless-offline
 
 custom:
   logRetentionInDays:
     prod: 30
     other: 1
-  pythonRequirements:
+  #pythonRequirements:
     # dockerizePip: true # Had some problem with C libs in python if using no-linux
     # slim: true # Omits tests, __pycache__, *.pyc etc from dependencies
     # Caching pip
     #useDownloadCache: true
     #useStaticCache: true
-    fileName: requirements.txt
+   # fileName: requirements.txt
     # slimPatternsAppendDefaults: false # Weird error with google-api-python-client https://russo.nyc/lambda-distribution-not-found-python/
+
+layers:
+  common:
+    path: layer/common

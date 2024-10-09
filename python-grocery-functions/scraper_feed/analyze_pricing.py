@@ -11,7 +11,6 @@ from scraper_feed.handle_config import fetch_single_handle_config
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import boto3
-import botostubs
 
 import aws_config
 from util.helpers import get_product_uri

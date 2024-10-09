@@ -1,3 +1,4 @@
+import logging
 from typing import List, Set, Dict, Tuple, TypedDict
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -42,7 +43,7 @@ def update_offers_with_product_id(
                     }
                 )
             else:
-                print(f"No product_id found for offer {offer_uri}")
+                logging.warning(f"No product_id found for offer {offer_uri}")
 
         if offer_product_updates:
             # Prepare data for bulk update
@@ -60,7 +61,9 @@ def update_offers_with_product_id(
             # Execute the bulk update
             session.execute(stmt, update_values)
 
-            print(f"Updated {len(offer_product_updates)} offers with product_id.")
+            logging.info(
+                f"Updated {len(offer_product_updates)} offers with product_id."
+            )
 
 
 def update_products(
@@ -96,6 +99,7 @@ def update_products(
                 (p for p in existing_products if UUID(str(p.id)) == product_id),
                 None,
             )
+
             if existing_product_info_row is None:
                 raise Exception(
                     f"Product with ID {product_id} not found in existing products."
@@ -151,7 +155,9 @@ def update_products(
         )
 
         session.execute(update_stmt_on_conflict)
-        print(f"Updated {len(product_updates)} products.")
+        logging.info(f"Updated {len(product_updates)} products.")
+    else:
+        logging.info("No products to update.")
 
 
 def insert_products(session: Session, new_products: List[DbProductInfo]) -> None:
@@ -165,7 +171,10 @@ def insert_products(session: Session, new_products: List[DbProductInfo]) -> None
     if products_entries:
         insert_stmt = pg_insert(ProductsTable.__table__).values(products_entries)
         session.execute(insert_stmt)
-        print(f"Inserted {len(products_entries)} new products.")
+        session.commit()
+        logging.info(f"Inserted {len(products_entries)} new products.")
+    else:
+        logging.info("No new products to insert.")
 
 
 def determine_product_ids(
@@ -245,17 +254,28 @@ def determine_product_ids(
 
 
 def merge_product_info(existing: ProductInfo, new: ProductInfo) -> ProductInfo:
+    n_existing_nutrition_keys = sum(
+        1
+        for k in (
+            existing.nutrition.model_dump().values() if existing.nutrition else {}
+        )
+        if k is not None
+    )
+    n_new_nutrition_keys = sum(
+        1 for k in (new.nutrition.model_dump().values() if new.nutrition else {}) if k
+    )
+    nutrition = (
+        existing.nutrition
+        if n_existing_nutrition_keys > n_new_nutrition_keys
+        else new.nutrition
+    )
+
     return ProductInfo(
         quantity_unit=existing.quantity_unit or new.quantity_unit,
         quantity_amount=existing.quantity_amount or new.quantity_amount,
         quantity_standard_amount=existing.quantity_standard_amount
         or new.quantity_standard_amount,
-        nutrition=NutritionType(
-            **{
-                **(existing.nutrition.model_dump() if existing.nutrition else {}),
-                **(new.nutrition.model_dump() if new.nutrition else {}),
-            }
-        ),
+        nutrition=nutrition,
         merged_to=existing.merged_to or new.merged_to,
     )
 
@@ -305,6 +325,7 @@ def upsert_product_has_ingredient(
             )
 
     if not to_upsert:
+        logging.info("No product_has_ingredient entries to upsert.")
         return
 
     stmt = (
@@ -313,4 +334,4 @@ def upsert_product_has_ingredient(
         .on_conflict_do_nothing(index_elements=["product_id", "ingredient_id"])
     )
     session.execute(stmt)
-    print(f"Upserted {len(to_upsert)} product_has_ingredient entries.")
+    logging.info(f"Upserted {len(to_upsert)} product_has_ingredient entries.")

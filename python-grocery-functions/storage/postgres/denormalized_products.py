@@ -1,6 +1,7 @@
+import logging
 from typing import List
 from uuid import UUID
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, and_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -21,18 +22,21 @@ from storage.postgres.postgres_tables import (
 def update_denormalized_products(affected_product_ids: List[UUID]):
     with Session(get_pg_engine()) as session:
         try:
-            # Query to aggregate data for affected products
+            # Alias for ProductMarketInfoTable
+            pm_info = aliased(ProductMarketInfoTable)
+
+            # Main query to aggregate data for affected products
             aggregated_data = (
                 session.query(
-                    # Select columns
+                    # Existing selected columns
                     ProductsTable.id.label("product_id"),
-                    ProductMarketInfoTable.market,
-                    ProductMarketInfoTable.title,
-                    ProductMarketInfoTable.subtitle,
-                    ProductMarketInfoTable.description,
-                    ProductMarketInfoTable.short_description,
-                    ProductMarketInfoTable.brand_key,
-                    ProductMarketInfoTable.vendor_key,
+                    pm_info.market,
+                    pm_info.title,
+                    pm_info.subtitle,
+                    pm_info.description,
+                    pm_info.short_description,
+                    pm_info.brand_key,
+                    pm_info.vendor_key,
                     func.array_agg(func.distinct(GtinsTable.gtin)).label("gtins"),
                     # Aggregate ingredients
                     func.jsonb_agg(
@@ -92,8 +96,12 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
                     func.max(OffersTable.value_standard_amount).label("value_max"),
                     func.max(OffersTable.valid_through).label("valid_through"),
                     func.max(OffersTable.image).label("image_url"),
-                    ProductMarketInfoTable.context,
-                    ProductMarketInfoTable.category_key,
+                    pm_info.context,
+                    pm_info.category_key,
+                    # Include category hierarchy using the database function
+                    func.get_category_hierarchy(
+                        pm_info.category_key, pm_info.context
+                    ).label("category_keys"),
                     func.array_agg(func.distinct(OffersTable.dealer_key)).label(
                         "dealer_keys"
                     ),
@@ -101,19 +109,20 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
                 .select_from(ProductsTable)
                 # Join ProductMarketInfoTable
                 .join(
-                    ProductMarketInfoTable,
-                    ProductsTable.id == ProductMarketInfoTable.product_id,
+                    pm_info,
+                    ProductsTable.id == pm_info.product_id,
                 )
+                # Rest of your joins...
                 # Outer join GtinsTable
                 .outerjoin(GtinsTable, GtinsTable.product_id == ProductsTable.id)
                 # Outer join OfferHasGtinTable
                 .outerjoin(OfferHasGtinTable, OfferHasGtinTable.gtin == GtinsTable.gtin)
-                # Outer join OffersTable via OfferHasGtinTable
+                # Outer join OffersTable
                 .outerjoin(
                     OffersTable,
                     and_(
                         OffersTable.product_id == ProductsTable.id,
-                        OffersTable.market == ProductMarketInfoTable.market,
+                        OffersTable.market == pm_info.market,
                         OffersTable.valid_through > func.now(),
                     ),
                 )
@@ -134,18 +143,18 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
                 # Group by necessary columns
                 .group_by(
                     ProductsTable.id,
-                    ProductMarketInfoTable.market,
-                    ProductMarketInfoTable.title,
-                    ProductMarketInfoTable.subtitle,
-                    ProductMarketInfoTable.description,
-                    ProductMarketInfoTable.short_description,
-                    ProductMarketInfoTable.brand_key,
-                    ProductMarketInfoTable.vendor_key,
+                    pm_info.market,
+                    pm_info.title,
+                    pm_info.subtitle,
+                    pm_info.description,
+                    pm_info.short_description,
+                    pm_info.brand_key,
+                    pm_info.vendor_key,
                     ProductsTable.nutrition,
                     ProductsTable.quantity_unit,
                     ProductsTable.quantity_amount,
-                    ProductMarketInfoTable.context,
-                    ProductMarketInfoTable.category_key,
+                    pm_info.context,
+                    pm_info.category_key,
                 )
                 .having(func.count(OffersTable.uri) > 0)
                 .all()
@@ -177,8 +186,8 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
                     "valid_through": data.valid_through,
                     "context": data.context,
                     "category_key": data.category_key,
+                    "category_keys": data.category_keys,
                     "dealer_keys": data.dealer_keys,
-                    # 'created_at' and 'updated_at' will be set automatically
                 }
                 insert_data_list.append(insert_data)
 
@@ -200,6 +209,10 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
 
                 session.execute(on_conflict_stmt)
                 session.commit()
+
+                logging.info(f"Upserted {len(insert_data_list)} denormalized products")
+            else:
+                logging.info("No denormalized products to upsert")
         except Exception as e:
             session.rollback()
             raise e
@@ -207,6 +220,7 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
 
 def delete_denormalized_products_without_valid_offers():
     # Delete denormalized_products where valid_through <= NOW()
+    # TODO also delete offers that are not valid anymore and delete if no offers
     with Session(get_pg_engine()) as session:
         try:
             session.query(DenormalizedProductsTable).filter(
