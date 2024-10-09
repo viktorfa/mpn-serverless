@@ -1,14 +1,16 @@
 import { jsonObjectFrom } from "kysely/helpers/postgres";
 import { FastifyReply, FastifyRequest, type FastifyInstance } from "fastify";
 import { Static, Type } from "@sinclair/typebox";
-import { sql } from "kysely";
 import {
   getCommaSeparatedAsList,
+  getOfferContextFromSiteCollection,
   getQuantity,
   getValue,
+  orderNullsLast,
   standardizeQuantity,
 } from "./utils";
 import { Offers } from "generated/kysely";
+import { sql } from "kysely";
 
 export const priceDifferencesSchema = {
   schema: {
@@ -38,17 +40,22 @@ export const priceDifferencesHandler = async (
   reply: FastifyReply,
   server: FastifyInstance,
 ): Promise<Static<(typeof priceDifferencesSchema.schema.response)["200"]>> => {
-  const orderNullsLast = (direction: "asc" | "desc") =>
-    sql`${sql.raw(direction)} nulls last`;
-
   const dealerKeys = getCommaSeparatedAsList(request.query.dealers);
   const categoryKeys = getCommaSeparatedAsList(request.query.categories);
+  const offerContext = getOfferContextFromSiteCollection(
+    request.query.productCollection,
+  );
 
   const now = new Date();
 
-  const offersQuery = server.db
+  let offersQuery = server.db
     .selectFrom("offers")
     .selectAll("offers")
+    .innerJoin(
+      "product_market_infos",
+      "offers.product_id",
+      "product_market_infos.product_id",
+    )
     .select((eb) => [
       jsonObjectFrom(
         eb
@@ -78,6 +85,7 @@ export const priceDifferencesHandler = async (
       ).as("productObject"),
     ])
     .where("offers.market", "=", request.query.market)
+    .where("offers.context", "=", offerContext)
     .where("offers.valid_through", ">", now)
     .orderBy(
       "difference_180_days_mean_percentage",
@@ -85,10 +93,17 @@ export const priceDifferencesHandler = async (
     )
     .limit(Math.min(request.query.limit, 10));
 
+  console.log({ dealerKeys, categoryKeys });
+
   if (dealerKeys.length > 0) {
-    offersQuery.where("dealer_key", "in", dealerKeys);
+    offersQuery = offersQuery.where("dealer_key", "in", dealerKeys);
   }
   if (categoryKeys.length > 0) {
+    offersQuery = offersQuery.where(
+      "product_market_infos.category_keys",
+      "&&",
+      sql<string[]>`${categoryKeys}`,
+    );
   }
 
   const offers = await offersQuery.execute();

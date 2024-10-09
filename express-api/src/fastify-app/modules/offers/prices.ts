@@ -29,9 +29,8 @@ export const getPricingHandler = async (
     .selectFrom("offer_prices")
     .selectAll()
     .where("uri", "=", uri)
+    .orderBy("recorded_at", "asc")
     .execute();
-
-  console.log({ recordedPrices, uri });
 
   if (recordedPrices.length === 0) {
     return reply.code(404).send({ error: "Offer not found" });

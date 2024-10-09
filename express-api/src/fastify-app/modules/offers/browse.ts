@@ -1,18 +1,24 @@
 import { FastifyReply, FastifyRequest, type FastifyInstance } from "fastify";
 import { Static, Type } from "@sinclair/typebox";
 import { sql } from "kysely";
-import { convertDenormalizedProduct, getCommaSeparatedAsList } from "./utils";
-import { jsonObjectFrom } from "kysely/helpers/postgres";
+import {
+  convertDenormalizedProduct,
+  getCommaSeparatedAsList,
+  getOfferContextFromSiteCollection,
+  orderNullsLast,
+} from "./utils";
 
 export const searchRelationsSchema = {
   schema: {
     querystring: Type.Object({
-      market: Type.String(),
-      productCollection: Type.String(),
+      market: Type.Optional(Type.String()),
+      productCollection: Type.Optional(Type.String()),
       limit: Type.Integer(),
       page: Type.Integer(),
-      sort: Type.String(),
+      sort: Type.Optional(Type.String()),
       dealers: Type.Optional(Type.String()),
+      brands: Type.Optional(Type.String()),
+      vendors: Type.Optional(Type.String()),
       categories: Type.Optional(Type.String()),
       query: Type.Optional(Type.String()),
     }),
@@ -26,6 +32,7 @@ export const searchRelationsSchema = {
             page: Type.Integer(),
             pageSize: Type.Integer(),
             pageCount: Type.Integer(),
+            sort: Type.Optional(Type.String()),
           },
           { additionalProperties: true },
         ),
@@ -68,16 +75,18 @@ export const searchRelationsHandler = async (
 ): Promise<Static<(typeof searchRelationsSchema.schema.response)["200"]>> => {
   const dealerKeys = getCommaSeparatedAsList(request.query.dealers);
   const categoryKeys = getCommaSeparatedAsList(request.query.categories);
-
-  console.log({ dealerKeys, categoryKeys });
+  const brandKeys = getCommaSeparatedAsList(request.query.brands);
+  const vendorKeys = getCommaSeparatedAsList(request.query.vendors);
 
   const limitToUse = Math.min(request.query.limit, 10);
+
+  let [sortCol, sortDirection] = request.query.sort
+    ? request.query.sort.split(":")
+    : ["", ""];
 
   let productsQuery = server.db
     .selectFrom("denormalized_products")
     .selectAll("denormalized_products")
-    //.innerJoin("brands", "denormalized_products.brand_key", "brands.key")
-    //.select("brands.title as brand")
     .select((eb) =>
       eb
         .selectFrom("brands")
@@ -86,37 +95,101 @@ export const searchRelationsHandler = async (
         .whereRef("denormalized_products.brand_key", "=", "brands.key")
         .as("brand"),
     )
-    .where("denormalized_products.market", "=", request.query.market)
     .offset((request.query.page - 1) * limitToUse)
+    // TODO Remove
+    //.orderBy("denormalized_products.created_at", "desc")
+    .orderBy(
+      sql<number>`(denormalized_products.nutrition->>'kcals')::numeric`,
+      "desc",
+    )
+
     .limit(limitToUse);
   let aggregateQuery = server.db
     .selectFrom("denormalized_products")
-    .select(sql<number>`count(*)`.as("count"))
-    .where("market", "=", request.query.market);
+    .select(sql<number>`count(*)`.as("count"));
 
+  console.log({ dealerKeys });
+
+  if (request.query.market) {
+    productsQuery = productsQuery.where("market", "=", request.query.market);
+    aggregateQuery = aggregateQuery.where("market", "=", request.query.market);
+  }
+  if (request.query.productCollection) {
+    const offerContext = getOfferContextFromSiteCollection(
+      request.query.productCollection,
+    );
+    productsQuery = productsQuery.where("context", "=", offerContext);
+    aggregateQuery = aggregateQuery.where("context", "=", offerContext);
+  }
   if (dealerKeys.length > 0) {
-    productsQuery = productsQuery.where("dealer_keys", "in", dealerKeys);
-    aggregateQuery = aggregateQuery.where("dealer_keys", "in", dealerKeys);
+    productsQuery = productsQuery.where(
+      "dealer_keys",
+      "&&",
+      sql<string[]>`${dealerKeys}`,
+    );
+    aggregateQuery = aggregateQuery.where(
+      "dealer_keys",
+      "&&",
+      sql<string[]>`${dealerKeys}`,
+    );
+  }
+  if (brandKeys.length > 0) {
+    productsQuery = productsQuery.where("brand_key", "in", brandKeys);
+    aggregateQuery = aggregateQuery.where("brand_key", "in", brandKeys);
+  }
+  if (vendorKeys.length > 0) {
+    productsQuery = productsQuery.where("vendor_key", "in", vendorKeys);
+    aggregateQuery = aggregateQuery.where("vendor_key", "in", vendorKeys);
   }
   if (categoryKeys.length > 0) {
-    productsQuery = productsQuery.where("category_key", "in", categoryKeys);
-    aggregateQuery = aggregateQuery.where("category_key", "in", categoryKeys);
+    productsQuery = productsQuery.where(
+      "category_keys",
+      "&&",
+      sql<string[]>`${categoryKeys}`,
+    );
+    aggregateQuery = aggregateQuery.where(
+      "category_keys",
+      "&&",
+      sql<string[]>`${categoryKeys}`,
+    );
+  }
+  if (sortCol && (sortDirection === "asc" || sortDirection === "desc")) {
+    if (sortCol === "priceMin") {
+      productsQuery = productsQuery.orderBy(
+        "price_min",
+        orderNullsLast(sortDirection),
+      );
+    }
+    if (sortCol === "valueMin") {
+      productsQuery = productsQuery.orderBy(
+        "value_min",
+        orderNullsLast(sortDirection),
+      );
+    }
   }
   if (request.query.query) {
-    const queryText = request.query.query;
+    const sanitizedQuery = request.query.query.replace(/[^\w\s]/g, " ");
+    const tsQuery = sanitizedQuery.replace(/\s+/g, "|");
+    await server.db.selectFrom(sql`set_limit(0.1)`).execute();
 
     const rank =
-      sql<number>`ts_rank(tsvector_col, plainto_tsquery('simple', ${queryText}))`.as(
+      sql<number>`ts_rank(tsvector_col, plainto_tsquery('simple', ${tsQuery}))`.as(
         "rank",
       );
+    const trigramSimilarity =
+      sql<number>`similarity(trigram_col, ${sanitizedQuery})`.as("similarity");
 
     productsQuery = productsQuery
       .select(rank)
-      .where(sql<any>`tsvector_col @@ plainto_tsquery('simple', ${queryText})`)
-      .orderBy("rank", "desc");
+      .select(trigramSimilarity)
+      .where(
+        sql<any>`tsvector_col @@ plainto_tsquery('simple', ${tsQuery}) OR trigram_col % ${sanitizedQuery}`,
+      )
+      .orderBy("rank", "desc")
+      .orderBy("similarity", "desc");
 
     aggregateQuery = aggregateQuery.where(
-      sql<any>`tsvector_col @@ plainto_tsquery('simple', ${queryText})`,
+      sql<any>`tsvector_col @@ plainto_tsquery('simple', ${tsQuery}) OR trigram_col % ${sanitizedQuery}`,
     );
   }
 
