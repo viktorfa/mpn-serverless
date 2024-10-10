@@ -140,9 +140,6 @@ def handle_store_offer_batch(
 
             insert_new_gtins(session, new_gtins, gtin_to_product_map)
 
-            print("products_to_update")
-            print(products_to_update)
-
             update_products(
                 session,
                 products_to_update,

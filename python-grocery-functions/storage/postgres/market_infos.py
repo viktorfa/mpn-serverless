@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from storage.migrate.migrate_categories import CategoriesTable
+from storage.postgres.categories import get_categories_for_market_info
 from storage.postgres.pydantic_models import DbMarketInfo, MarketInfo
 from amp_types.amp_product import ProcessedMpnOffer
 from storage.postgres.postgres_tables import (
@@ -50,13 +51,13 @@ def collect_product_market_info_entries(
     )
 
     category_mappings = (
-        session.query(CategoryMappingsTable, CategoriesTable)
-        .join(
-            CategoriesTable,
+        session.query(CategoriesTable, CategoryMappingsTable)
+        .outerjoin(
+            CategoryMappingsTable,
             (CategoryMappingsTable.context == CategoriesTable.context)
             & (CategoryMappingsTable.target == CategoriesTable.key),
         )
-        .filter(CategoryMappingsTable.context == context)
+        .filter(CategoriesTable.context == context)
         .all()
     )
 
@@ -92,50 +93,10 @@ def collect_product_market_info_entries(
                 offer = get_offer_from_gtin(gtin_offer_object_map, gtin)
                 offer_cats = offer.get("categories")
                 if offer_cats:
-                    matched_categories: List[
-                        Tuple[CategoryMappingsTable, CategoriesTable]
-                    ] = []
-                    for cat in offer_cats:
-                        for mapping, category in category_mappings:
-                            if cat in mapping.source:
-                                matched_categories.append((mapping, category))
-                                break
-                    if matched_categories:
-                        highest_level_matched_category = max(
-                            matched_categories, key=lambda x: x[1].level
-                        )
-
-                        category_keys = []
-                        highest_category = next(
-                            (
-                                category
-                                for mapping, category in category_mappings
-                                if category.key
-                                == highest_level_matched_category[0].target
-                            ),
-                            None,
-                        )
-
-                        if not highest_category:
-                            raise Exception(
-                                f"Category not found for GTIN {gtin} with category key {highest_level_matched_category[0].target}"
-                            )
-
-                        market_info_entry.category_key = str(highest_category.key)
-                        while True and highest_category:
-                            category_keys.insert(0, highest_category.key)
-                            highest_category = next(
-                                (
-                                    category
-                                    for mapping, category in category_mappings
-                                    if category.key == highest_category.parent
-                                ),
-                                None,
-                            )
-                            if not highest_category:
-                                break
-
-                        market_info_entry.category_keys = category_keys
+                    category_keys = get_categories_for_market_info(
+                        offer_cats, category_mappings
+                    )
+                    market_info_entry.category_keys = category_keys
 
             new_market_info = merge_market_info(new_market_info, market_info_entry)
             entry = DbMarketInfo(

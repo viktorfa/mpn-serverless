@@ -1,9 +1,10 @@
 import pydash
 from typing import List
 
-from amp_types.amp_product import ScraperOffer, MappingConfigField
+from amp_types.amp_product import ScraperOffer
 from unittest import TestCase
 
+from scraper_feed.scraper_configs import MappingConfigField
 from transform.transform import transform_fields
 
 

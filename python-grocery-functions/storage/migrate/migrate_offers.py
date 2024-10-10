@@ -416,6 +416,17 @@ def migrate_data(limit: int, batch_size: int):
         if not offer_market:
             offer_market = offer_context.split("-")[-1]
         offer_provenance_id = _offer["uri"].split(":")[-1]
+
+        value = _offer.get("value", {}) or {}
+        if type(value) is str:
+            value = {}
+        items = _offer.get("items", {}) or {}
+        if type(items) is str:
+            items = {}
+        quantity = _offer.get("quantity", {}) or {}
+        if type(quantity) is str:
+            quantity = {}
+
         try:
             offer = MongoOffer(
                 uri=_offer["uri"],
@@ -431,7 +442,7 @@ def migrate_data(limit: int, batch_size: int):
                 href=_offer["href"],
                 imageUrl=_offer.get("imageUrl"),
                 isPartner=_offer.get("isPartner"),
-                items=_offer.get("items", {}) or {},
+                items=items,
                 market=offer_market,
                 mpnIngredients=_offer.get("mpnIngredients") or {},
                 mpnNutrition=_offer.get("mpnNutrition", {}) or {},
@@ -440,12 +451,12 @@ def migrate_data(limit: int, batch_size: int):
                 pricing=_offer["pricing"],
                 provenance=_offer["provenance"],
                 provenanceId=offer_provenance_id,
-                quantity=_offer.get("quantity", {}) or {},
+                quantity=quantity,
                 siteCollection=_offer["siteCollection"],
                 title=_offer["title"],
                 validFrom=_offer["validFrom"],
                 validThrough=_offer["validThrough"],
-                value=_offer.get("value", {}) or {},
+                value=value,
                 scrapeBatchId=_offer.get("scrapeBatchId", DEFAULT_SCRAPE_BATCH_ID),
                 isRecent=_offer.get("isRecent"),
                 difference=_offer.get("difference"),

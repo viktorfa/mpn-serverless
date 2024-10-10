@@ -3,7 +3,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, Set, List, Dict, Any
 from datetime import datetime
 
-from amp_types.amp_product import ProcessedMpnOffer
 from scraper_feed.scraper_configs import DEFAULT_EXTRACT_CATEGORIES_FIELD
 
 

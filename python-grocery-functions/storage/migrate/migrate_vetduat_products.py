@@ -10,12 +10,10 @@ from uuid_extensions import uuid7
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 import argparse
 
-from amp_types.amp_product import IngredientType
 from config.mongo import get_collection
 from parsing.ingredients_extraction import (
     get_extracted_ingredients_postgres,
     get_raw_ingredients_from_strings,
-    sort_db_ingredient_key,
 )
 from parsing.quantity_extraction import parse_quantity, standardize_quantity
 from scraper_feed.helpers import is_valid_ean

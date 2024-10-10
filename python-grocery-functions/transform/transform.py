@@ -3,10 +3,8 @@ from typing import List
 
 from pydash import get
 
-from amp_types.amp_product import (
-    MappingConfigField,
-    ScraperOffer,
-)
+from amp_types.amp_product import ScraperOffer
+from scraper_feed.scraper_configs import MappingConfigField
 from transform.offer import get_field_from_scraper_offer
 
 
