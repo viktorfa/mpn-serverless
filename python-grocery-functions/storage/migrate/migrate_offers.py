@@ -407,6 +407,9 @@ def migrate_data(limit: int, batch_size: int):
     for _offer in cursor:
         if offer_counter >= limit:
             break
+        if _offer.get("provenance") == "custom":
+            logging.info("Skipping custom offer")
+            continue
         offer_counter += 1
         offer_market = _offer.get("market")
         offer_context = get_offer_context_from_site_collection(_offer["siteCollection"])
@@ -414,7 +417,6 @@ def migrate_data(limit: int, batch_size: int):
             offer_market = offer_context.split("-")[-1]
         offer_provenance_id = _offer["uri"].split(":")[-1]
         try:
-            # TODO Got one error where the offer had price 499,90 as a string. Validation error in PgOffer
             offer = MongoOffer(
                 uri=_offer["uri"],
                 ahref=_offer.get("ahref"),
