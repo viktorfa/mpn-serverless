@@ -32,18 +32,15 @@ provider:
     - !Ref CommonLambdaLayer
 
   environment:
-    MONGO_URI: ${env:MONGO_URI}
-    MONGO_DATABASE: ${env:MONGO_DATABASE}
     STAGE: ${sls:stage}
     SCRAPER_FEED_BUCKET: !Ref ScraperFeedBucket
-    SCRAPER_FEED_HANDLED_TOPIC_ARN: !Ref ScraperFeedHandledTopic
-    PRICING_FEED_HANDLED_TOPIC_ARN: !Ref PricingFeedHandledTopic
-    BOOK_FEED_HANDLED_TOPIC_ARN: !Ref BookFeedHandledTopic
-    SENTRY_DSN: ${env:SENTRY_DSN}
-    SENTRY_ENVIRONMENT: ${sls:stage}
     HANDLE_SCRAPER_FEED_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTrigger"
-    HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME: "${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
     POSTGRES_URL: "${env:POSTGRES_URL}"
+
+    # For message broker
+    REDIS_HOST: ${env:LAMBDA_REDIS_HOST}
+    REDIS_PASSWORD: ${env:LAMBDA_REDIS_PASSWORD}
+    DRAMATIQ_NAMESPACE: ${env:DRAMATIQ_NAMESPACE}
 
   iamRoleStatements:
     - Effect: Allow
@@ -112,65 +109,65 @@ functions:
     timeout: 900
   offerFeedCategoriesSns:
     handler: offer_feed.categories.offer_feed_sns_for_categories
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Ref: ScraperFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Ref: ScraperFeedHandledTopic
   offerFeedCategoriesTrigger:
     handler: offer_feed.categories.offer_feed_trigger_for_categories
   offerFeedMetaTrigger:
     handler: offer_feed.offer_handler.offer_feed_meta_trigger
   offerFeedMetaSns:
     handler: offer_feed.offer_handler.offer_feed_meta_sns
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Ref: ScraperFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Ref: ScraperFeedHandledTopic
   handle_offer_relations_trigger:
     handler: offer_feed.offer_relations_handler.handle_offer_relations_trigger
   handle_offer_relations_sns:
     handler: offer_feed.offer_relations_handler.handle_offer_relations_sns
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Ref: ScraperFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Ref: ScraperFeedHandledTopic
   handle_offers_market_trigger:
     handler: offer_feed.offer_market_handler.handle_market_offers_trigger
   handle_offers_market_sns:
     handler: offer_feed.offer_market_handler.handle_market_offers_sns
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Ref: ScraperFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Ref: ScraperFeedHandledTopic
   offerFeedGtinsTrigger:
     handler: offer_feed.offer_handler.offer_feed_trigger_for_gtins
   offerFeedGtinsSns:
     handler: offer_feed.offer_handler.offer_feed_sns_for_gtins
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Ref: ScraperFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: ScraperFeedHandled
+    #      arn:
+    #        Ref: ScraperFeedHandledTopic
 
   bookFeedTrigger:
     handler: book_feed.handler.handle_book_offers_trigger
   bookFeedSns:
     handler: book_feed.handler.handle_book_offers_sns
-    events:
-      - sns:
-          topicName: BookFeedHandled
-          arn:
-            Ref: BookFeedHandledTopic
+    #events:
+    #  - sns:
+    #      topicName: BookFeedHandled
+    #      arn:
+    #        Ref: BookFeedHandledTopic
   processBooksTrigger:
     handler: book_feed.handler.process_books_trigger
     events:
       - schedule:
           rate: rate(1 day)
-          enabled: true
+          enabled: false
           description: "Every day"
 
   handleHttpOptions:

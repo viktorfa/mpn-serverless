@@ -12,6 +12,7 @@ TEMP_DIR=.package
 cp -R aws_config.py $TEMP_DIR/ || { echo "Failed to copy aws_config.py"; exit 1; }
 cp -R offer_feed $TEMP_DIR/ || { echo "Failed to copy offer_feed"; exit 1; }
 cp -R scraper_feed $TEMP_DIR/ || { echo "Failed to copy scraper_feed"; exit 1; }
+cp -R dramatiq_app $TEMP_DIR/ || { echo "Failed to copy scraper_feed"; exit 1; }
 cp -R book_feed $TEMP_DIR/ || { echo "Failed to copy book_feed"; exit 1; }
 cp -R scraper_management $TEMP_DIR/ || { echo "Failed to copy scraper_management"; exit 1; }
 cp -R storage $TEMP_DIR/ || { echo "Failed to copy storage"; exit 1; }
