@@ -1,14 +1,11 @@
-from typing import List, Mapping
+from typing import List
 import pydash
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from slugify import slugify
 
 from storage.models import mpn_offer_store_fields
-from parsing.ingredients_extraction import (
-    get_ingredients_data,
-    get_raw_ingredients_list,
-)
+from parsing.ingredients_extraction import get_raw_ingredients_list
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
     extract_dimensions,
@@ -27,7 +24,12 @@ from parsing.quantity_extraction import (
     standardize_quantity,
     parse_explicit_quantity,
 )
-from amp_types.amp_product import HandleConfig, MpnOffer, ScraperOffer
+from amp_types.amp_product import (
+    HandleConfig,
+    MpnOffer,
+    ScraperOffer,
+    OfferFilterConfig,
+)
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
     get_gtins,
@@ -36,8 +38,6 @@ from scraper_feed.helpers import (
     get_stock_status,
     remove_none_fields,
 )
-
-from amp_types.amp_product import MpnOffer, OfferFilterConfig, IngredientType
 
 
 mpn_categories_version = 1
@@ -50,7 +50,7 @@ mpn_quantity_version = 2
 
 class MyTime(object):
     def __init__(self):
-        self.set_time(datetime.utcnow())
+        self.set_time(datetime.now(timezone.utc))
 
     def set_time(self, time):
         self._time = time
@@ -124,12 +124,8 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
     return offer
 
 
-def transform_product(
-    offer: ScraperOffer,
-    config: HandleConfig,
-    ingredients_data: Mapping[str, IngredientType],
-) -> MpnOffer:
-    time.set_time(config.get("scrape_time", datetime.utcnow()))
+def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
+    time.set_time(config.get("scrape_time", datetime.now(timezone.utc)))
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
     namespace = config["namespace"]
@@ -248,8 +244,7 @@ def transform_product(
     result["mpnProperties"] = standardize_additional_properties(offer, config)
 
     result["rawIngredients"] = get_raw_ingredients_list(offer, config)
-    if config["context"] in ["amp-no"]:
-        result["mpnIngredients"] = get_ingredients_data(offer, config, ingredients_data)
+
     result["mpnNutrition"] = extract_nutritional_data(offer, config)
 
     result = analyze_quantity({**offer, **result})
@@ -291,14 +286,7 @@ def transform_product(
 def transform_and_filter_offers(
     offers: List[ScraperOffer], config: HandleConfig
 ) -> List[MpnOffer]:
-    transformed_offers = (
-        transform_product(
-            x,
-            config,
-            ingredients_data=ingredients_data,
-        )
-        for x in offers
-    )
+    transformed_offers = (transform_product(x, config) for x in offers)
     filters = pydash.get(config, ["filters"], [])
 
     if len(filters) == 0:

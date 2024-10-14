@@ -1,27 +1,14 @@
 import logging
-from datetime import datetime
 import os
-from typing import Iterable, Mapping
 
 import pydash
 import ijson
 from ijson.common import IncompleteJSONError
 import botocore.response
 
-from util.mappings import get_offer_context_from_site_collection
-from storage.db import save_book_offers
-from amp_types.amp_product import (
-    HandleConfig,
-    HandleConfigNew,
-    IngredientType,
-    ProcessedMpnOffer,
-    ScraperOffer,
-)
+from amp_types.amp_product import HandleConfigNew, ProcessedMpnOffer, ScraperOffer
 from scraper_feed.affiliate_links import add_affilite_link_to_product
-from scraper_feed.helpers import get_book_gtins
 from scraper_feed.filters import filter_product, transform_product
-from parsing.ingredients_extraction import sort_db_ingredient_key
-from storage.db import get_collection
 from storage.postgres.scraper_feed import (
     handle_store_offer_batch,
     insert_handle_run_batch,
@@ -32,6 +19,8 @@ from storage.postgres.scraper_feed import (
 def handle_feed_with_config_postgres(
     feed_json_stream: botocore.response.StreamingBody, config: HandleConfigNew
 ):
+    logging.info("handle_feed_with_config_postgres")
+    logging.info(config)
     if not config["namespace"]:
         raise Exception("Config needs namespace")
     if not config["context"]:
@@ -43,21 +32,9 @@ def handle_feed_with_config_postgres(
 
     offer_context = config["context"]
 
-    start_time = datetime.now()
-
     inserted_scrape_batch = insert_handle_run_batch(
         config=config,
     )
-
-    ingredients_data: Mapping[str, IngredientType] = {}
-    if (
-        config["context"] in ["amp-no"]
-        and len(config.get("extractIngredientsFields", [])) > 0
-    ):
-        ingredients_collection = get_collection("ingredients")
-        db_ingredients: Iterable[IngredientType] = ingredients_collection.find({})
-        for x in sorted(db_ingredients, key=sort_db_ingredient_key):
-            ingredients_data[x["key"]] = x
 
     scrape_batch_id = config["scrapeBatchId"]
     filters = pydash.get(config, ["filters"], [])
@@ -68,12 +45,10 @@ def handle_feed_with_config_postgres(
     total_filtered_offers = 0
 
     try:
-        for offer in ijson.items(feed_json_stream, "item"):
+        for offer in ijson.items(feed_json_stream, "item", use_float=True):
             total_offers += 1
             offer: ScraperOffer = offer
-            transformed_offer = transform_product(
-                offer=offer, config=config, ingredients_data=ingredients_data
-            )
+            transformed_offer = transform_product(offer=offer, config=config)
             should_keep = filter_product(product=transformed_offer, filters=filters)
             if not should_keep:
                 continue
@@ -84,7 +59,6 @@ def handle_feed_with_config_postgres(
                 "context": config["context"],
                 "scrapeBatchId": scrape_batch_id,
                 "namespace": config["namespace"],
-                "context": config["context"],
             }
 
             offer_batch.append(processed_offer)

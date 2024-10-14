@@ -218,6 +218,160 @@ def update_denormalized_products(affected_product_ids: List[UUID]):
             raise e
 
 
+def test_denormalized_products(affected_product_ids: List[UUID]):
+    with Session(get_pg_engine()) as session:
+        try:
+            # Alias for ProductMarketInfoTable
+            pm_info = aliased(ProductMarketInfoTable)
+
+            # Main query to aggregate data for affected products
+            aggregated_data = (
+                session.query(
+                    # Existing selected columns
+                    ProductsTable.id.label("product_id"),
+                    pm_info.market,
+                    pm_info.title,
+                    pm_info.subtitle,
+                    pm_info.description,
+                    pm_info.short_description,
+                    pm_info.brand_key,
+                    pm_info.vendor_key,
+                    func.array_agg(func.distinct(GtinsTable.gtin)).label("gtins"),
+                    # Aggregate ingredients
+                    func.jsonb_agg(
+                        func.jsonb_build_object(
+                            "ingredient_id",
+                            IngredientsTable.id,
+                            "name",
+                            IngredientsTable.title,
+                            "shortDescription",
+                            IngredientsTable.short_description,
+                            "key",
+                            IngredientsTable.id,
+                        )
+                    )
+                    .filter(IngredientsTable.id.isnot(None))
+                    .label("ingredients"),
+                    ProductsTable.nutrition,
+                    ProductsTable.quantity_unit,
+                    ProductsTable.quantity_amount,
+                    # Aggregate offers into JSONB array
+                    func.array_agg(
+                        func.distinct(
+                            func.jsonb_build_object(
+                                "uri",
+                                OffersTable.uri,
+                                "href",
+                                OffersTable.href,
+                                "ahref",
+                                OffersTable.ahref,
+                                "dealer_key",
+                                OffersTable.dealer_key,
+                                "valid_through",
+                                OffersTable.valid_through,
+                                "price",
+                                OffersTable.price,
+                                "pre_price",
+                                OffersTable.pre_price,
+                                "price_unit",
+                                OffersTable.price_unit,
+                                "currency",
+                                OffersTable.currency,
+                                "dealerObject",
+                                func.jsonb_build_object(
+                                    "key",
+                                    DealersTable.key,
+                                    "market",
+                                    DealersTable.market,
+                                    "title",
+                                    DealersTable.title,
+                                ),
+                            )
+                        )
+                    ).label("offers"),
+                    func.min(OffersTable.price).label("price_min"),
+                    func.max(OffersTable.price).label("price_max"),
+                    func.min(OffersTable.value_standard_amount).label("value_min"),
+                    func.max(OffersTable.value_standard_amount).label("value_max"),
+                    func.max(OffersTable.valid_through).label("valid_through"),
+                    func.max(OffersTable.image).label("image_url"),
+                    pm_info.context,
+                    pm_info.category_key,
+                    # Include category hierarchy using the database function
+                    func.get_category_hierarchy(
+                        pm_info.category_key, pm_info.context
+                    ).label("category_keys"),
+                    func.array_agg(func.distinct(OffersTable.dealer_key)).label(
+                        "dealer_keys"
+                    ),
+                )
+                .select_from(ProductsTable)
+                # Join ProductMarketInfoTable
+                .join(
+                    pm_info,
+                    ProductsTable.id == pm_info.product_id,
+                )
+                # Rest of your joins...
+                # Outer join GtinsTable
+                .outerjoin(GtinsTable, GtinsTable.product_id == ProductsTable.id)
+                # Outer join OfferHasGtinTable
+                .outerjoin(OfferHasGtinTable, OfferHasGtinTable.gtin == GtinsTable.gtin)
+                # Outer join OffersTable
+                .outerjoin(
+                    OffersTable,
+                    and_(
+                        OffersTable.product_id == ProductsTable.id,
+                        OffersTable.market == pm_info.market,
+                        OffersTable.valid_through > func.now(),
+                    ),
+                )
+                # Outer join DealersTable
+                .outerjoin(DealersTable, DealersTable.key == OffersTable.dealer_key)
+                # Outer join ProductHasIngredientTable
+                .outerjoin(
+                    ProductHasIngredientTable,
+                    ProductHasIngredientTable.product_id == ProductsTable.id,
+                )
+                # Outer join IngredientsTable
+                .outerjoin(
+                    IngredientsTable,
+                    IngredientsTable.id == ProductHasIngredientTable.ingredient_id,
+                )
+                # Filter by affected product IDs
+                .filter(ProductsTable.id.in_(affected_product_ids))
+                # Group by necessary columns
+                .group_by(
+                    ProductsTable.id,
+                    pm_info.market,
+                    pm_info.title,
+                    pm_info.subtitle,
+                    pm_info.description,
+                    pm_info.short_description,
+                    pm_info.brand_key,
+                    pm_info.vendor_key,
+                    ProductsTable.nutrition,
+                    ProductsTable.quantity_unit,
+                    ProductsTable.quantity_amount,
+                    pm_info.context,
+                    pm_info.category_key,
+                )
+                .having(func.count(OffersTable.uri) > 0)
+            )
+
+            # Print out the SQL query for analysis
+            print(aggregated_data.statement)
+
+            # If you want to see the query with parameters
+            compiled_query = aggregated_data.statement.compile(
+                dialect=session.bind.dialect, compile_kwargs={"literal_binds": True}
+            )
+            print(compiled_query)
+
+        except Exception as e:
+            session.rollback()
+            raise e
+
+
 def delete_denormalized_products_without_valid_offers():
     # Delete denormalized_products where valid_through <= NOW()
     # TODO also delete offers that are not valid anymore and delete if no offers
@@ -230,3 +384,7 @@ def delete_denormalized_products_without_valid_offers():
         except Exception as e:
             session.rollback()
             raise e
+
+
+if __name__ == "__main__":
+    test_denormalized_products([UUID("067083cb-aa01-70a0-8000-cd6ec13a311d")])

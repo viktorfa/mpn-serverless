@@ -2,7 +2,7 @@ import logging
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import func, select, case
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from storage.postgres.common import get_pg_engine
 from storage.postgres.postgres_tables import OfferPricesTable, OffersTable
@@ -48,7 +48,7 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                         case(
                             (
                                 op_ap.c.recorded_at
-                                >= datetime.utcnow() - timedelta(days=7),
+                                >= datetime.now(timezone.utc) - timedelta(days=7),
                                 op_ap.c.price,
                             ),
                             else_=None,
@@ -58,7 +58,7 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                         case(
                             (
                                 op_ap.c.recorded_at
-                                >= datetime.utcnow() - timedelta(days=30),
+                                >= datetime.now(timezone.utc) - timedelta(days=30),
                                 op_ap.c.price,
                             ),
                             else_=None,
@@ -68,7 +68,7 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                         case(
                             (
                                 op_ap.c.recorded_at
-                                >= datetime.utcnow() - timedelta(days=90),
+                                >= datetime.now(timezone.utc) - timedelta(days=90),
                                 op_ap.c.price,
                             ),
                             else_=None,
@@ -78,7 +78,7 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                         case(
                             (
                                 op_ap.c.recorded_at
-                                >= datetime.utcnow() - timedelta(days=180),
+                                >= datetime.now(timezone.utc) - timedelta(days=180),
                                 op_ap.c.price,
                             ),
                             else_=None,
@@ -88,7 +88,7 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                         case(
                             (
                                 op_ap.c.recorded_at
-                                >= datetime.utcnow() - timedelta(days=365),
+                                >= datetime.now(timezone.utc) - timedelta(days=365),
                                 op_ap.c.price,
                             ),
                             else_=None,

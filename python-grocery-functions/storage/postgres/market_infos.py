@@ -43,9 +43,11 @@ def collect_product_market_info_entries(
 ) -> Dict[str, DbMarketInfo]:
     product_market_info_entries: Dict[str, DbMarketInfo] = {}
 
+    [_, market] = context.split("-")
+
     existing_market_infos = (
         session.query(ProductMarketInfoTable)
-        .filter(ProductMarketInfoTable.context == context)
+        .filter(ProductMarketInfoTable.market == market)
         .filter(ProductMarketInfoTable.product_id.in_(gtin_to_product_map.values()))
         .all()
     )
@@ -60,6 +62,20 @@ def collect_product_market_info_entries(
         .filter(CategoriesTable.context == context)
         .all()
     )
+
+    if category_mappings:
+        # Build data structures for quick lookup
+        categories_by_key: Dict[str, CategoriesTable] = {}
+        categories_by_name: Dict[str, CategoriesTable] = {}
+        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+
+        for category, mapping in category_mappings:
+            categories_by_key[category.key] = category
+            if category.title:
+                categories_by_name[category.title] = category
+            if mapping:
+                source_tuple = tuple(mapping.source)
+                source_cat_map[source_tuple] = mapping
 
     for root, component_gtins in root_to_gtins.items():
         product_id = gtin_to_product_map[root]
@@ -92,10 +108,16 @@ def collect_product_market_info_entries(
             if category_mappings:
                 offer = get_offer_from_gtin(gtin_offer_object_map, gtin)
                 offer_cats = offer.get("categories")
+
                 if offer_cats:
                     category_keys = get_categories_for_market_info(
-                        offer_cats, category_mappings
+                        offer_cats,
+                        categories_by_key,
+                        categories_by_name,
+                        source_cat_map,
                     )
+                    if category_keys:
+                        market_info_entry.category_key = category_keys[-1]
                     market_info_entry.category_keys = category_keys
 
             new_market_info = merge_market_info(new_market_info, market_info_entry)

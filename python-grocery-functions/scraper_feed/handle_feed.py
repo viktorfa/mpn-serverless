@@ -62,7 +62,7 @@ def handle_feed_with_config(
     total_filtered_offers = 0
 
     try:
-        for offer in ijson.items(feed_json_stream, "item"):
+        for offer in ijson.items(feed_json_stream, "item", use_float=True):
             total_offers += 1
             offer: ScraperOffer = offer
             transformed_offer = transform_product(

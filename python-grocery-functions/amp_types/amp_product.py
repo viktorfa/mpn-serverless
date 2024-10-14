@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 from amp_types.quantity_types import ItemsField, Quantity, QuantityField
+from scraper_feed.scraper_configs import MappingConfigField
 
 
 class NutritionalData(TypedDict):
@@ -106,16 +107,6 @@ class ReplaceType(Enum):
     fixed = 1
     key = 2
     ignore = 3
-
-
-class MappingConfigField(TypedDict):
-    value_type: str
-    replace_type: Literal["fixed", "key", "ignore"]
-    replace_value: Any
-    source: str
-    destination: str
-    text: str
-    force_replace: bool
 
 
 class ScraperConfig(TypedDict):

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 from typing import Sequence, List
 from pydantic import BaseModel, ValidationError
@@ -13,7 +13,6 @@ from util.logging import configure_lambda_logging
 from util.timer import Timer
 
 
-# For old offers without scrapeBatchId
 OFFER_LIMIT = 1024 * 2
 BATCH_SIZE = 1024
 configure_lambda_logging()
@@ -37,42 +36,33 @@ def migrate_data(limit: int, batch_size: int):
 
     timer = Timer()
     timer.start("Migrate data")
-    timer.start("Get collection")
 
     with Session(get_pg_engine()) as session:
         try:
-            offset = 0
-            while True:
-                if offset >= limit:
-                    break
-                cursor = (
-                    session.query(OffersTable.uri)
-                    .outerjoin(
-                        OfferPricesTable, OffersTable.uri == OfferPricesTable.uri
-                    )
-                    .filter(
-                        OfferPricesTable.uri == None
-                    )  # No corresponding offer_prices entry exists
-                    .offset(offset)
-                    .limit(batch_size)
-                    .all()
-                )
+            cursor = (
+                session.query(OffersTable.uri)
+                .filter(OffersTable.prices_migrated_at.is_(None))
+                .limit(batch_size)
+                .all()
+            )
 
-                if not cursor:
-                    break  # No more data
+            offer_uris = [str(row.uri) for row in cursor]
+            handle_store_offer_prices_batch(session, offer_uris)
+            logging.info(f"Processed prices for {len(offer_uris)} offers")
+            session.query(OffersTable).filter(OffersTable.uri.in_(offer_uris)).update(
+                {"prices_migrated_at": datetime.now(timezone.utc)},
+                synchronize_session=False,
+            )
 
-                offer_uris = [str(row.uri) for row in cursor]
-                handle_store_offer_prices_batch(session, offer_uris)
-                logging.info(f"Processed {len(offer_uris)} offers")
-
-                session.commit()
-                offset += batch_size
+            session.commit()
 
         except Exception:
             session.rollback()
             raise
         finally:
             session.close()
+
+    timer.stop("Migrate data")
 
 
 def handle_store_offer_prices_batch(session: Session, offer_uris: Sequence[str]):

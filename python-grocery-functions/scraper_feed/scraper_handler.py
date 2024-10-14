@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+
 from util.aws import invoke_function
 from scraper_feed.handle_config import generate_handle_config_postgres
 from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
@@ -11,17 +12,7 @@ import botocore.response
 
 from amp_types.amp_product import EventHandleConfig
 import aws_config
-from scraper_feed.handle_feed import handle_feed_with_config
 from storage.s3 import get_s3_object
-
-import sentry_sdk
-from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
-
-
-if not os.getenv("IS_LOCAL"):
-    sentry_sdk.init(
-        integrations=[AwsLambdaIntegration()],
-    )
 
 
 configure_lambda_logging()
@@ -51,9 +42,22 @@ def scraper_feed_sns(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     try:
+        from dramatiq_app.actors import trigger_dramatiq_scraper_feed_with_config
+
         invocations = []
 
         for config in configs:
+            logging.info("Handling feed with dramatiq")
+            job_result = trigger_dramatiq_scraper_feed_with_config.send(
+                {
+                    **config.model_dump(),
+                    "feed_key": key,
+                    "use_postgres": True,
+                }
+            )
+            print("Task sent to the queue", job_result.message_id)
+            invocations.append(job_result.message_id)
+            continue
             # if is_online:
             #    invocations.append(
             #        invoke_function(
@@ -62,7 +66,7 @@ def scraper_feed_sns(event, context):
             #            InvocationType="Event",
             #        )
             #    )
-            if os.getenv("STAGE") in ["local", "dev"]:
+            if True:
                 invocations.append(
                     invoke_function(
                         FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
@@ -84,7 +88,7 @@ def scraper_feed_sns(event, context):
             #            InvocationType="Event",
             #        )
             #    )
-        return f"Invoked {len(invocations)} lambda functions"
+        return f"Invoked {len(invocations)} dramatiq events"
     except Exception as e:
         logging.error(e)
         log_traceback(e)
@@ -118,8 +122,21 @@ def trigger_scraper_feed(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     try:
+        from dramatiq_app.actors import trigger_dramatiq_scraper_feed_with_config
+
         invocations = []
         for config in configs:
+            logging.info("Handling feed with dramatiq")
+            job_result = trigger_dramatiq_scraper_feed_with_config.send(
+                {
+                    **config.model_dump(),
+                    "feed_key": key,
+                    "use_postgres": True,
+                }
+            )
+            print("Task sent to the queue", job_result.message_id)
+            invocations.append(job_result.message_id)
+            continue
             # if is_online:
             #    invocations.append(
             #        invoke_function(
@@ -128,7 +145,7 @@ def trigger_scraper_feed(event, context):
             #            InvocationType="Event",
             #        )
             #    )
-            if os.getenv("STAGE") in ["local", "dev"]:
+            if True:
                 invocations.append(
                     invoke_function(
                         FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
@@ -151,7 +168,7 @@ def trigger_scraper_feed(event, context):
             #        )
             #    )
 
-        return f"Invoked {len(invocations)} lambda functions"
+        return f"Invoked {len(invocations)} dramatiq events"
 
     except Exception as e:
         logging.error(e)
@@ -195,24 +212,14 @@ def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
         return {"message": "No items in scraped feed"}
 
     try:
-        if event.get("use_postgres"):
-            result = handle_feed_with_config_postgres(
-                file_content_stream,
-                {
-                    **config,
-                    "scrape_time": scrape_time,
-                    "scrapeBatchId": s3_object["VersionId"],
-                },
-            )
-        else:
-            result = handle_feed_with_config(
-                file_content_stream,
-                {
-                    **config,
-                    "scrape_time": scrape_time,
-                    "scrapeBatchId": s3_object["VersionId"],
-                },
-            )
+        result = handle_feed_with_config_postgres(
+            file_content_stream,
+            {
+                **config,
+                "scrape_time": scrape_time,
+                "scrapeBatchId": s3_object["VersionId"],
+            },
+        )
 
         return {
             "message": "Go Serverless v1.0! Your function executed successfully!",

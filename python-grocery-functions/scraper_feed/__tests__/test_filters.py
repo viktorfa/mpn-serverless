@@ -1,9 +1,10 @@
-from unittest import TestCase, mock
+from unittest import TestCase
 
 from scraper_feed.filters import (
     filter_product,
     replace_offer_fields_with_meta,
 )
+from scraper_feed.helpers import get_product_pricing
 
 
 class TestFilters(TestCase):
@@ -63,3 +64,33 @@ class TestAddMeta(TestCase):
         self.assertEqual(actual["quantityString"], "100g")
         self.assertEqual(actual["brand"], "Mølleren")
         self.assertEqual(actual["price"], 22)
+
+
+class TestGetProductPricing(TestCase):
+    def test_get_product_pricing(self):
+        scraper_offer = {
+            "price": 870.0,
+            "priceCurrency": "SEK",
+        }
+        actual = get_product_pricing(scraper_offer)
+
+        self.assertEqual(actual["price"], 870.0)
+        self.assertEqual(actual["currency"], "SEK")
+
+    def test_get_product_pricing_with_string(self):
+        scraper_offer = {
+            "price": "870.0",
+            "priceCurrency": "SEK",
+        }
+        actual = get_product_pricing(scraper_offer)
+        self.assertEqual(actual["price"], 870.0)
+        self.assertEqual(actual["currency"], "SEK")
+
+    def test_get_product_pricing_with_string_and_comma(self):
+        scraper_offer = {
+            "price": "870,00",
+            "priceCurrency": "SEK",
+        }
+        actual = get_product_pricing(scraper_offer)
+        self.assertEqual(actual["price"], 870.0)
+        self.assertEqual(actual["currency"], "SEK")

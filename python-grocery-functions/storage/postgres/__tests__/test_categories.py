@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Dict, Optional, List, Tuple
 
 from storage.postgres.categories import get_categories_for_market_info
 
@@ -53,9 +53,24 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
             ),
         ]
 
+        # Build data structures for quick lookup
+        categories_by_key: Dict[str, CategoriesTable] = {}
+        categories_by_name: Dict[str, CategoriesTable] = {}
+        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+
+        for category, mapping in category_mappings:
+            categories_by_key[category.key] = category
+            if category.title:
+                categories_by_name[category.title] = category
+            if mapping:
+                source_tuple = tuple(mapping.source)
+                source_cat_map[source_tuple] = mapping
+
         expected_category_keys = ["frukt-gront_0", "gronnsaker_1"]
 
-        result = get_categories_for_market_info(offer_cats, category_mappings)
+        result = get_categories_for_market_info(
+            offer_cats, categories_by_key, categories_by_name, source_cat_map
+        )
 
         print("result", result)
         self.assertEqual(result, expected_category_keys)
@@ -91,9 +106,25 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
             ),
         ]
 
+        # Build data structures for quick lookup
+        categories_by_key: Dict[str, CategoriesTable] = {}
+        categories_by_name: Dict[str, CategoriesTable] = {}
+        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+
+        for category, mapping in category_mappings:
+            categories_by_key[category.key] = category
+            if category.title:
+                categories_by_name[category.title] = category
+            if mapping:
+                source_tuple = tuple(mapping.source)
+                source_cat_map[source_tuple] = mapping
+
         expected_category_keys = ["electronics_0", "computers_1", "laptops_2"]
 
-        result = get_categories_for_market_info(offer_cats, category_mappings)
+        result = get_categories_for_market_info(
+            offer_cats, categories_by_key, categories_by_name, source_cat_map
+        )
+
         self.assertEqual(result, expected_category_keys)
 
     def test_no_mappings_direct_match(self):
@@ -118,9 +149,24 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
             ),
         ]
 
+        # Build data structures for quick lookup
+        categories_by_key: Dict[str, CategoriesTable] = {}
+        categories_by_name: Dict[str, CategoriesTable] = {}
+        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+
+        for category, mapping in category_mappings:
+            categories_by_key[category.key] = category
+            if category.title:
+                categories_by_name[category.title] = category
+            if mapping:
+                source_tuple = tuple(mapping.source)
+                source_cat_map[source_tuple] = mapping
+
         expected_category_keys = ["home_0", "kitchen_1", "appliances_2"]
 
-        result = get_categories_for_market_info(offer_cats, category_mappings)
+        result = get_categories_for_market_info(
+            offer_cats, categories_by_key, categories_by_name, source_cat_map
+        )
         self.assertEqual(result, expected_category_keys)
 
     def test_mapping_and_direct_match(self):
@@ -139,9 +185,24 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
             ),
         ]
 
+        # Build data structures for quick lookup
+        categories_by_key: Dict[str, CategoriesTable] = {}
+        categories_by_name: Dict[str, CategoriesTable] = {}
+        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+
+        for category, mapping in category_mappings:
+            categories_by_key[category.key] = category
+            if category.title:
+                categories_by_name[category.title] = category
+            if mapping:
+                source_tuple = tuple(mapping.source)
+                source_cat_map[source_tuple] = mapping
+
         expected_category_keys = ["books_0", "fiction_1"]
 
-        result = get_categories_for_market_info(offer_cats, category_mappings)
+        result = get_categories_for_market_info(
+            offer_cats, categories_by_key, categories_by_name, source_cat_map
+        )
         self.assertEqual(result, expected_category_keys)
 
 

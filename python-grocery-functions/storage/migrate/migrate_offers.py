@@ -409,10 +409,12 @@ def migrate_data(limit: int, batch_size: int):
             break
         if _offer.get("provenance") == "custom":
             logging.info("Skipping custom offer")
+            migrated_offer_ids.append(_offer["_id"])
             continue
         offer_counter += 1
         offer_market = _offer.get("market")
-        offer_context = get_offer_context_from_site_collection(_offer["siteCollection"])
+        site_collection = "".join(filter(str.isalnum, _offer["siteCollection"].lower()))
+        offer_context = get_offer_context_from_site_collection(site_collection)
         if not offer_market:
             offer_market = offer_context.split("-")[-1]
         offer_provenance_id = _offer["uri"].split(":")[-1]
@@ -423,6 +425,10 @@ def migrate_data(limit: int, batch_size: int):
         items = _offer.get("items", {}) or {}
         if type(items) is str:
             items = {}
+        for k, v in items.items():
+            if type(v) is not int:
+                items = {}
+                break
         quantity = _offer.get("quantity", {}) or {}
         if type(quantity) is str:
             quantity = {}
@@ -452,7 +458,7 @@ def migrate_data(limit: int, batch_size: int):
                 provenance=_offer["provenance"],
                 provenanceId=offer_provenance_id,
                 quantity=quantity,
-                siteCollection=_offer["siteCollection"],
+                siteCollection=site_collection,
                 title=_offer["title"],
                 validFrom=_offer["validFrom"],
                 validThrough=_offer["validThrough"],
@@ -502,10 +508,35 @@ def migrate_data(limit: int, batch_size: int):
             pass
 
         try:
-            if (offer.pricing["price"]) is str:
+            if type(offer.pricing["currency"]) is str:
+                if len(offer.pricing["currency"]) != 3:
+                    offer.pricing["currency"] = None
+        except KeyError:
+            pass
+
+        try:
+            if type(offer.pricing["price"]) is str:
                 offer.pricing["price"] = float(offer.pricing["price"].replace(",", "."))
         except KeyError:
             pass
+        except ValueError:
+            logging.warning(
+                f"Could not convert price to float: {offer.pricing.get('price')}"
+            )
+            offer.pricing["price"] = None
+
+        try:
+            if type(offer.pricing["prePrice"]) is str:
+                offer.pricing["prePrice"] = float(
+                    offer.pricing["prePrice"].replace(",", ".")
+                )
+        except KeyError:
+            pass
+        except ValueError:
+            logging.warning(
+                f"Could not convert prePrice to float: {offer.pricing.get('prePrice')}"
+            )
+            offer.pricing["prePrice"] = None
 
         processed_offer = OfferForMigration(
             title=offer.title,

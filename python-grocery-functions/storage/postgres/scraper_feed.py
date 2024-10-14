@@ -173,7 +173,8 @@ def handle_store_offer_batch(
 
             # Upsert offer prices to the database
             logging.info(f"Upserting {len(offer_prices)} offer prices")
-            upsert_offer_prices_batch(session, offer_prices)
+            if len(offer_prices) > 0:
+                upsert_offer_prices_batch(session, offer_prices)
             timer.stop("Insert prices")
 
             upsert_offer_has_gtin(session, prepared_data.offer_has_gtin_list)

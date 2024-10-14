@@ -2,18 +2,56 @@ import re
 from urllib.parse import urlparse
 from gtin import has_valid_check_digit
 
-from util.enums import currency_codes
 from amp_types.amp_product import ScraperOffer, PricingField
+
+
+def format_price(price_str: str | float | int) -> float:
+    if type(price_str) is float:
+        return price_str
+    elif type(price_str) is int:
+        return float(price_str)
+    elif type(price_str) is str:
+        try:
+            # Strip any extra spaces
+            price_str = price_str.strip()
+
+            # Case 1: If price has both comma and period (e.g., "1.590,00")
+            if "," in price_str and "." in price_str:
+                # Assume period is for thousands and comma is for decimals
+                price_str = price_str.replace(".", "").replace(",", ".")
+
+            # Case 2: If price only has a comma (e.g., "1590,00" or "1,590")
+            elif "," in price_str:
+                # Check if there are exactly two digits after the comma (e.g., "1,590")
+                if re.match(r"^\d+,\d{2}$", price_str):
+                    # It's a decimal, replace comma with dot
+                    price_str = price_str.replace(",", ".")
+                else:
+                    # Otherwise, it's a thousand separator, just remove it
+                    price_str = price_str.replace(",", "")
+
+            # Case 3: If price only has a period (e.g., "1590.00" or "1.590")
+            elif "." in price_str:
+                # Assume it's a decimal separator, no need to modify
+                pass
+
+            # Convert the cleaned-up string to float
+            return float(price_str)
+
+        except ValueError:
+            # Handle cases where conversion fails
+            raise
 
 
 def get_product_pricing(product: ScraperOffer) -> PricingField:
     currency = product.get("priceCurrency") or product.get("currency") or ""
     price = product.get("price")
     pre_price = product.get("prePrice")
+
     return dict(
-        price=float(price) if price else None,
+        price=format_price(price) if price else None,
         currency=currency,
-        prePrice=float(pre_price) if pre_price else None,
+        prePrice=format_price(pre_price) if pre_price else None,
         priceUnit=product.get("priceUnit", "pcs"),
     )
 

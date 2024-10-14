@@ -137,6 +137,8 @@ class OffersTable(Base):
     difference_365_days_mean = Column(Numeric)
     difference_365_days_mean_percentage = Column(Numeric)
 
+    prices_migrated_at = Column(TIMESTAMP)
+
 
 class OfferPricesTable(Base):
     __tablename__ = "offer_prices"
@@ -293,3 +295,4 @@ class DenormalizedProductsTable(Base):
     created_at = Column(TIMESTAMP, server_default=text("now()"))
     updated_at = Column(TIMESTAMP, server_default=text("now()"))
     category_keys = Column(ARRAY(TEXT))
+    page_views = Column(INTEGER)

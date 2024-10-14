@@ -1,6 +1,15 @@
-from typing import List
+from typing import Any, List, Literal, TypedDict
 
-from amp_types.amp_product import MappingConfigField
+
+class MappingConfigField(TypedDict):
+    value_type: str
+    replace_type: Literal["fixed", "key", "ignore"]
+    replace_value: Any
+    source: str
+    destination: str
+    text: str
+    force_replace: bool
+
 
 DEFAULT_EXTRACT_QUANTITY_FIELDS = []
 DEFAULT_EXTRACT_PROPERTIES_FIELDS = ["title", "subtitle"]
