@@ -346,6 +346,13 @@ class OfferForMigration(ProcessedMpnOffer):
     mongo_id: str
 
 
+def sanitize_data(offer: OfferForMigration) -> OfferForMigration:
+    for key, value in offer.items():
+        if isinstance(value, str):
+            offer[key] = value.replace("\0", "")  # Remove NUL characters
+    return offer
+
+
 def migrate_data(limit: int, batch_size: int):
     logging.info(
         f"Starting migration of mongo offers with limit {limit} and batch size {batch_size}"
@@ -575,6 +582,7 @@ def migrate_data(limit: int, batch_size: int):
             context=get_offer_context_from_site_collection(offer.siteCollection),
             mongo_id=_offer["_id"],
         )
+        processed_offer = sanitize_data(processed_offer)
 
         if offer_context not in offers_for_context:
             offers_for_context[offer_context] = []
@@ -588,7 +596,11 @@ def migrate_data(limit: int, batch_size: int):
                             raise ValueError(
                                 f"Offer context {offer['context']} does not match site collection {c}"
                             )
-                    handle_store_offer_batch(offers, c)
+                    try:
+                        handle_store_offer_batch(offers, c)
+                    except Exception:
+                        logging.error(offers)
+                        raise
                     offers_for_context[c] = []
                     now = datetime.now()
                     collection.bulk_write(
@@ -611,7 +623,11 @@ def migrate_data(limit: int, batch_size: int):
                     raise ValueError(
                         f"Offer context {offer['context']} does not match site collection {c}"
                     )
-            handle_store_offer_batch(offers, c)
+            try:
+                handle_store_offer_batch(offers, c)
+            except Exception:
+                logging.error(offers)
+                raise
             offers_for_context[c] = []
             now = datetime.now()
             collection.bulk_write(

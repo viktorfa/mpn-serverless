@@ -203,6 +203,14 @@ functions:
           rate: rate(12 hours)
           enabled: true
           description: "Every twelve hours"
+          
+  updateDenormalizedProducts:
+    handler: storage.postgres.denormalized_products.update_denormalized_products_for_valid_offers
+    events:
+      - schedule:
+          rate: rate(24 hours)
+          enabled: false
+          description: "Every 24 hours"
 
 resources:
   - ${file(../s3-sns-cloudformation.yml)}

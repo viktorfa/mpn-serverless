@@ -1,9 +1,5 @@
-import os
 import logging
-import pydash
-from pymongo.operations import UpdateOne
-import sentry_sdk
-from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
+from collections import defaultdict
 from google.analytics import data_v1beta
 from google.analytics.data_v1beta.types import (
     DateRange,
@@ -14,21 +10,13 @@ from google.analytics.data_v1beta.types import (
     OrderBy,
 )
 from typing import Mapping
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
-from scraper_feed.google_anal.utils import (
-    sites,
-    initialize_analyticsreporting,
-    get_analytics_data_client,
-)
-
-from storage.db import get_collection
+from scraper_feed.google_anal.utils import get_analytics_data_client, sites
+from storage.postgres.common import get_pg_engine
+from storage.postgres.postgres_tables import DenormalizedProductsTable, OffersTable
 from util.logging import configure_lambda_logging
-from offer_feed.offer_relations_handler import update_offer_relations_view
-
-if not os.getenv("IS_LOCAL"):
-    sentry_sdk.init(
-        integrations=[AwsLambdaIntegration()],
-    )
 
 
 configure_lambda_logging()
@@ -45,7 +33,8 @@ def get_report_ga4(
     request = data_v1beta.RunReportRequest(
         property=f"properties/{property_id}",
         date_ranges=[
-            DateRange(start_date="yesterday", end_date="today"),
+            # DateRange(start_date="yesterday", end_date="today"),
+            DateRange(start_date="7daysAgo", end_date="today"),
         ],
         metrics=[Metric(name="screenPageViews")],
         dimensions=[Dimension(name="date"), Dimension(name="pagePath")],
@@ -82,218 +71,94 @@ def get_report_ga4(
     return uri_to_views_map
 
 
-def get_report(analytics, view_id, offer_string, page_size=6000):
-    """Queries the Analytics Reporting API V4.
-
-    Args:
-      analytics: An authorized Analytics Reporting API V4 service object.
-    Returns:
-      The Analytics Reporting API V4 response.
-    """
-    return (
-        analytics.reports()
-        .batchGet(
-            body={
-                "reportRequests": [
-                    {
-                        "viewId": view_id,
-                        "dateRanges": [{"startDate": "yesterday", "endDate": "today"}],
-                        "metrics": [{"expression": "ga:pageviews"}],
-                        "dimensions": [
-                            {"name": "ga:pagepath"},
-                            {"name": "ga:dateHour"},
-                        ],
-                        "orderBys": [
-                            {"fieldName": "ga:pageviews", "sortOrder": "DESCENDING"},
-                        ],
-                        "pageSize": str(page_size),
-                        "dimensionFilterClauses": [
-                            {
-                                "filters": [
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/offers/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/tilbud/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/angebote/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/erbjudande/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/tarjouksia/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/offres/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/aanbiedingen/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/oferty/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/ofertas/"],
-                                    },
-                                    {
-                                        "dimensionName": "ga:pagepath",
-                                        "operator": "PARTIAL",
-                                        "expressions": ["/offerte/"],
-                                    },
-                                ]
-                            }
-                        ],
-                    }
-                ]
-            }
-        )
-        .execute()
+def save_postgres_pageviews(
+    uri_pageviews: Mapping[str, int], market: str, session: Session
+):
+    # Step 1: Fetch offers and map URIs to product IDs
+    uris = list(uri_pageviews.keys())
+    offers = (
+        session.query(OffersTable.uri, OffersTable.product_id)
+        .filter(OffersTable.uri.in_(uris))
+        .all()
     )
 
+    logging.info(f"Found {len(offers)} offers in the database.")
 
-def get_latest_uri_pageviews_from_response(response, max_uris=1024):
-    reports = response.get("reports", [])
+    # Build a mapping from product_id to total pageviews
+    product_pageviews = defaultdict(int)
+    for uri, product_id in offers:
+        pageviews = uri_pageviews.get(uri, 0)
+        product_pageviews[product_id] += pageviews
 
-    grouped_by_hour = pydash.group_by(
-        reports[0].get("data", {}).get("rows", []), "dimensions.1"
-    )
-    hours = sorted(list(grouped_by_hour.keys()), reverse=True)
+    existing_rows = session.execute(
+        select(DenormalizedProductsTable.product_id, DenormalizedProductsTable.market)
+        .filter(DenormalizedProductsTable.market == market)
+        .filter(DenormalizedProductsTable.product_id.in_(product_pageviews.keys()))
+    ).fetchall()
 
-    result = {}
-    for hour in hours[:]:
-        for measure in grouped_by_hour[hour]:
-            url = measure["dimensions"][0]
-            uri = f"{url}/".replace("//", "/").split("/")[-2]
-            pageviews = int(measure["metrics"][0]["values"][0])
-            if url in result.keys():
-                result[uri] += pageviews
-            else:
-                result[uri] = pageviews
-        if len(result.keys()) >= max_uris:
-            logging.info(f"Got {max_uris} uris. Stopping")
-            return result
-    return result
+    existing_pairs = {(row.product_id, row.market) for row in existing_rows}
 
-
-def save_mongo_pageviews(uri_pageviews: Mapping[str, int]):
-    collection = get_collection("mpnoffers")
-
-    updates = list(
-        UpdateOne({"uri": uri}, {"$set": {"pageviews": pageviews}})
-        for uri, pageviews in uri_pageviews.items()
+    logging.info(
+        f"Found {len(existing_pairs)} existing rows in the denormalized table."
     )
 
-    bulk_write_result = collection.bulk_write(updates)
+    updates = [
+        {
+            "product_id": product_id,
+            "market": market,
+            "page_views": total_pageviews,
+        }
+        for product_id, total_pageviews in product_pageviews.items()
+        if (product_id, market) in existing_pairs
+    ]
 
-    return bulk_write_result.modified_count
-
-
-def get_and_save_pageviews(max_pages=6000):
-    analytics = initialize_analyticsreporting()
-
-    reports = []
-
-    for site_key, site_config in sites.items():
-        if not site_config.get("view_id"):
-            continue
-        logging.info(f"Getting report for {site_key}")
-        response = get_report(
-            analytics, site_config["view_id"], site_config["offer_string"], max_pages
-        )
-        uri_pageviews = get_latest_uri_pageviews_from_response(response)
-        reports.append(
-            {
-                "uri_pageviews": uri_pageviews,
-                "site_config": site_config,
-                "site_key": site_key,
-            }
-        )
-
-    result = []
-    for report in reports:
-        uri_pageviews = report["uri_pageviews"]
-        mongo_modified = (
-            save_mongo_pageviews(uri_pageviews) if len(uri_pageviews) > 0 else 0
-        )
-        result.append({"mongo_modified": mongo_modified, "site": report["site_key"]})
-
-    logging.info("Modified offers")
-    logging.info(result)
-
-    return result
+    logging.info(f"Updating {len(updates)} rows in the denormalized table.")
+    if updates:
+        session.bulk_update_mappings(DenormalizedProductsTable, updates)
+        session.commit()
+    else:
+        logging.info("No updates to perform.")
 
 
 def get_and_save_pageviews_ga4(max_pages=6000):
     client = get_analytics_data_client()
+    with Session(get_pg_engine()) as session:
+        try:
+            for site_key, site_config in sites.items():
+                if not site_config.get("property_id"):
+                    continue
+                logging.info(f"Getting report for {site_key}")
 
-    reports = []
+                uri_pageviews = get_report_ga4(
+                    client,
+                    site_config["property_id"],
+                    site_config["offer_string"],
+                    max_pages,
+                )
+                transformed_uri_pageviews: Mapping[str, int] = {}
+                for uri, views in uri_pageviews.items():
+                    try:
+                        namespace, _, sku = uri.split(":")
+                        new_uri = f"{namespace}:{sku}"
+                    except ValueError:
+                        logging.warning(f"Could not split URI: {uri}")
+                        continue
+                    transformed_uri_pageviews[new_uri] = views
 
-    for site_key, site_config in sites.items():
-        if not site_config.get("property_id"):
-            continue
-        logging.info(f"Getting report for {site_key}")
+                logging.info(
+                    f"Got {len(transformed_uri_pageviews)} pages from GA4 for {site_key}"
+                )
 
-        uri_pageviews = get_report_ga4(
-            client,
-            site_config["property_id"],
-            site_config["offer_string"],
-            max_pages,
-        )
+                market = site_config["market"]
+                if transformed_uri_pageviews:
+                    save_postgres_pageviews(transformed_uri_pageviews, market, session)
 
-        reports.append(
-            {
-                "uri_pageviews": uri_pageviews,
-                "site_config": site_config,
-                "site_key": site_key,
-            }
-        )
-
-    result = []
-    logging.info("reports")
-    logging.info(reports)
-
-    for report in reports:
-        uri_pageviews = report["uri_pageviews"]
-        mongo_modified = (
-            save_mongo_pageviews(uri_pageviews) if len(uri_pageviews) > 0 else 0
-        )
-        update_offer_relations_view_response = update_offer_relations_view(
-            {"offerSet": {"$in": list(uri_pageviews.keys())}},
-            market=report["site_config"]["market"],
-        )
-        logging.info("update_offer_relations_view_response")
-        logging.info(update_offer_relations_view_response)
-        result.append({"mongo_modified": mongo_modified, "site": report["site_key"]})
-
-    logging.info("Modified offers")
-    logging.info(result)
-
-    return result
-
-
-def handle(event, context):
-    max_pages = event.get("max_pages", 6000)
-    return get_and_save_pageviews(max_pages)
+            session.close()
+            logging.info("Pageviews have been updated in denormalized_products.")
+        except Exception as e:
+            logging.error(f"An error occurred: {e}")
+            session.rollback()
+            raise
 
 
 def handle_ga4(event, context):
