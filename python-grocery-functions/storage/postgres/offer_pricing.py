@@ -121,7 +121,54 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                     / func.nullif(avg_prices_subq.c.avg_price_7_days, 0)
                     * 100
                 ).label("difference_7_days_mean_percentage"),
-                # Add similar calculations for other time ranges
+                (
+                    current_prices_subq.c.current_price
+                    - avg_prices_subq.c.avg_price_30_days
+                ).label("difference_30_days_mean"),
+                (
+                    (
+                        current_prices_subq.c.current_price
+                        - avg_prices_subq.c.avg_price_30_days
+                    )
+                    / func.nullif(avg_prices_subq.c.avg_price_30_days, 0)
+                    * 100
+                ).label("difference_30_days_mean_percentage"),
+                (
+                    current_prices_subq.c.current_price
+                    - avg_prices_subq.c.avg_price_90_days
+                ).label("difference_90_days_mean"),
+                (
+                    (
+                        current_prices_subq.c.current_price
+                        - avg_prices_subq.c.avg_price_90_days
+                    )
+                    / func.nullif(avg_prices_subq.c.avg_price_90_days, 0)
+                    * 100
+                ).label("difference_90_days_mean_percentage"),
+                (
+                    current_prices_subq.c.current_price
+                    - avg_prices_subq.c.avg_price_180_days
+                ).label("difference_180_days_mean"),
+                (
+                    (
+                        current_prices_subq.c.current_price
+                        - avg_prices_subq.c.avg_price_180_days
+                    )
+                    / func.nullif(avg_prices_subq.c.avg_price_180_days, 0)
+                    * 100
+                ).label("difference_180_days_mean_percentage"),
+                (
+                    current_prices_subq.c.current_price
+                    - avg_prices_subq.c.avg_price_365_days
+                ).label("difference_365_days_mean"),
+                (
+                    (
+                        current_prices_subq.c.current_price
+                        - avg_prices_subq.c.avg_price_365_days
+                    )
+                    / func.nullif(avg_prices_subq.c.avg_price_365_days, 0)
+                    * 100
+                ).label("difference_365_days_mean_percentage"),
             ).select_from(
                 current_prices_subq.join(
                     avg_prices_subq, current_prices_subq.c.uri == avg_prices_subq.c.uri
@@ -136,7 +183,14 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                 row.uri: {
                     "difference_7_days_mean": row.difference_7_days_mean,
                     "difference_7_days_mean_percentage": row.difference_7_days_mean_percentage,
-                    # Include other differences as needed
+                    "difference_30_days_mean": row.difference_30_days_mean,
+                    "difference_30_days_mean_percentage": row.difference_30_days_mean_percentage,
+                    "difference_90_days_mean": row.difference_90_days_mean,
+                    "difference_90_days_mean_percentage": row.difference_90_days_mean_percentage,
+                    "difference_180_days_mean": row.difference_180_days_mean,
+                    "difference_180_days_mean_percentage": row.difference_180_days_mean_percentage,
+                    "difference_365_days_mean": row.difference_365_days_mean,
+                    "difference_365_days_mean_percentage": row.difference_365_days_mean_percentage,
                 }
                 for row in results
             }
@@ -148,7 +202,22 @@ def update_offer_pricing(affected_offer_uris: List[str]):
                     "difference_7_days_mean_percentage": diffs[
                         "difference_7_days_mean_percentage"
                     ],
-                    # Include other fields as needed
+                    "difference_30_days_mean": diffs["difference_30_days_mean"],
+                    "difference_30_days_mean_percentage": diffs[
+                        "difference_30_days_mean_percentage"
+                    ],
+                    "difference_90_days_mean": diffs["difference_90_days_mean"],
+                    "difference_90_days_mean_percentage": diffs[
+                        "difference_90_days_mean_percentage"
+                    ],
+                    "difference_180_days_mean": diffs["difference_180_days_mean"],
+                    "difference_180_days_mean_percentage": diffs[
+                        "difference_180_days_mean_percentage"
+                    ],
+                    "difference_365_days_mean": diffs["difference_365_days_mean"],
+                    "difference_365_days_mean_percentage": diffs[
+                        "difference_365_days_mean_percentage"
+                    ],
                 }
                 for uri, diffs in price_diffs_map.items()
             ]
