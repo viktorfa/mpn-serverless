@@ -121,49 +121,58 @@ def save_postgres_pageviews(
 
 
 def get_and_save_pageviews_ga4(max_pages=6000):
-    client = get_analytics_data_client()
-    with Session(get_pg_engine()) as session:
-        try:
-            for site_key, site_config in sites.items():
-                if not site_config.get("property_id"):
-                    continue
-                logging.info(f"Getting report for {site_key}")
-
-                uri_pageviews = get_report_ga4(
-                    client,
-                    site_config["property_id"],
-                    site_config["offer_string"],
-                    max_pages,
-                )
-                transformed_uri_pageviews: Mapping[str, int] = {}
-                for uri, views in uri_pageviews.items():
-                    try:
-                        namespace, _, sku = uri.split(":")
-                        new_uri = f"{namespace}:{sku}"
-                    except ValueError:
-                        logging.warning(f"Could not split URI: {uri}")
+    with get_analytics_data_client() as client:
+        with Session(get_pg_engine()) as session:
+            try:
+                for site_key, site_config in sites.items():
+                    if not site_config.get("property_id"):
                         continue
-                    transformed_uri_pageviews[new_uri] = views
+                    logging.info(f"Getting report for {site_key}")
 
-                logging.info(
-                    f"Got {len(transformed_uri_pageviews)} pages from GA4 for {site_key}"
-                )
+                    uri_pageviews = get_report_ga4(
+                        client,
+                        site_config["property_id"],
+                        site_config["offer_string"],
+                        max_pages,
+                    )
+                    transformed_uri_pageviews: Mapping[str, int] = {}
+                    for uri, views in uri_pageviews.items():
+                        try:
+                            namespace, _, sku = uri.split(":")
+                            new_uri = f"{namespace}:{sku}"
+                        except ValueError:
+                            logging.warning(f"Could not split URI: {uri}")
+                            continue
+                        transformed_uri_pageviews[new_uri] = views
 
-                market = site_config["market"]
-                if transformed_uri_pageviews:
-                    save_postgres_pageviews(transformed_uri_pageviews, market, session)
+                    logging.info(
+                        f"Got {len(transformed_uri_pageviews)} pages from GA4 for {site_key}"
+                    )
 
-            session.close()
-            logging.info("Pageviews have been updated in denormalized_products.")
-        except Exception as e:
-            logging.error(f"An error occurred: {e}")
-            session.rollback()
-            raise
+                    market = site_config["market"]
+                    if transformed_uri_pageviews:
+                        save_postgres_pageviews(
+                            transformed_uri_pageviews, market, session
+                        )
+
+                logging.info("Pageviews have been updated in denormalized_products.")
+                session.commit()
+            except Exception as e:
+                logging.error(f"An error occurred: {e}")
+                session.rollback()
+                raise
 
 
 def handle_ga4(event, context):
     max_pages = event.get("max_pages", 6000)
-    return get_and_save_pageviews_ga4(max_pages)
+    try:
+        get_and_save_pageviews_ga4(max_pages)
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        logging.error(e)
+        raise
+
+    return None
 
 
 if __name__ == "__main__":

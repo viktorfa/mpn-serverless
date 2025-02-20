@@ -25,8 +25,8 @@ provider:
   profile: serverless-mpn-admin
   versionFunctions: false
 
-  memorySize: 2048
-  timeout: 900
+  memorySize: 1024
+  timeout: 30
 
   layers:
     - !Ref CommonLambdaLayer
@@ -81,11 +81,11 @@ provider:
         - "lambda:InvokeFunction"
       Resource:
         - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTrigger"
-    - Effect: Allow
-      Action:
-        - "lambda:InvokeFunction"
-      Resource:
-        - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
+    #- Effect: Allow
+    #  Action:
+    #    - "lambda:InvokeFunction"
+    #  Resource:
+    #    - "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${sls:stage}-scraperFeedWithConfigTriggerForPricing"
 
 package:
   artifact: serverless_artifact.zip
@@ -98,77 +98,78 @@ functions:
           topicName: ScraperFeedCreated
           arn:
             Ref: ScraperFeedCreatedTopic
+    timeout: 12
   scraperFeedTrigger:
     handler: scraper_feed.scraper_handler.trigger_scraper_feed
   scraperFeedWithConfigTrigger:
     handler: scraper_feed.scraper_handler.trigger_scraper_feed_with_config
-  scraperFeedWithConfigTriggerForPricing:
-    handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_with_config
-  scraperFeedPricingHistory:
-    handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
-    timeout: 900
-  offerFeedCategoriesSns:
-    handler: offer_feed.categories.offer_feed_sns_for_categories
+  #scraperFeedWithConfigTriggerForPricing:
+  #  handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_with_config
+  #scraperFeedPricingHistory:
+  #  handler: scraper_feed.handle_feed_pricing.trigger_scraper_feed_pricing_with_history
+  #  timeout: 900
+  #offerFeedCategoriesSns:
+  #  handler: offer_feed.categories.offer_feed_sns_for_categories
     #events:
     #  - sns:
     #      topicName: ScraperFeedHandled
     #      arn:
     #        Ref: ScraperFeedHandledTopic
-  offerFeedCategoriesTrigger:
-    handler: offer_feed.categories.offer_feed_trigger_for_categories
-  offerFeedMetaTrigger:
-    handler: offer_feed.offer_handler.offer_feed_meta_trigger
-  offerFeedMetaSns:
-    handler: offer_feed.offer_handler.offer_feed_meta_sns
+  #offerFeedCategoriesTrigger:
+  #  handler: offer_feed.categories.offer_feed_trigger_for_categories
+  #offerFeedMetaTrigger:
+  #  handler: offer_feed.offer_handler.offer_feed_meta_trigger
+  #offerFeedMetaSns:
+  #  handler: offer_feed.offer_handler.offer_feed_meta_sns
     #events:
     #  - sns:
     #      topicName: ScraperFeedHandled
     #      arn:
     #        Ref: ScraperFeedHandledTopic
-  handle_offer_relations_trigger:
-    handler: offer_feed.offer_relations_handler.handle_offer_relations_trigger
-  handle_offer_relations_sns:
-    handler: offer_feed.offer_relations_handler.handle_offer_relations_sns
+  #handle_offer_relations_trigger:
+  #  handler: offer_feed.offer_relations_handler.handle_offer_relations_trigger
+  #handle_offer_relations_sns:
+  #  handler: offer_feed.offer_relations_handler.handle_offer_relations_sns
     #events:
     #  - sns:
     #      topicName: ScraperFeedHandled
     #      arn:
     #        Ref: ScraperFeedHandledTopic
-  handle_offers_market_trigger:
-    handler: offer_feed.offer_market_handler.handle_market_offers_trigger
-  handle_offers_market_sns:
-    handler: offer_feed.offer_market_handler.handle_market_offers_sns
+  #handle_offers_market_trigger:
+  #  handler: offer_feed.offer_market_handler.handle_market_offers_trigger
+  #handle_offers_market_sns:
+  #  handler: offer_feed.offer_market_handler.handle_market_offers_sns
     #events:
     #  - sns:
     #      topicName: ScraperFeedHandled
     #      arn:
     #        Ref: ScraperFeedHandledTopic
-  offerFeedGtinsTrigger:
-    handler: offer_feed.offer_handler.offer_feed_trigger_for_gtins
-  offerFeedGtinsSns:
-    handler: offer_feed.offer_handler.offer_feed_sns_for_gtins
+  #offerFeedGtinsTrigger:
+  #  handler: offer_feed.offer_handler.offer_feed_trigger_for_gtins
+  #offerFeedGtinsSns:
+  #  handler: offer_feed.offer_handler.offer_feed_sns_for_gtins
     #events:
     #  - sns:
     #      topicName: ScraperFeedHandled
     #      arn:
     #        Ref: ScraperFeedHandledTopic
 
-  bookFeedTrigger:
-    handler: book_feed.handler.handle_book_offers_trigger
-  bookFeedSns:
-    handler: book_feed.handler.handle_book_offers_sns
+  #bookFeedTrigger:
+  #  handler: book_feed.handler.handle_book_offers_trigger
+  #bookFeedSns:
+  #  handler: book_feed.handler.handle_book_offers_sns
     #events:
     #  - sns:
     #      topicName: BookFeedHandled
     #      arn:
     #        Ref: BookFeedHandledTopic
-  processBooksTrigger:
-    handler: book_feed.handler.process_books_trigger
-    events:
-      - schedule:
-          rate: rate(1 day)
-          enabled: false
-          description: "Every day"
+  #processBooksTrigger:
+  #  handler: book_feed.handler.process_books_trigger
+  #  events:
+  #    - schedule:
+  #        rate: rate(1 day)
+  #        enabled: false
+  #        description: "Every day"
 
   handleHttpOptions:
     handler: scraper_management.handler.handle_options
@@ -198,6 +199,7 @@ functions:
 
   updatePageviews:
     handler: scraper_feed.google_anal.pageviews.handle_ga4
+    timeout: 120
     events:
       - schedule:
           rate: rate(12 hours)
@@ -206,10 +208,11 @@ functions:
           
   updateDenormalizedProducts:
     handler: storage.postgres.denormalized_products.update_denormalized_products_for_valid_offers
+    timeout: 450
     events:
       - schedule:
           rate: rate(24 hours)
-          enabled: false
+          enabled: true
           description: "Every 24 hours"
 
 resources:

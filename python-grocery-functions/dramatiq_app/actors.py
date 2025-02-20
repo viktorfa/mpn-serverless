@@ -1,6 +1,6 @@
 import logging
 import os
-from dramatiq_app.redis import ensure_broker_initialized
+from dramatiq_app.redis_file import ensure_broker_initialized
 from scraper_feed.handle_config import generate_handle_config_postgres
 from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
 from storage.postgres.scraper_feed import get_handle_configs
