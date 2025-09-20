@@ -47,14 +47,14 @@ def scraper_feed_sns(event, context):
         invocations = []
 
         for config in configs:
-            logging.info("Handling feed with dramatiq")
-            job_result = trigger_dramatiq_scraper_feed_with_config.send(
-                {
-                    **config.model_dump(),
-                    "feed_key": key,
-                    "use_postgres": True,
-                }
-            )
+            logging.info("Handlin' feed with dramatiq")
+            handle_args = {
+                "id": config.id,
+                "feed_key": key,
+                "use_postgres": True,
+            }
+            job_result = trigger_dramatiq_scraper_feed_with_config.send(handle_args)
+
             print("Task sent to the queue", job_result.message_id)
             invocations.append(job_result.message_id)
             continue
@@ -126,14 +126,13 @@ def trigger_scraper_feed(event, context):
 
         invocations = []
         for config in configs:
-            logging.info("Handling feed with dramatiq")
-            job_result = trigger_dramatiq_scraper_feed_with_config.send(
-                {
-                    **config.model_dump(),
-                    "feed_key": key,
-                    "use_postgres": True,
-                }
-            )
+            logging.info("Handlin' feed with dramatiq")
+            handle_args = {
+                "id": config.id,
+                "feed_key": key,
+                "use_postgres": True,
+            }
+            job_result = trigger_dramatiq_scraper_feed_with_config.send(handle_args)
             print("Task sent to the queue", job_result.message_id)
             invocations.append(job_result.message_id)
             continue

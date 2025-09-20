@@ -116,6 +116,50 @@ class TestHandleProducts(TestCase):
         self.assertIsNotNone(actual[0].get("validThrough"))
         self.assertIn("shopgun", actual[0]["uri"])
 
+    def test_transform_product_parfymklick(self):
+        config = {
+            "provenance": "parfymklick_se_spider",
+            "namespace": "parfymklick",
+            "market": "se",
+            "fieldMapping": get_field_mapping(),
+            "categoriesLimits": [],
+            "extractQuantityFields": [],
+            "extractPropertiesFields": [],
+            "extractIngredientsFields": [],
+            "extractNutritionFields": [],
+            "ignore_none": True,
+            "context": "beauty-se",
+        }
+
+        actual = transform_product(
+            {
+                "price": 870.0,
+                "priceCurrency": "SEK",
+                "sku": "51871",
+                "brand": "/Aftershave/Yves-Saint-Laurent/",
+                "title": "Yves Saint Laurent Y Eau de Toilette 60ml Sprej",
+                "url": "https://www.parfym-klick.se/Yves-Saint-Laurent-Y-Eau-de-Toilette-60ml-Sprej-s51871/",
+                "image": "https://299df094394db9cc1de4-60c51f90a91f2305b52a889e5c1d7548.ssl.cf3.rackcdn.com/110746_xl_7.jpg",
+                "description": "Yves Saint Laurent Y Eau de Toilette 60ml Sprej Y for Men av Yves Saint Laurent är en träig och aromatisk doft för män. Sammansättningen av Eau de Toilette börjar med rena noter av vita aldehyder, ingefära och bergamott som utvecklas med geranium, violetta blad och salvia i hjärtat med stöd av en maskulär bas av gran balsam, rökelse, ambergris, mysk och cederträ. Eau de Parfum delar dessa noter berikade med äpple i öppningen, enbär i hjärtat och olibanum i basen. Båda versionerna finns i en minimalistisk linjär flaska med en metallaccent som bara verkar ha märkesnamnet när du ser framsidan av flaskan, men om du vänder det visar det sig vara basen i bokstaven Y. Y skapades för att ge den generation som föddes på 80- och 90-talet en säker och mångsidig doft till skillnad från någon annan. EDT-versionen av Y for Men lanserades 2017 följt av en EDP 2018.",
+                "availability": "http://schema.org/InStock",
+                "itemCondition": "http://schema.org/NewCondition",
+                "categories": [
+                    "Parfym Klick",
+                    "Dofter",
+                    "För Honom",
+                    "Yves Saint Laurent",
+                    "Y",
+                ],
+                "canonical_url": "https://www.parfym-klick.se/Yves-Saint-Laurent-Y-Eau-de-Toilette-60ml-Sprej-s51871/",
+                "provenance": "parfyme_klikk_se_spider",
+                "url_fingerprint": "ec66ee66d93af84db49cdee0f95ee33bc89053e3",
+                "provenanceId": "51871",
+            },
+            config,
+        )
+        self.assertIsNotNone(actual.get("validThrough"))
+        self.assertEqual(870.0, actual["pricing"]["price"])
+
 
 class TestGetCategories(TestCase):
     def test_get_categories_remove_first(self):

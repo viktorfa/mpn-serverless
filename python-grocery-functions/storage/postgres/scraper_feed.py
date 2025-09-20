@@ -62,6 +62,18 @@ def get_handle_configs(provenance: str):
             raise e
 
 
+def get_handle_config_by_id(id: str):
+    # Perform the ORM query
+    with Session(pg_engine) as session:
+        try:
+            stmt = session.query(HandleConfigsTable).filter(HandleConfigsTable.id == id)
+            result = stmt.one_or_none()
+            return result
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise e
+
+
 def insert_handle_run_batch(config: HandleConfig):
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 

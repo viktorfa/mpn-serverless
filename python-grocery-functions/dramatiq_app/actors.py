@@ -3,7 +3,7 @@ import os
 from dramatiq_app.redis_file import ensure_broker_initialized
 from scraper_feed.handle_config import generate_handle_config_postgres
 from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
-from storage.postgres.scraper_feed import get_handle_configs
+from storage.postgres.scraper_feed import get_handle_config_by_id, get_handle_configs
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 import botocore.response
@@ -55,6 +55,14 @@ def trigger_dramatiq_scraper_feed_with_config(event: EventHandleConfig):
             config = generate_handle_config_postgres(handle_configs[0]).model_dump()
 
             print("config", config)
+        else:
+            config_id = config["id"]
+            db_config = get_handle_config_by_id(config_id)
+            print(f"Getting handle config from id {config_id}")
+            if not db_config:
+                logging.error(f"Could not find handle config with id {config_id}")
+                raise Exception(f"Could not find handle config with id {config_id}")
+            config = generate_handle_config_postgres(db_config).model_dump()
 
         s3_object = get_s3_object(bucket, key)
         scrape_time = s3_object["LastModified"]

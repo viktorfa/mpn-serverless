@@ -1,1 +1,1 @@
-*/1 * * * * cd /app && /usr/local/bin/python3 -m storage.migrate.migrate_offers --limit 6000 --batch_size 1024 >> /var/log/cron.log 2>&1
+*/1 * * * * cd /app && /usr/local/bin/python3 -m storage.migrate.migrate_offer_prices --limit 2048 --batch_size 2048 >> /var/log/cron.log 2>&1

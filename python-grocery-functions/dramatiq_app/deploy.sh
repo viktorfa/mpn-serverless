@@ -20,12 +20,12 @@ fi
 #export $(grep -v '^#' $ENV_FILE | xargs)
 
 # Convert docker-compose.yml to canonical form to insert env variables
-docker compose --env-file ./dramatiq_app/${ENV_FILE} -f ./dramatiq_app/docker-compose-${STAGE}.yml convert --no-path-resolution | grep -v '^name' > ./dramatiq_app/docker-compose-${STAGE}.canonical.yml
+docker compose --env-file ./dramatiq_app/${ENV_FILE} -f ./dramatiq_app/docker-compose-${STAGE}.yml config --no-path-resolution | grep -v '^name' > ./dramatiq_app/docker-compose-${STAGE}.canonical.yml
 
 
 
 # Build and push the Docker image
-pdm export > requirements.txt
+uv export --format requirements-txt --all-extras > requirements.txt
 docker build --file Dockerfile.dramatiq -t ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest .
 docker push ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest
 
