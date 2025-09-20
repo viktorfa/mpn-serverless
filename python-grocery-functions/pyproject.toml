@@ -6,10 +6,8 @@ authors = [
     {name = "Viktor Andersen", email = "vikfand@gmail.com"},
 ]
 dependencies = [
-    "pymongo~=4.8.0",
     "pydash~=8.0.0",
     "python-dotenv~=1.0.0",
-    "dnspython~=2.6.0",
     "sentry-sdk~=1.26.0",
     "google-api-python-client~=2.91.0",
     "oauth2client~=4.1.0",
@@ -35,4 +33,67 @@ dev = [
     "botostubs~=0.15.0",
     "boto3~=1.35.0",
     "pytest~=8.3.0",
+    "pytest-cov~=5.0.0",
+    "pytest-mock~=3.14.0",
+    "ruff>=0.13.1",
+    "pylance>=0.36.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "tests/*",
+    "*.pyc",
+    "*__pycache__*",
+    ".venv/*",
+    "layer/*",
+    "node_modules/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError"
+]
+
+[tool.ruff]
+lint.select = [
+    "E",    # pycodestyle (style errors)
+    "F",    # pyflakes (logic errors, unused imports/vars, etc.)
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern syntax)
+    "B",    # bugbear (common bugs, e.g. bare except)
+    "W",    # pycodestyle warnings
+]
+lint.ignore = [
+    "E402",  # allow imports not only at top of file
+]
+
+# Formatting
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"    # enforce double quotes
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["python_grocery_functions"]
+combine-as-imports = true
+
+[tool.pylance]
+# Very basic, helps Pylance know about the project
+typeCheckingMode = "basic"
