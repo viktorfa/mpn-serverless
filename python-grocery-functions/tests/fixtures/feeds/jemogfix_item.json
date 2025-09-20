@@ -1,0 +1,6 @@
+{
+  "additionalProperties": [
+    {"key": "unitPrice", "value": "22.9"},
+    {"key": "unitPriceUnit", "value": "kg"}
+  ]
+}

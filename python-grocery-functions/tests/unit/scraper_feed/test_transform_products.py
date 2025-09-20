@@ -1,5 +1,6 @@
 from unittest import TestCase
 import json
+from pathlib import Path
 
 from scraper_feed.filters import transform_product, get_categories
 from scraper_feed.scraper_configs import get_field_mapping
@@ -7,11 +8,12 @@ from scraper_feed.scraper_configs import get_field_mapping
 
 class TestHandleProducts(TestCase):
     def setUp(self):
-        with open("assets/obsbygg-scraper-feed.json") as obsbygg_products_json:
+        fixtures_path = Path(__file__).parent.parent.parent / "fixtures" / "feeds"
+        with open(fixtures_path / "obsbygg-scraper-feed.json") as obsbygg_products_json:
             self.obsbygg_products = json.load(obsbygg_products_json)
-        with open("assets/swecandy-scraper-feed.json") as swecandy_products_json:
+        with open(fixtures_path / "swecandy-scraper-feed.json") as swecandy_products_json:
             self.swecandy_products = json.load(swecandy_products_json)
-        with open("assets/shopgun-scraper-feed-new.json") as shopgun_products_json:
+        with open(fixtures_path / "shopgun-scraper-feed-new.json") as shopgun_products_json:
             self.shopgun_products = json.load(shopgun_products_json)
 
     def test_transform_product(self):
@@ -25,12 +27,13 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": ["title"],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": False,
-            "collection_name": "byggoffers",
+            "context": "amp-no",
         }
 
-        actual = transform_product(product, config, {})
+        actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -44,12 +47,13 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": ["title"],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": False,
-            "collection_name": "groceryoffers",
+            "context": "amp-no",
         }
 
-        actual = transform_product(product, config, {})
+        actual = transform_product(product, config)
         self.assertIsNotNone(actual["imageUrl"])
         self.assertIsNotNone(actual["dealer"])
 
@@ -64,12 +68,13 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": ["title"],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": False,
-            "collection_name": "groceryoffers",
+            "context": "amp-no",
         }
 
-        actual = transform_product(product, config, {})
+        actual = transform_product(product, config)
         self.assertIn("HALLA", actual["uri"])
 
     def test_transform_product_with_ignore_none_fields(self):
@@ -83,12 +88,13 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": [],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": True,
-            "collection_name": "groceryoffers",
+            "context": "amp-no",
         }
 
-        actual = transform_product(product, config, {})
+        actual = transform_product(product, config)
         self.assertIsNone(actual.get("quantity"))
         self.assertIn("obsbygg", actual["uri"])
 
@@ -102,14 +108,15 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": [],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": True,
-            "collection_name": "groceryoffers",
+            "context": "amp-no",
         }
 
         actual = list(
             [
-                transform_product(product, config, {})
+                transform_product(product, config)
                 for product in self.shopgun_products[:100]
             ]
         )
@@ -126,7 +133,8 @@ class TestHandleProducts(TestCase):
             "extractQuantityFields": [],
             "extractPropertiesFields": [],
             "extractIngredientsFields": [],
-            "extractNutritionFields": [],
+            "categoriesField": "categories",
+            "is_partner": False,
             "ignore_none": True,
             "context": "beauty-se",
         }

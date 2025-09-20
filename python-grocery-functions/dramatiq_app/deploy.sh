@@ -27,7 +27,7 @@ docker compose --env-file ./dramatiq_app/${ENV_FILE} -f ./dramatiq_app/docker-co
 # Build and push the Docker image
 uv export --format requirements-txt --all-extras > requirements.txt
 docker build --file Dockerfile.dramatiq -t ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest .
-docker push ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest
+docker -D push ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest
 
 # Replace quoted integers in the `published` port with unquoted integers
 sed -i 's/published: "\(.*\)"/published: \1/' ./dramatiq_app/docker-compose-${STAGE}.canonical.yml

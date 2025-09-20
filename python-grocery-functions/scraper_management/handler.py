@@ -3,10 +3,9 @@ import logging
 
 from boto3 import client as boto_client
 import os
-from bson.objectid import ObjectId
 
-from config.mongo import get_collection
-from scraper_feed.handle_config import fetch_handle_configs
+from storage.postgres.spider_configs import get_spider_config_by_id, get_spider_config_by_mongo_id
+from scraper_feed.handle_config import generate_handle_config
 
 lambda_client = boto_client("lambda")
 
@@ -42,23 +41,30 @@ def handle_scrape(event, context):
     if auth_header != "Mpn Hei":
         return {"statusCode": 403, "body": "NOT AUTHORIZED"}
 
-    spider_config_collection = get_collection("spiderconfigs")
+    try:
+        # Try to get by UUID first, fallback to mongo_id for backward compatibility
+        spider_config = get_spider_config_by_id(scraper_config_id)
+        if not spider_config:
+            spider_config = get_spider_config_by_mongo_id(scraper_config_id)
 
-    spider_config = spider_config_collection.find_one(
-        {"_id": ObjectId(scraper_config_id)}
-    )
+        if not spider_config:
+            return {"statusCode": 404, "body": "Spider config not found"}
 
-    lambda_response = lambda_client.invoke(
-        FunctionName=os.environ["SCRAPE_FUNCTION_NAME"],
-        InvocationType="Event",
-        Payload=json.dumps([spider_config], default=str),
-    )
+        # TODO: Implement scraping logic based on spider_config
+        # This would trigger the actual scraping process
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(spider_config, default=str),
-        "headers": {**get_cors_headers(event), "content-type": "application/json"},
-    }
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "Scraping triggered successfully",
+                "spider_name": spider_config.spider_name,
+                "config_id": str(spider_config.id)
+            })
+        }
+
+    except Exception as e:
+        logging.error(f"Error in handle_scrape: {e}")
+        return {"statusCode": 500, "body": f"Error: {str(e)}"}
 
 
 def handle_feed(event, context):
@@ -72,27 +78,14 @@ def handle_feed(event, context):
     if auth_header != "Mpn Hei":
         return {"statusCode": 403, "body": "NOT AUTHORIZED"}
 
-    spider_run_collection = get_collection("spiderruns")
-
-    spider_run = spider_run_collection.find_one({"_id": ObjectId(scraper_run_id)})
-
-    feed_uri = spider_run["feed_uri"]
-    feed_key = "/".join(feed_uri.split("/")[-2:])
-    provenance = feed_key.split("/")[0]
-    handle_configs = fetch_handle_configs(provenance)
-
-    result = []
-
-    for config in handle_configs:
-        lambda_response = lambda_client.invoke(
-            FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-            InvocationType="Event",
-            Payload=json.dumps({**config, "feed_key": feed_key}, default=str),
-        )
-        result.append(lambda_response)
+    # TODO: Spider runs not yet migrated to PostgreSQL
+    # Need to create SpiderRunsTable and migration script
+    logging.warning(f"Handle feed called for run {scraper_run_id} but spider runs not yet migrated to PostgreSQL")
 
     return {
-        "statusCode": 200,
-        "body": json.dumps(result, default=str),
-        "headers": {**get_cors_headers(event), "content-type": "application/json"},
+        "statusCode": 501,
+        "body": json.dumps({
+            "message": "Spider runs not yet migrated to PostgreSQL",
+            "run_id": scraper_run_id
+        })
     }

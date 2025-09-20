@@ -1,0 +1,874 @@
+[
+  {
+    "title": "NORA R\u00f8dk\u00e5l",
+    "subtitle": "450 g",
+    "description": "R\u00f8dk\u00e5l",
+    "categories": ["Frukt og gr\u00f8nt"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "NORA",
+    "brandKey": "nora",
+    "pricing": {
+      "price": 23.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 51.11, "max": 51.11 },
+        "standard": { "min": 51.11, "max": 51.11 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:335",
+    "href": "https://oda.com/no/products/335-nora-rodkal/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/e8516513-7435-41db-bdae-d97cdcbd5197.jpg?auto=format&fit=max&w=218&s=065504b43729b571fc521dd54d83df5e",
+    "gtins": { "ean": "7039610001131" },
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "g" } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "335",
+    "sku": "335",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "S\u00e6tre Bixit Sjokolade",
+    "subtitle": "Sjokolade, 200 g",
+    "description": "Bixit Sjokolade er den klassiske Bixit-kjeksen med sjokolade! Kjeksbunnen er trukket med deilig sjokolade. En skikkelig turfavoritt som alle elsker!\nRainforest Alliace sertifisering",
+    "categories": ["Iskrem, kaker og kjeks", "Kjeks"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "S\u00e6tre",
+    "brandKey": "saetre",
+    "pricing": {
+      "price": 31.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 159.5, "max": 159.5 },
+        "standard": { "min": 159.5, "max": 159.5 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:351",
+    "href": "https://oda.com/no/products/351-saetre-bixit-sjokolade/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/2106ad12-fd92-4026-8ad4-e8362e1d48bd.jpg?auto=format&fit=max&w=300&s=45a99c7ccc1f10e553a7e0f321c3967c",
+    "gtins": { "ean": "5400279014848", "nobb": "12345678" },
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "351",
+    "sku": "351",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Sweetfire Marshmallows",
+    "subtitle": "200 g",
+    "description": "Store. myke marshmallows. Perfekt til grilling!",
+    "categories": ["Sjokolade, snacks og godteri", "Godteri"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Sweetfire",
+    "brandKey": "sweetfire",
+    "pricing": {
+      "price": 23.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 119.5, "max": 119.5 },
+        "standard": { "min": 119.5, "max": 119.5 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:311",
+    "href": "https://oda.com/no/products/311-sweetfire-marshmallows/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/959ed3a0-9e72-46bb-906a-a3eda324e822.jpg?auto=format&fit=max&w=300&s=0a823483bd2f3acb07738c9411c6bc4a",
+    "gtins": {},
+    "mpnStock": "OutOfStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "311",
+    "sku": "311",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Malaco Fox/Nox/Rox",
+    "subtitle": "200 g",
+    "description": "Fox/Nox/Rox er en blandingspose med ulike fruktkarameller. Fox med sitronsmak har v\u00e6rt i Norge siden 1935, og er fortsatt den store favoritten innenfor godteri. Med Nox lakris og Rox bringeb\u00e6r Sitrongresss er dette posen som har en smak for alle! Alle karamellene har naturlige smaksaromaer.",
+    "categories": ["Sjokolade, snacks og godteri", "Godteri"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Malaco",
+    "brandKey": "malaco",
+    "pricing": {
+      "price": 48.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 240.0, "max": 240.0 },
+        "standard": { "min": 240.0, "max": 240.0 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:314",
+    "href": "https://oda.com/no/products/314-malaco-fox-nox-rox/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/01e5a5df-c37d-47ec-8422-c64242f9c226.jpg?auto=format&fit=max&w=256&s=8d6f310d5cd52d02df3270b465c59317",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "314",
+    "sku": "314",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Extra White Sweet Fruit Sukkerfri 10 stk",
+    "subtitle": "10 stk, 14 g",
+    "description": "Ekstra frukt-smaksatt tyggegummi - en myk tyggeopplevelse med en deilig smak. Perfekt p\u00e5 farten!",
+    "categories": ["Sjokolade, snacks og godteri", "Tyggis og pastiller"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Extra",
+    "brandKey": "extra",
+    "pricing": {
+      "price": 16.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 1142.86, "max": 1142.86 },
+        "standard": { "min": 1142.86, "max": 1142.86 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:315",
+    "href": "https://oda.com/no/products/315-extra-extra-white-sweet-fruit-sukkerfri-10-stk/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/55a5643f-df2a-4019-8657-0db9640a0783.jpg?auto=format&fit=max&w=300&s=b0336d5b4935c38ff015de761bda1e16",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "315",
+    "sku": "315",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Extra Spearmint Sukkerfri 10 stk",
+    "subtitle": "10 stk, 14 g",
+    "description": "Ekstra Spearmint-smaksatt tyggegummi - en myk tygge opplevelse med en deilig smak. Perfekt p\u00e5 farten!",
+    "categories": ["Sjokolade, snacks og godteri", "Tyggis og pastiller"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Extra",
+    "brandKey": "extra",
+    "pricing": {
+      "price": 16.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 1142.86, "max": 1142.86 },
+        "standard": { "min": 1142.86, "max": 1142.86 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:316",
+    "href": "https://oda.com/no/products/316-extra-extra-spearmint-sukkerfri-10-stk/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/d50284f9-9f27-4e65-b8c3-5d428fcd1078.jpg?auto=format&fit=max&w=300&s=612b35f8ddcb53e6a62a6a012cb1b0d4",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "g" } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "316",
+    "sku": "316",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "FREIA Heln\u00f8tt",
+    "subtitle": "200 g",
+    "description": "Freia  Heln\u00f8tt er en sammensetning av Freia Melkesjokolade og hele spesialr\u00f8stede hasseln\u00f8tter. \nFreia Heln\u00f8tt har v\u00e6rt en folkefavoritt i Norge siden 1958. \nEn perfekt turkamerat, eller som en gobit n\u00e5r du skal kose deg. \nLes mer om COCOA LIFE p\u00e5 www.freia.no/baerekraft.",
+    "categories": ["Sjokolade, snacks og godteri", "Sjokolade"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "FREIA",
+    "brandKey": "freia",
+    "pricing": {
+      "price": 29.9,
+      "currency": "NOK",
+      "prePrice": 39.9,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 149.5, "max": 149.5 },
+        "standard": { "min": 149.5, "max": 149.5 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:291",
+    "href": "https://oda.com/no/products/291-freia-helnott/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/f3e0305e-a4fe-4db0-bbe6-23c5d4765113.jpg?auto=format&fit=max&w=300&s=7a4f9473c1899fb70d717714ebef488b",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "291",
+    "sku": "291",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Haribo Stjerne Mix",
+    "subtitle": "220 g",
+    "description": "Klassikeren med vingummi og skum med Happy Cola, Speilegg, Kirseb\u00e6r, Goldbears og Frosker.",
+    "categories": ["Sjokolade, snacks og godteri", "Godteri"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "pricing": {
+      "price": 37.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 172.27, "max": 172.27 },
+        "standard": { "min": 172.27, "max": 172.27 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:64679",
+    "href": "https://oda.com/no/products/64679-haribo-haribo-stjerne-mix/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/e958e8bb-6d33-4b4a-914c-cd116f0fb010.jpg?auto=format&fit=max&w=259&s=913e815e20a806ec117dcb8a9eadb8ed",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "64679",
+    "sku": "64679",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Santa Maria Chili explosion x-hot kvern",
+    "subtitle": "67 g",
+    "description": "Chili Explosion X-HOT er en sterk krydderblanding med ingredienser som blant annet r\u00f8d chili, chiliflak, sort pepper, guajillo chili, tomat, chipotle, paprika og salt. Chili Explosion X-HOT skiller seg fra Chili Explosion ved \u00e5 innholde st\u00f8rre mengde chili og guajillochili, noe som gj\u00f8r den ekstra spicy. Bruk Chili Explosion X-HOT til en hver rett du \u00f8nsker \u00e5 gi litt ekstra \u00abspice\u00bb. Den sterke chiliblandingen er et \u00abmust-have\u00bb for de som liker sterk mat og chili. Det er mange fordeler ved \u00e5 kverne ditt eget krydder. Nykvernede krydder har en rikere, dypere smak, og hele krydder bevarer smaken og aromaen lenger enn kvernet krydder.",
+    "categories": ["Middager og tilbeh\u00f8r", "Krydder og buljong"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Santa Maria",
+    "brandKey": "santa_maria",
+    "pricing": {
+      "price": 61.2,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 913.43, "max": 913.43 },
+        "standard": { "min": 913.43, "max": 913.43 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:64587",
+    "href": "https://oda.com/no/products/64587-chili-explosion-x-hot-kvern/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/81c0c0b4-9e3c-4bc5-8680-37e801124650.jpg?auto=format&fit=max&w=105&s=5c0aabf6ef0335dfd0ae5ae9fd2166c6",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 36.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "64587",
+    "sku": "64587",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Mills No1 normalsaltet",
+    "subtitle": "500 g",
+    "description": "Mills No1 er laget i Norge med klaret sm\u00f8r, rapsolje og kjernemelk og har de samme gode egenskapene, smak og bruksomr\u00e5dene som tradisjonelt meierism\u00f8r. Den fine blandingen av klaret sm\u00f8r og rapsolje gj\u00f8r at du ikke trenger \u00e5 tempere Mills No1 f\u00f8r bruk. \r\nMills No1 bruner ogs\u00e5 litt saktere enn meierism\u00f8r og er derfor enklere \u00e5 steke med.",
+    "categories": ["Meieri, ost og egg", "Sm\u00f8r og margarin"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Mills",
+    "brandKey": "mills",
+    "pricing": {
+      "price": 34.8,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 69.6, "max": 69.6 },
+        "standard": { "min": 69.6, "max": 69.6 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:64421",
+    "href": "https://oda.com/no/products/64421-mills-mills-no1-normalsaltet/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/73eb4736-2c04-4aa0-8974-1b1c6a7d48e7.jpg?auto=format&fit=max&w=300&s=0cd5758a3bc6b34ee12df106b8babe63",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 1.0, "unit": "g" } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "64421",
+    "sku": "64421",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Q Skyr\u00ae Banan & Pasjonsfrukt",
+    "subtitle": "160 g",
+    "description": "Skyr\u00ae Banan & Pasjon er en smakfull yoghurt med fl\u00f8yelsmyk og fyldig konsistens. Produktet er naturlig proteinrik, fettfritt, uten tilsatt sukker og laktoseredusert. Inneholder s\u00f8tstoff.",
+    "categories": ["Meieri, ost og egg", "Yoghurt"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Q",
+    "brandKey": "q",
+    "pricing": {
+      "price": 23.5,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 146.88, "max": 146.88 },
+        "standard": { "min": 146.88, "max": 146.88 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:64571",
+    "href": "https://oda.com/no/products/64571-q-skyr-r-banan-pasjonsfrukt/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/20ef8565-ed2c-4760-9772-57347186316d.jpg?auto=format&fit=max&w=239&s=07595658f537ed9726f41502a3e30b5f",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "64571",
+    "sku": "64571",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "title": "Dent Crush Salty Licorice",
+    "subtitle": "25 g",
+    "description": "Sukkerfrie pastiller med smak av salt lakris",
+    "categories": ["Sjokolade, snacks og godteri", "Tyggis og pastiller"],
+    "provenance": "kolonial_spider",
+    "market": "no",
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "brand": "Dent",
+    "brandKey": "dent",
+    "pricing": {
+      "price": 19.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 760.0, "max": 760.0 },
+        "standard": { "min": 760.0, "max": 760.0 }
+      },
+      "pieces": {}
+    },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "kolonial:product:64490",
+    "href": "https://oda.com/no/products/64490-dent-dent-crush-salty-licorice/",
+    "ahref": null,
+    "imageUrl": "https://bilder.kolonial.no/local_products/c3f6bf3d-12eb-49d5-9627-5b4957607655.jpg?auto=format&fit=max&w=263&s=d9aa9738109f806a13f5fb13195bd35b",
+    "gtins": {},
+    "mpnStock": "InStock",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 1.0, "unit": "." } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "64490",
+    "sku": "64490",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "pG6A895zrCt52RS4teCGEP774e8wAQs6",
+    "namespace": "kolonial"
+  },
+  {
+    "uri": "kolonial:product:65866",
+    "ahref": null,
+    "brand": "Aunt Mabels",
+    "brandKey": "aunt_mabels",
+    "categories": ["Iskrem, kaker og kjeks"],
+    "dealer": "kolonial",
+    "dealerKey": "kolonial",
+    "gtins": {},
+    "href": "https://oda.com/no/products/65866-aunt-mabels-muffin-melkesjokolade/",
+    "imageUrl": "https://bilder.kolonial.no/local_products/9775730c-3bc8-4d35-8c70-870b61fd5c48.jpg?auto=format&fit=max&w=300&s=86298dea496489dc71462ed768c521f8",
+    "isPartner": false,
+    "isRecent": true,
+    "items": { "max": 1, "min": 1 },
+    "market": "no",
+    "mpnCategoriesV": 1,
+    "mpnIngredients": {
+      "ingredients": {
+        "sugar": {
+          "text": "melkesjokolade 4,8% (sukker",
+          "key": "sugar",
+          "shortDescription": "",
+          "name": "Sukker"
+        },
+        "vegetableOil": {
+          "text": "vegetabilsk olje (raps)",
+          "key": "vegetableOil",
+          "shortDescription": "",
+          "name": "Vegetabilsk olje"
+        },
+        "egg": {
+          "text": "EGGEHVITEPULVER",
+          "key": "egg",
+          "shortDescription": "",
+          "name": "Egg"
+        },
+        "aqua": {
+          "text": "vann",
+          "key": "aqua",
+          "shortDescription": "",
+          "name": "Vann"
+        },
+        "cocoaButter": {
+          "text": "kakaosmør",
+          "key": "cocoaButter",
+          "shortDescription": "",
+          "name": "Kakaosmør"
+        },
+        "cocoaMass": {
+          "text": "kakaomasse",
+          "key": "cocoaMass",
+          "shortDescription": "",
+          "name": "Kakaomasse"
+        },
+        "emulgator": {
+          "text": "emulgator (mono- og diglyserider av fettsyrer)",
+          "key": "emulgator",
+          "shortDescription": "",
+          "name": "Emulgator"
+        },
+        "e322": {
+          "text": "emulgator (SOYALECITIN)",
+          "key": "e322",
+          "shortDescription": "",
+          "name": "Lecitin"
+        },
+        "aroma": {
+          "text": "aroma",
+          "key": "aroma",
+          "shortDescription": "Varen er tilsatt aroma",
+          "name": "Aroma"
+        },
+        "glycerol": {
+          "text": "fuktighetsbevarende (glyserol",
+          "key": "glycerol",
+          "shortDescription": "",
+          "name": "Glyserol"
+        },
+        "starch": {
+          "text": "modifisert maisstivelse",
+          "key": "starch",
+          "shortDescription": "",
+          "name": "Stivelse"
+        },
+        "e450": {
+          "text": "hevemiddel (dinatriumdifosfat",
+          "key": "e450",
+          "shortDescription": "",
+          "name": "Dinatriumdifosfat"
+        },
+        "e500": {
+          "text": "natriumhydrogenkarbonat)",
+          "key": "e500",
+          "shortDescription": "",
+          "name": "Natriumhydrogenkarbonat"
+        },
+        "glycerides": {
+          "text": "emulgator (mono- og diglyserider av fettsyrer)",
+          "key": "glycerides",
+          "shortDescription": "",
+          "name": "Glyserider"
+        },
+        "eggWhitePowder": {
+          "text": "EGGEHVITEPULVER",
+          "key": "eggWhitePowder",
+          "shortDescription": "",
+          "name": "Eggehvitepulver"
+        },
+        "potassiumSorbate": {
+          "text": "konserveringsmiddel (kaliumsorbat)",
+          "key": "potassiumSorbate",
+          "shortDescription": "",
+          "name": "Kaliumsorbat"
+        },
+        "stabilizer": {
+          "text": "stabilisator (xantangum).",
+          "key": "stabilizer",
+          "shortDescription": "",
+          "name": "Stabilisator"
+        }
+      },
+      "processedScore": 0
+    },
+    "mpnIngredientsV": 3,
+    "mpnNutrition": {
+      "fats": { "key": "fats", "value": 20, "unit": "." },
+      "carbohydrates": { "key": "carbohydrates", "value": 45, "unit": "." },
+      "proteins": { "key": "proteins", "value": 5, "unit": "." },
+      "satFats": { "key": "satFats", "value": 2, "unit": "." },
+      "salt": { "key": "salt", "value": 1, "unit": "g" },
+      "fibers": { "key": "fibers", "value": 1, "unit": "." },
+      "sugars": { "key": "sugars", "value": 24, "unit": "." },
+      "energy": { "key": "energy", "value": 394, "unit": "kcal" },
+      "energyKcal": { "value": 394, "key": "energyKcal" }
+    },
+    "mpnNutritionV": 2,
+    "mpnProperties": {},
+    "mpnPropertiesV": 1,
+    "mpnQuantityV": 2,
+    "mpnStock": "InStock",
+    "mpnStockV": 1,
+    "namespace": "kolonial",
+    "pricing": {
+      "price": 9.97,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "provenance": "kolonial_spider",
+    "provenanceId": "65866",
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 95, "max": 95 },
+        "standard": { "min": 0.095, "max": 0.095 }
+      },
+      "pieces": {}
+    },
+    "scrapeBatchId": "KfAP2LaPFFsmU_i64rLIXi_5ovxXLKRE",
+    "siteCollection": "groceryoffers",
+    "sku": "65866",
+    "subtitle": "95 g",
+    "title": "Aunt Mabels Muffin Melkesjokolade",
+    "validFrom": "2024-09-16 23:41:59+00:00",
+    "validThrough": "2024-09-27 03:41:59+00:00",
+    "value": {
+      "size": {
+        "unit": {
+          "symbol": "kg",
+          "type": "quantity_value",
+          "si": { "symbol": "kg", "factor": 1 }
+        },
+        "amount": { "min": 104.95, "max": 104.95 },
+        "standard": { "min": 104.95, "max": 104.95 }
+      },
+      "pieces": {}
+    },
+    "vendor": "Baxt AS",
+    "vendorKey": "baxt_as",
+    "mpnCategories": [],
+    "difference": 0,
+    "difference30DaysMean": 0,
+    "difference30DaysMeanPercentage": 0,
+    "difference365DaysMean": 0,
+    "difference365DaysMeanPercentage": 0,
+    "difference7DaysMean": 0,
+    "difference7DaysMeanPercentage": 0,
+    "difference90DaysMean": 0,
+    "difference90DaysMeanPercentage": 0,
+    "differencePercentage": 0,
+    "differencePrevYear90DaysMean": 0,
+    "differencePrevYear90DaysPercentage": 0,
+    "price30DaysMean": 0,
+    "price365DaysMean": 0,
+    "price7DaysMean": 0,
+    "price90DaysMean": 0,
+    "pricePrevYear90DaysMean": 0
+  }
+]

@@ -1,0 +1,787 @@
+[
+  {
+    "title": "Bananer",
+    "subtitle": "Bama",
+    "categories": ["frukt-gront", "frukt", "bananer"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Bama",
+    "brandKey": "bama",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 5.58,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.0279, "max": 0.0279 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 27.900000000000002, "max": 27.900000000000002 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 200.0, "max": 200.0 },
+        "standard": { "min": 0.2, "max": 0.2 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000401100000",
+    "href": "https://meny.no/varer/frukt-gront/frukt/bananer/bananer-2000401100000",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4011/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000401100000",
+    "sku": "2000401100000",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Speltbr\u00f8d 100%",
+    "subtitle": "660g Jacobs Utvalgte",
+    "categories": ["bakeri", "brod", "brod"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Jacobs utvalgte",
+    "brandKey": "jacobs_utvalgte",
+    "vendor": "United bakeries norway",
+    "vendorKey": "united_bakeries_norway",
+    "pricing": {
+      "price": 51.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.07863636363636363, "max": 0.07863636363636363 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 78.63636363636363, "max": 78.63636363636363 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 660.0, "max": 660.0 },
+        "standard": { "min": 0.66, "max": 0.66 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:7071848007455",
+    "href": "https://meny.no/varer/bakeri/brod/brod/speltbrod-100-7071848007455",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/7071848103089/meny/medium.jpg",
+    "gtins": { "ean": "7071848007455" },
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 1.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "7071848007455",
+    "sku": "7071848007455",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Agurk",
+    "subtitle": "hel Norsk",
+    "categories": ["frukt-gront", "gronnsaker", "agurk"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Bama",
+    "brandKey": "bama",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 22.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.057249999999999995, "max": 0.057249999999999995 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 57.24999999999999, "max": 57.24999999999999 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 400.0, "max": 400.0 },
+        "standard": { "min": 0.4, "max": 0.4 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000459500005",
+    "href": "https://meny.no/varer/frukt-gront/gronnsaker/agurk/agurk-2000459500005",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4595/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000459500005",
+    "sku": "2000459500005",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Sm\u00f8r Croissant",
+    "subtitle": "Premium",
+    "categories": ["bakeri", "boller-og-smakaker", "croissant"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "vendor": "United bakeries norway",
+    "vendorKey": "united_bakeries_norway",
+    "pricing": {
+      "price": 19.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": { "size": {}, "pieces": {} },
+    "quantity": { "size": {}, "pieces": {} },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000213800006",
+    "href": "https://meny.no/varer/bakeri/boller-og-smakaker/croissant/smor-croissant-2000213800006",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/2138/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": {},
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000213800006",
+    "sku": "2000213800006",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Klementin stykk",
+    "subtitle": null,
+    "categories": ["frukt-gront", "frukt", "sitrusfrukt", "klementiner"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 4.39,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.03990909090909091, "max": 0.03990909090909091 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 39.90909090909091, "max": 39.90909090909091 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 110.0, "max": 110.0 },
+        "standard": { "min": 0.11, "max": 0.11 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000405500004",
+    "href": "https://meny.no/varer/frukt-gront/frukt/sitrusfrukt/klementiner/klementin-stykk-2000405500004",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4055/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "rawIngredients": ["salt", "gurkemeie", "koriander", "karragenan"],
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000405500004",
+    "sku": "2000405500004",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Sitron stykk",
+    "subtitle": null,
+    "categories": ["frukt-gront", "frukt", "sitrusfrukt", "sitron"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 8.8,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.04190476190476191, "max": 0.04190476190476191 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 41.90476190476191, "max": 41.90476190476191 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 210.0, "max": 210.0 },
+        "standard": { "min": 0.21, "max": 0.21 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000403300002",
+    "href": "https://meny.no/varer/frukt-gront/frukt/sitrusfrukt/sitron/sitron-stykk-2000403300002",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4033/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000403300002",
+    "sku": "2000403300002",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Kyllingfilet",
+    "subtitle": "650g Kyllingg\u00e5rden",
+    "categories": ["kylling-og-fjaerkre", "kylling", "kyllingfilet"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Kyllingg\u00e5rden",
+    "brandKey": "kyllinggarden",
+    "vendor": "Nortura sa p",
+    "vendorKey": "nortura_sa_p",
+    "pricing": {
+      "price": 128.0,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.19692307692307692, "max": 0.19692307692307692 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 196.9230769230769, "max": 196.9230769230769 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 650.0, "max": 650.0 },
+        "standard": { "min": 0.65, "max": 0.65 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:7039610001131",
+    "href": "https://meny.no/varer/kylling-og-fjaerkre/kylling/kyllingfilet/kyllingfilet-7039610001131",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/7039610001131/meny/medium.jpg",
+    "gtins": { "ean": "7039610001131" },
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.2 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "7039610001131",
+    "sku": "7039610001131",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Avocado",
+    "subtitle": "2pk Spisemoden",
+    "categories": ["frukt-gront", "frukt", "avocado"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 29.9,
+      "currency": "NOK",
+      "prePrice": 34.9,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.07475, "max": 0.07475 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 74.75, "max": 74.75 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 400.0, "max": 400.0 },
+        "standard": { "min": 0.4, "max": 0.4 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:5400279014848",
+    "href": "https://meny.no/varer/frukt-gront/frukt/avocado/avocado-5400279014848",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/5400279014848/meny/medium.jpg",
+    "gtins": { "ean": "5400279014848" },
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "5400279014848",
+    "sku": "5400279014848",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Druer",
+    "subtitle": "Gr\u00f8nne Beger Cevita",
+    "categories": ["frukt-gront", "frukt", "druer"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Cevita",
+    "brandKey": "cevita",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 24.9,
+      "currency": "NOK",
+      "prePrice": 32.9,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.0498, "max": 0.0498 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 49.8, "max": 49.8 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 500.0, "max": 500.0 },
+        "standard": { "min": 0.5, "max": 0.5 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:7040511027441",
+    "href": "https://meny.no/varer/frukt-gront/frukt/druer/druer-7040511027441",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/7040511027441/meny/medium.jpg",
+    "gtins": { "ean": "7040511027441", "nobb": "87654321" },
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "7040511027441",
+    "sku": "7040511027441",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Brokkoli",
+    "subtitle": "400g",
+    "categories": ["frukt-gront", "gronnsaker", "kal", "brokkoli"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Bama",
+    "brandKey": "bama",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 14.9,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.03725, "max": 0.03725 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 37.25, "max": 37.25 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 400.0, "max": 400.0 },
+        "standard": { "min": 0.4, "max": 0.4 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000434900004",
+    "href": "https://meny.no/varer/frukt-gront/gronnsaker/kal/brokkoli/brokkoli-2000434900004",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4349/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000434900004",
+    "sku": "2000434900004",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Pepsi Max",
+    "subtitle": "0,5l flaske",
+    "categories": ["drikke", "brus"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "brand": "Pepsi",
+    "brandKey": "pepsi",
+    "vendor": "Ringnes as",
+    "vendorKey": "ringnes_as",
+    "pricing": {
+      "price": 28.5,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.057, "max": 0.057 },
+        "unit": {
+          "symbol": "ml",
+          "type": "quantity",
+          "si": { "symbol": "l", "factor": 0.001 }
+        },
+        "standard": { "min": 57.0, "max": 57.0 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "ml",
+          "type": "quantity",
+          "si": { "symbol": "l", "factor": 0.001 }
+        },
+        "amount": { "min": 500.0, "max": 500.0 },
+        "standard": { "min": 0.5, "max": 0.5 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:7044610874661",
+    "href": "https://meny.no/varer/drikke/brus/pepsi-max-7044610874661",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/7044610874661/meny/medium.jpg",
+    "gtins": { "ean": "7044610874661" },
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.01 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "7044610874661",
+    "sku": "7044610874661",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  },
+  {
+    "title": "Paprika",
+    "subtitle": "R\u00f8d",
+    "categories": ["frukt-gront", "gronnsaker", "paprika"],
+    "provenance": "meny_api_spider",
+    "market": "no",
+    "dealer": "meny",
+    "dealerKey": "meny",
+    "vendor": "Bama dagligvare  as",
+    "vendorKey": "bama_dagligvare_as",
+    "pricing": {
+      "price": 16.08,
+      "currency": "NOK",
+      "prePrice": null,
+      "priceUnit": "pcs"
+    },
+    "value": {
+      "size": {
+        "amount": { "min": 0.06991304347826086, "max": 0.06991304347826086 },
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "standard": { "min": 69.91304347826086, "max": 69.91304347826086 }
+      },
+      "pieces": {}
+    },
+    "quantity": {
+      "size": {
+        "unit": {
+          "symbol": "g",
+          "type": "quantity",
+          "si": { "symbol": "kg", "factor": 0.001 }
+        },
+        "amount": { "min": 230.0, "max": 230.0 },
+        "standard": { "min": 0.23, "max": 0.23 }
+      },
+      "pieces": {}
+    },
+    "items": { "max": 1, "min": 1 },
+    "uri": "meny:product:2000408800002",
+    "href": "https://meny.no/varer/frukt-gront/gronnsaker/paprika/paprika-2000408800002",
+    "ahref": null,
+    "imageUrl": "https://bilder.ngdata.no/4088/meny/medium.jpg",
+    "gtins": {},
+    "mpnStock": "Unknown",
+    "mpnNutrition": { "salt": { "key": "salt", "value": 0.0 } },
+    "mpnProperties": {},
+    "mpnIngredients": null,
+    "validFrom": "2024-09-16 23:51:31+00:00",
+    "validThrough": "2024-09-27 03:51:31+00:00",
+    "isPartner": true,
+    "isRecent": true,
+    "provenanceId": "2000408800002",
+    "sku": "2000408800002",
+    "mpnCategoriesV": 1,
+    "mpnIngredientsV": 3,
+    "mpnNutritionV": 2,
+    "mpnPropertiesV": 1,
+    "mpnStockV": 1,
+    "mpnQuantityV": 2,
+    "siteCollection": "groceryoffers",
+    "scrapeBatchId": "mYZgAqh7j83DOWnhzEN5k.6IdlgCXWa1",
+    "namespace": "meny"
+  }
+]
