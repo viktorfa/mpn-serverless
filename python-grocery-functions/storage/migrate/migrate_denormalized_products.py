@@ -1,8 +1,8 @@
-from datetime import datetime
-import logging
 import argparse
-from typing import List
+import logging
+from datetime import datetime
 from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
@@ -15,7 +15,6 @@ from storage.postgres.postgres_tables import (
 )
 from util.logging import configure_lambda_logging
 from util.timer import Timer
-
 
 # For old offers without scrapeBatchId
 OFFER_LIMIT = 1024 * 2
@@ -47,7 +46,7 @@ def migrate_data(limit: int, batch_size: int):
             )
 
             product_count = 0
-            product_ids: List[UUID] = []
+            product_ids: list[UUID] = []
 
             for row in cursor:
                 product_count += 1

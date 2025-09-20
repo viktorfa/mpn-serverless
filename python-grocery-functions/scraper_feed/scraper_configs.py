@@ -1,4 +1,4 @@
-from typing import Any, List, Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 
 class MappingConfigField(TypedDict):
@@ -36,8 +36,8 @@ DEFAULT_FIELD_MAPPING = [
 
 
 def get_field_mapping(
-    config_fields: List[MappingConfigField] = [],
-) -> List[MappingConfigField]:
+    config_fields: list[MappingConfigField] = [],
+) -> list[MappingConfigField]:
     if not config_fields:
         config_fields = []
     result = [*DEFAULT_FIELD_MAPPING, *config_fields]

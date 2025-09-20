@@ -1,5 +1,7 @@
 import logging
 from collections import defaultdict
+from collections.abc import Mapping
+
 from google.analytics import data_v1beta
 from google.analytics.data_v1beta.types import (
     DateRange,
@@ -9,7 +11,6 @@ from google.analytics.data_v1beta.types import (
     Metric,
     OrderBy,
 )
-from typing import Mapping
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -17,7 +18,6 @@ from scraper_feed.google_anal.utils import get_analytics_data_client, sites
 from storage.postgres.common import get_pg_engine
 from storage.postgres.postgres_tables import DenormalizedProductsTable, OffersTable
 from util.logging import configure_lambda_logging
-
 
 configure_lambda_logging()
 

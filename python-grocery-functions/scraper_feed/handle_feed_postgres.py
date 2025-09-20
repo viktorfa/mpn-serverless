@@ -1,10 +1,10 @@
 import logging
 import os
 
-import pydash
-import ijson
-from ijson.common import IncompleteJSONError
 import botocore.response
+import ijson
+import pydash
+from ijson.common import IncompleteJSONError
 
 from amp_types.amp_product import HandleConfigNew, ProcessedMpnOffer, ScraperOffer
 from scraper_feed.affiliate_links import add_affilite_link_to_product

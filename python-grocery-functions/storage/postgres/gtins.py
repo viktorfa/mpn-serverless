@@ -1,13 +1,13 @@
-from typing import List, Set, Dict, Tuple
 from uuid import UUID
-from sqlalchemy.orm import Session
-from sqlalchemy import case
 
-from storage.postgres.postgres_tables import OfferHasGtinTable, GtinsTable
+from sqlalchemy import case
+from sqlalchemy.orm import Session
+
+from storage.postgres.postgres_tables import GtinsTable, OfferHasGtinTable
 
 
 def insert_new_gtins(
-    session: Session, new_gtins: Set[str], gtin_to_product_map: Dict[str, UUID]
+    session: Session, new_gtins: set[str], gtin_to_product_map: dict[str, UUID]
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -28,10 +28,10 @@ def insert_new_gtins(
         print(f"Inserted {len(gtins_to_insert)} new GTINs.")
 
 
-def update_gtins(session: Session, gtins_to_update: List[Dict[str, str]]) -> None:
+def update_gtins(session: Session, gtins_to_update: list[dict[str, str]]) -> None:
     if gtins_to_update:
         # Prepare data for bulk update
-        gtin_update_mapping: Dict[str, str] = {
+        gtin_update_mapping: dict[str, str] = {
             item["gtin"]: item["product_id"] for item in gtins_to_update
         }
         gtins_to_update_list = list(gtin_update_mapping.keys())
@@ -55,7 +55,7 @@ def update_gtins(session: Session, gtins_to_update: List[Dict[str, str]]) -> Non
 
 
 def upsert_offer_has_gtin(
-    session: Session, offer_has_gtin_list: List[Dict[str, str]]
+    session: Session, offer_has_gtin_list: list[dict[str, str]]
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -70,20 +70,20 @@ def upsert_offer_has_gtin(
 
 
 def find_existing_gtins(
-    session: Session, offer_gtins: Set[str]
-) -> Tuple[Dict[str, UUID], Set[str], Set[str]]:
+    session: Session, offer_gtins: set[str]
+) -> tuple[dict[str, UUID], set[str], set[str]]:
     existing_gtin_rows = (
         session.query(GtinsTable).filter(GtinsTable.gtin.in_(offer_gtins)).all()
     )
 
     print(f"Found {len(existing_gtin_rows)} existing GTINs.")
 
-    gtin_to_product_map: Dict[str, UUID] = {
+    gtin_to_product_map: dict[str, UUID] = {
         row.gtin: UUID(str(row.product_id))
         for row in existing_gtin_rows
         if bool(row.product_id)
     }
-    existing_gtins: Set[str] = set(gtin_to_product_map.keys())
-    new_gtins: Set[str] = offer_gtins - existing_gtins
+    existing_gtins: set[str] = set(gtin_to_product_map.keys())
+    new_gtins: set[str] = offer_gtins - existing_gtins
 
     return gtin_to_product_map, existing_gtins, new_gtins

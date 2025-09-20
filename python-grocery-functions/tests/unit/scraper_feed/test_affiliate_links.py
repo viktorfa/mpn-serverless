@@ -1,11 +1,9 @@
-from unittest import TestCase, mock
+from unittest import TestCase
 
-from scraper_feed import handle_config
 from scraper_feed.affiliate_links import (
-    add_se_amazon_affiliate_link,
     add_affiliate_links,
+    add_se_amazon_affiliate_link,
 )
-from util.errors import NoHandleConfigError
 
 
 class TestAffiliateLinks(TestCase):

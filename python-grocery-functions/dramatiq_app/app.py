@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 print("dramatiq_app/app.py started")
@@ -26,6 +27,5 @@ dramatiq.set_broker(redis_broker)
 
 
 # Make sure actors are registered in the containerized app
-import dramatiq_app.actors
 
 print("dramatiq_app/app.py finished")

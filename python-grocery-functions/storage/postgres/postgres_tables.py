@@ -1,19 +1,18 @@
 from sqlalchemy import (
+    TIMESTAMP,
+    Boolean,
     Column,
+    ForeignKey,
     ForeignKeyConstraint,
     Integer,
+    Numeric,
     PrimaryKeyConstraint,
     String,
-    Numeric,
-    Boolean,
     Text,
-    TIMESTAMP,
-    ForeignKey,
     text,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INTEGER, BOOLEAN, ARRAY, TEXT
-from sqlalchemy.orm import Mapped, mapped_column, declarative_base, relationship
-
+from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, INTEGER, JSONB, TEXT, UUID
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
 Base = declarative_base()
 

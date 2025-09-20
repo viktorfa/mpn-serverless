@@ -1,5 +1,6 @@
-from unittest import TestCase
 from datetime import datetime
+from unittest import TestCase
+
 import pydash
 
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
@@ -52,10 +53,12 @@ class TestHandleShopgunOffers(TestCase):
         )
         self.assertEqual(actual["title"], shopgun_product["heading"])
         self.assertEqual(
-            pydash.get(actual, ["quantity", "size", "amount", "min"]), 365,
+            pydash.get(actual, ["quantity", "size", "amount", "min"]),
+            365,
         )
         self.assertEqual(
-            pydash.get(actual, ["quantity", "size", "unit", "symbol"]), "g",
+            pydash.get(actual, ["quantity", "size", "unit", "symbol"]),
+            "g",
         )
         self.assertEqual(
             actual["validThrough"], datetime.fromisoformat("2019-01-20T22:59:59")

@@ -2,18 +2,17 @@ import json
 import logging
 import os
 
-from util.aws import invoke_function
+import botocore.response
+
+import aws_config
+from amp_types.amp_product import EventHandleConfig
 from scraper_feed.handle_config import generate_handle_config_postgres
 from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
 from storage.postgres.scraper_feed import get_handle_configs
+from storage.s3 import get_s3_object
+from util.aws import invoke_function
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
-import botocore.response
-
-from amp_types.amp_product import EventHandleConfig
-import aws_config
-from storage.s3 import get_s3_object
-
 
 configure_lambda_logging()
 

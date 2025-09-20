@@ -1,16 +1,18 @@
+import argparse
+import logging
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional, Set, TypedDict
+from typing import TypedDict
 from uuid import UUID
+
+import pydash
+from config.mongo import get_collection
 from pymongo import UpdateOne
 from slugify import slugify
-import logging
-import pydash
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 from uuid_extensions import uuid7
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-import argparse
 
-from config.mongo import get_collection
 from parsing.ingredients_extraction import (
     get_extracted_ingredients_postgres,
     get_raw_ingredients_from_strings,
@@ -35,7 +37,6 @@ from storage.postgres.pydantic_models import (
     ProductHasIngredient,
 )
 
-
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -50,49 +51,49 @@ class VetDuAtProduct(TypedDict):
     allergenerInneholder: list[str]
     allergenerInneholderIkke: list[str]
     allergenerKanInneholde: list[str]
-    allergierklaring: Optional[str]
-    carbohydrates: Optional[VetDuAtNutrition]
-    deklarasjonListe: Optional[list[str]]
-    energyKcal: Optional[VetDuAtNutrition]
-    energyKj: Optional[VetDuAtNutrition]
+    allergierklaring: str | None
+    carbohydrates: VetDuAtNutrition | None
+    deklarasjonListe: list[str] | None
+    energyKcal: VetDuAtNutrition | None
+    energyKj: VetDuAtNutrition | None
     epdNr: str
     erForbrukerpakning: bool
-    erOkologisk: Optional[bool]
+    erOkologisk: bool | None
     erSnus: bool
     erStorhusholdningsprodukt: bool
     erTobakk: bool
-    fats: Optional[VetDuAtNutrition]
+    fats: VetDuAtNutrition | None
     fellesProduktnavn: str
-    fibers: Optional[VetDuAtNutrition]
+    fibers: VetDuAtNutrition | None
     firmaNavn: str
     gtin: str
-    harBilde: Optional[bool]
-    holdbarhetsdagerTotalt: Optional[int]
-    informasjonstekst: Optional[str]
-    ingredienser: Optional[str]
+    harBilde: bool | None
+    holdbarhetsdagerTotalt: int | None
+    informasjonstekst: str | None
+    ingredienser: str | None
     isBasispakning: bool
     isNewProduct: bool
     kategoriNavn: str
-    maksimumstemperaturCelcius: Optional[float]
+    maksimumstemperaturCelcius: float | None
     markedsnavn: str
     mengde: float
     mengdetypeenhet: str
     merkeordninger: list[str]
     merkeOrdninger: list[str]
-    minimumstemperaturCelsius: Optional[float]
+    minimumstemperaturCelsius: float | None
     pakningID: str
     parsedIngredients: str
-    polyfats: Optional[VetDuAtNutrition]
-    polyols: Optional[VetDuAtNutrition]
-    produksjonsland: Optional[str]
+    polyfats: VetDuAtNutrition | None
+    polyols: VetDuAtNutrition | None
+    produksjonsland: str | None
     produktID: str
-    proteins: Optional[VetDuAtNutrition]
-    salt: Optional[VetDuAtNutrition]
-    satFats: Optional[VetDuAtNutrition]
-    starch: Optional[VetDuAtNutrition]
-    sugars: Optional[VetDuAtNutrition]
+    proteins: VetDuAtNutrition | None
+    salt: VetDuAtNutrition | None
+    satFats: VetDuAtNutrition | None
+    starch: VetDuAtNutrition | None
+    sugars: VetDuAtNutrition | None
     varegruppenavn: str
-    varemerke: Optional[str]
+    varemerke: str | None
 
 
 LIMIT = 512
@@ -189,8 +190,8 @@ def migrate_data(limit: int, batch_size: int):
         .batch_size(batch_size)
     )
 
-    product_batch: List[VetDuAtProduct] = []
-    migrated_mongo_ids: Set[str] = set()
+    product_batch: list[VetDuAtProduct] = []
+    migrated_mongo_ids: set[str] = set()
 
     product_counter = 0
 
@@ -254,7 +255,7 @@ def migrate_data(limit: int, batch_size: int):
                 )
                 migrated_mongo_ids.clear()
 
-        except Exception as e:
+        except Exception:
             session.rollback()
             raise
 
@@ -263,8 +264,8 @@ def migrate_data(limit: int, batch_size: int):
 
 def insert_batch(
     session: Session,
-    product_batch: List[VetDuAtProduct],
-    ingredients: List[IngredientsTable],
+    product_batch: list[VetDuAtProduct],
+    ingredients: list[IngredientsTable],
 ):
     epd_gtins = []
     ean_gtins = []
@@ -281,15 +282,15 @@ def insert_batch(
     existing_gtins = session.query(GtinsTable).filter(
         GtinsTable.gtin.in_([*epd_gtins, *ean_gtins])
     )
-    existing_products_map: Dict[str, UUID] = {}
+    existing_products_map: dict[str, UUID] = {}
     for row in existing_gtins:
         existing_products_map[str(row.gtin)] = UUID(str(row.product_id))
 
-    brands_to_upsert: List[MpnBrand] = []
-    products_to_upsert: List[DbProductInfo] = []
-    market_infos_to_upsert: List[DbMarketInfo] = []
-    gtins_to_upsert: List[MpnGtin] = []
-    product_has_ingredient_to_upsert: List[ProductHasIngredient] = []
+    brands_to_upsert: list[MpnBrand] = []
+    products_to_upsert: list[DbProductInfo] = []
+    market_infos_to_upsert: list[DbMarketInfo] = []
+    gtins_to_upsert: list[MpnGtin] = []
+    product_has_ingredient_to_upsert: list[ProductHasIngredient] = []
 
     for product in product_batch:
         ean_gtin = f"ean:{product['gtin']}"

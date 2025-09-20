@@ -1,10 +1,10 @@
-import os
 import argparse
-from typing import List
-import redis
+import os
+
 import dramatiq
-from dramatiq.brokers.redis import RedisBroker
+import redis
 from dotenv import load_dotenv
+from dramatiq.brokers.redis import RedisBroker
 
 
 class DramatiqQueueHandler:
@@ -45,7 +45,7 @@ class DramatiqQueueHandler:
 
     def print_dlq(self, n_items: int = 100, print_details=False):
         # Fetch message IDs from the DLQ sorted set
-        message_ids: List[bytes] = self.redis_client.zrange(
+        message_ids: list[bytes] = self.redis_client.zrange(
             self.dlq_sorted_set_key, 0, n_items - 1
         )
 

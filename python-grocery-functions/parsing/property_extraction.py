@@ -1,12 +1,13 @@
-from transform.offer import get_field_from_scraper_offer
-from typing import List
-import re
 import logging
+import re
+
 import pydash
+
 from amp_types.amp_product import (
     HandleConfig,
     ScraperOffer,
 )
+from transform.offer import get_field_from_scraper_offer
 
 known_property_names = {
     "depth": {"type": "number", "property": "depth"},
@@ -75,7 +76,7 @@ def get_dimensions_object_from_string(dimension_string: str):
     return result
 
 
-def extract_dimensions(strings: List[str]):
+def extract_dimensions(strings: list[str]):
     try:
         matches = pydash.flatten(
             list(
@@ -93,7 +94,7 @@ def extract_dimensions(strings: List[str]):
         return None
 
 
-def extract_properties(strings: List[str]):
+def extract_properties(strings: list[str]):
     property_configs = [
         {
             "patterns": [r"c24", r"c34"],
@@ -127,7 +128,7 @@ def extract_properties(strings: List[str]):
             "property": "treeSort",
         },
     ]
-    properties: List = []
+    properties: list = []
     for config in property_configs:
         for string in strings:
             if not string:

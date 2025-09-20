@@ -1,32 +1,28 @@
-import logging
-import json
-from util.utils import log_traceback
 
-from transform.offer import get_field_from_scraper_offer
-from amp_types.amp_product import MpnOffer
-from typing import List
-import pydash
 import re
 
+import pydash
+
+from amp_types.amp_product import HandleConfig, MpnOffer, ScraperOffer
+from amp_types.quantity_types import (
+    ExtractQuantityReturnType,
+    ItemsField,
+    Quantity,
+    QuantityField,
+    SiConfig,
+)
+from parsing.constants import (
+    alt_unit_map,
+    piece_units,
+    quantity_units,
+)
+from parsing.enums import unit_types
 from parsing.parsing import (
     extract_numbers_with_context,
     extract_unit,
     extract_units_from_number_context,
 )
-from parsing.enums import unit_types
-from amp_types.amp_product import MpnOffer, ScraperOffer, HandleConfig
-from amp_types.quantity_types import (
-    Quantity,
-    QuantityField,
-    ItemsField,
-    ExtractQuantityReturnType,
-    SiConfig,
-)
-from parsing.constants import (
-    quantity_units,
-    piece_units,
-    alt_unit_map,
-)
+from transform.offer import get_field_from_scraper_offer
 
 
 def get_standard_si_amount(si_config: SiConfig, value: float, invert=False):
@@ -49,7 +45,7 @@ def standardize_quantity(offer: MpnOffer):
                 for key, value in pydash.get(offer, quantity_type)["amount"].items()
             }
             pydash.get(offer, quantity_type)["standard"] = standardized
-        except Exception as e:
+        except Exception:
             continue
     return offer
 
@@ -120,7 +116,7 @@ def analyze_quantity(offer: MpnOffer) -> MpnOffer:
     return offer
 
 
-def parse_quantity(strings: List[str], safe_units=None) -> ExtractQuantityReturnType:
+def parse_quantity(strings: list[str], safe_units=None) -> ExtractQuantityReturnType:
     """Returns a dict describing the quantity and value with unitsextracted from strings.
     Quantity can be denominated in both size (kg, l, grams, etc.) or pieces (packs, bags, etc.)
     It also extracts value which is price divided by quantity. It does this only by parsing text, not by using the price then dividing it by the extracted quantity.
@@ -137,7 +133,7 @@ def parse_quantity(strings: List[str], safe_units=None) -> ExtractQuantityReturn
     return dict(quantity=quantity, value=value, items=items)
 
 
-def extract_quantity(strings: List[str], safe_units=None) -> QuantityField:
+def extract_quantity(strings: list[str], safe_units=None) -> QuantityField:
     extracted_strings = []
     for string in strings:
         context = extract_numbers_with_context(string)
@@ -172,7 +168,7 @@ def extract_quantity(strings: List[str], safe_units=None) -> QuantityField:
     return result
 
 
-def extract_value(strings: List[str], safe_units=None) -> QuantityField:
+def extract_value(strings: list[str], safe_units=None) -> QuantityField:
     extracted_strings = []
     for string in strings:
         context = extract_numbers_with_context(string)
@@ -228,7 +224,7 @@ def handle_multipliers(extracted_numbers):
     return extracted_numbers
 
 
-def extract_items(strings: List[str]) -> ItemsField:
+def extract_items(strings: list[str]) -> ItemsField:
     return dict(max=1, min=1)
 
 
@@ -258,7 +254,7 @@ def get_explicit_quantity_strings(offer: ScraperOffer, config: HandleConfig):
         result.append(f"{explicit_quantity}{explicit_quantity_unit}")
     if explicit_unit_price and explicit_unit_price_unit:
         result.append(
-            f"{explicit_unit_price}/{re.sub(r'/', '',explicit_unit_price_unit)}"
+            f"{explicit_unit_price}/{re.sub(r'/', '', explicit_unit_price_unit)}"
         )
     if explicit_quantity_string:
         result.append(explicit_quantity_string)

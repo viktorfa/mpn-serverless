@@ -1,6 +1,7 @@
-from typing import Any, List, Literal, Mapping, TypedDict, Optional
+from collections.abc import Mapping
 from datetime import datetime
 from enum import Enum
+from typing import Any, Literal, TypedDict
 
 from amp_types.quantity_types import ItemsField, Quantity, QuantityField
 from scraper_feed.scraper_configs import MappingConfigField
@@ -11,10 +12,10 @@ class NutritionalData(TypedDict):
 
 
 class PricingField(TypedDict):
-    price: Optional[float]
+    price: float | None
     priceText: str
     currency: str
-    prePrice: Optional[float]
+    prePrice: float | None
     priceUnit: str
     validFrom: datetime
     validThrough: datetime
@@ -46,10 +47,10 @@ class MpnOffer(TypedDict):
     validThrough: datetime
     href: str
     provenance: str
-    brand: Optional[str]
-    brandKey: Optional[str]
-    vendor: Optional[str]
-    vendorKey: Optional[str]
+    brand: str | None
+    brandKey: str | None
+    vendor: str | None
+    vendorKey: str | None
     dealer: str
     uri: str
     provenanceId: str
@@ -57,8 +58,8 @@ class MpnOffer(TypedDict):
     additionalProperties: Mapping[str, AdditionalProperty]
     mpnProperties: Mapping[str, AdditionalProperty]
     mpnNutrition: Mapping[str, NutritionalData]
-    rawIngredients: List[str]
-    categories: List[str]
+    rawIngredients: list[str]
+    categories: list[str]
     gtins: Mapping[str, str]
     market: str
     isPartner: bool
@@ -90,9 +91,9 @@ class ScraperOffer(TypedDict):
     dealer: str
     availability: str
     itemCondition: str
-    additionalProperties: List[AdditionalProperty]
+    additionalProperties: list[AdditionalProperty]
     additionalPropertyDict: Mapping[str, AdditionalProperty]
-    categories: List[str]
+    categories: list[str]
     gtin: str
     gtin8: str
     gtin12: str
@@ -121,12 +122,12 @@ class OfferFilterConfig(TypedDict):
 
 class DbHandleConfig(TypedDict):
     id: str
-    fieldMapping: List[MappingConfigField]
-    filters: List[OfferFilterConfig]
-    extractQuantityFields: List[str]
-    extractPropertiesFields: List[str]
-    extractIngredientsFields: List[str]
-    categoriesLimits: List[int]
+    fieldMapping: list[MappingConfigField]
+    filters: list[OfferFilterConfig]
+    extractQuantityFields: list[str]
+    extractPropertiesFields: list[str]
+    extractIngredientsFields: list[str]
+    categoriesLimits: list[int]
     ignore_none: bool
     provenance: str
     namespace: str
@@ -158,13 +159,13 @@ class PriceHistoryRecord(TypedDict):
 
 class PriceHistoryForOffer(TypedDict):
     uri: str
-    history: List[PriceHistoryRecord]
+    history: list[PriceHistoryRecord]
 
 
 class IngredientType(TypedDict):
     key: str
-    eNumber: Optional[str]
-    name: Optional[str]
-    shortDescription: Optional[str]
-    processedValue: Optional[int]
-    patterns: Optional[list[str]]
+    eNumber: str | None
+    name: str | None
+    shortDescription: str | None
+    processedValue: int | None
+    patterns: list[str] | None

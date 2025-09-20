@@ -1,8 +1,9 @@
 import logging
 from unittest import TestCase
+
 from offer_feed.gtins import (
-    match_offers_with_gtins_map,
     get_lists_of_offers_with_same_gtins,
+    match_offers_with_gtins_map,
 )
 
 logging.basicConfig(level=logging.DEBUG)

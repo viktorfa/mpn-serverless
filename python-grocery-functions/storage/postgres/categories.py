@@ -1,4 +1,3 @@
-from typing import List, Tuple, Dict
 import logging
 
 from storage.migrate.migrate_categories import CategoriesTable
@@ -6,11 +5,11 @@ from storage.postgres.postgres_tables import CategoryMappingsTable
 
 
 def get_categories_for_market_info(
-    offer_cats: List[str],
-    categories_by_key: Dict[str, CategoriesTable],
-    categories_by_name: Dict[str, CategoriesTable],
-    source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable],
-) -> List[str]:
+    offer_cats: list[str],
+    categories_by_key: dict[str, CategoriesTable],
+    categories_by_name: dict[str, CategoriesTable],
+    source_cat_map: dict[tuple[str, ...], CategoryMappingsTable],
+) -> list[str]:
     """
     Processes offer categories and category mappings to return a list of category keys
     for market information.
@@ -25,7 +24,7 @@ def get_categories_for_market_info(
     """
 
     matched_categories = []
-    category_name_to_mappings: Dict[str, List[CategoryMappingsTable]] = {}
+    category_name_to_mappings: dict[str, list[CategoryMappingsTable]] = {}
 
     for mapping in source_cat_map.values():
         for source_cat in mapping.source:

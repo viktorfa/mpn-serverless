@@ -1,9 +1,21 @@
-from datetime import datetime
 import logging
-from typing import Dict, Sequence
+from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
-from sqlalchemy.orm import Session
+
 from sqlalchemy import update
+from sqlalchemy.orm import Session
+
+from amp_types.amp_product import HandleConfig, ProcessedMpnOffer
+from scraper_feed.filters import (
+    mpn_categories_version,
+    mpn_ingredients_version,
+    mpn_nutrition_version,
+    mpn_properties_version,
+    mpn_quantity_version,
+    mpn_stock_version,
+)
+from storage.postgres.common import execute_statement, get_pg_engine
 from storage.postgres.denormalized_products import update_denormalized_products
 from storage.postgres.gtins import (
     find_existing_gtins,
@@ -23,6 +35,7 @@ from storage.postgres.offers import (
     upsert_offers_postgres,
     upsert_vendors_postgres,
 )
+from storage.postgres.postgres_tables import HandleConfigsTable, HandleRunBatchesTable
 from storage.postgres.products import build_root_to_gtins, prepare_offer_data
 from storage.postgres.products_handling import (
     determine_product_ids,
@@ -31,19 +44,6 @@ from storage.postgres.products_handling import (
     upsert_product_has_ingredient,
 )
 from util.timer import Timer
-
-from storage.postgres.common import execute_statement, get_pg_engine
-from amp_types.amp_product import HandleConfig, ProcessedMpnOffer
-from storage.postgres.postgres_tables import HandleConfigsTable, HandleRunBatchesTable
-from scraper_feed.filters import (
-    mpn_categories_version,
-    mpn_ingredients_version,
-    mpn_nutrition_version,
-    mpn_properties_version,
-    mpn_stock_version,
-    mpn_quantity_version,
-)
-
 
 pg_engine = get_pg_engine()
 
@@ -162,7 +162,7 @@ def handle_store_offer_batch(
             )
 
             # After determining gtin_to_product_map and offer_to_gtins
-            offer_to_product_id: Dict[str, UUID] = {}
+            offer_to_product_id: dict[str, UUID] = {}
             for offer_uri, gtins in prepared_data.offer_to_gtins.items():
                 for gtin in gtins:
                     product_id = gtin_to_product_map.get(gtin)

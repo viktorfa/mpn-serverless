@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from pydash import get
 
@@ -51,7 +50,7 @@ def add_to_destination(
 
 
 def transform_fields(
-    offer: ScraperOffer, field_mapping: List[MappingConfigField]
+    offer: ScraperOffer, field_mapping: list[MappingConfigField]
 ) -> ScraperOffer:
     """
     Rename , add and remove fields according to config."""

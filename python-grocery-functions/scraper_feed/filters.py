@@ -1,10 +1,15 @@
-from typing import List
-import pydash
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+
+import pydash
 from slugify import slugify
 
-from storage.models import mpn_offer_store_fields
+from amp_types.amp_product import (
+    HandleConfig,
+    MpnOffer,
+    OfferFilterConfig,
+    ScraperOffer,
+)
 from parsing.ingredients_extraction import get_raw_ingredients_list
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import (
@@ -12,23 +17,11 @@ from parsing.property_extraction import (
     extract_properties,
     standardize_additional_properties,
 )
-
-from util.helpers import is_integer_num
-
-from transform.transform import transform_fields
-from transform.offer import get_field_from_scraper_offer
-from util.helpers import get_product_uri, json_time_to_datetime
 from parsing.quantity_extraction import (
     analyze_quantity,
+    parse_explicit_quantity,
     parse_quantity,
     standardize_quantity,
-    parse_explicit_quantity,
-)
-from amp_types.amp_product import (
-    HandleConfig,
-    MpnOffer,
-    ScraperOffer,
-    OfferFilterConfig,
 )
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import (
@@ -38,7 +31,10 @@ from scraper_feed.helpers import (
     get_stock_status,
     remove_none_fields,
 )
-
+from storage.models import mpn_offer_store_fields
+from transform.offer import get_field_from_scraper_offer
+from transform.transform import transform_fields
+from util.helpers import get_product_uri, is_integer_num, json_time_to_datetime
 
 mpn_categories_version = 1
 mpn_ingredients_version = 3
@@ -48,9 +44,9 @@ mpn_stock_version = 1
 mpn_quantity_version = 2
 
 
-class MyTime(object):
+class MyTime:
     def __init__(self):
-        self.set_time(datetime.now(timezone.utc))
+        self.set_time(datetime.now(UTC))
 
     def set_time(self, time):
         self._time = time
@@ -74,7 +70,7 @@ global time
 time = MyTime()
 
 
-def filter_product(product: MpnOffer, filters: List[OfferFilterConfig]):
+def filter_product(product: MpnOffer, filters: list[OfferFilterConfig]):
     """
     Will return true if any of the filters are accepted. I.e. OR chaining."""
 
@@ -125,7 +121,7 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
 
 
 def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
-    time.set_time(config.get("scrape_time", datetime.now(timezone.utc)))
+    time.set_time(config.get("scrape_time", datetime.now(UTC)))
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
     namespace = config["namespace"]
@@ -284,8 +280,8 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 
 
 def transform_and_filter_offers(
-    offers: List[ScraperOffer], config: HandleConfig
-) -> List[MpnOffer]:
+    offers: list[ScraperOffer], config: HandleConfig
+) -> list[MpnOffer]:
     transformed_offers = (transform_product(x, config) for x in offers)
     filters = pydash.get(config, ["filters"], [])
 

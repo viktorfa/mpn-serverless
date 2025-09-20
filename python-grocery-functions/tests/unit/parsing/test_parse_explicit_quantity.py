@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
+from unittest.case import TestCase
 
 from parsing.quantity_extraction import parse_explicit_quantity
-from unittest.case import TestCase
 
 fixtures_path = Path(__file__).parent.parent.parent / "fixtures" / "feeds"
 with open(fixtures_path / "jemogfix_item.json") as jemogfix_item_file:

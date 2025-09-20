@@ -1,8 +1,8 @@
-from unittest import TestCase
 import json
 from pathlib import Path
+from unittest import TestCase
 
-from scraper_feed.filters import transform_product, get_categories
+from scraper_feed.filters import get_categories, transform_product
 from scraper_feed.scraper_configs import get_field_mapping
 
 
@@ -11,9 +11,13 @@ class TestHandleProducts(TestCase):
         fixtures_path = Path(__file__).parent.parent.parent / "fixtures" / "feeds"
         with open(fixtures_path / "obsbygg-scraper-feed.json") as obsbygg_products_json:
             self.obsbygg_products = json.load(obsbygg_products_json)
-        with open(fixtures_path / "swecandy-scraper-feed.json") as swecandy_products_json:
+        with open(
+            fixtures_path / "swecandy-scraper-feed.json"
+        ) as swecandy_products_json:
             self.swecandy_products = json.load(swecandy_products_json)
-        with open(fixtures_path / "shopgun-scraper-feed-new.json") as shopgun_products_json:
+        with open(
+            fixtures_path / "shopgun-scraper-feed-new.json"
+        ) as shopgun_products_json:
             self.shopgun_products = json.load(shopgun_products_json)
 
     def test_transform_product(self):

@@ -1,10 +1,11 @@
 from unittest import TestCase
+
 import pydash
 
 from parsing.quantity_extraction import (
+    analyze_quantity,
     extract_quantity,
     standardize_quantity,
-    analyze_quantity,
 )
 
 

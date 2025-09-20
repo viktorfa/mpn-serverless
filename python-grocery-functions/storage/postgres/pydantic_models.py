@@ -1,45 +1,46 @@
-from uuid import UUID
-from pydantic import BaseModel, ConfigDict, Field
-from typing import Optional, Set, List, Dict, Any
 from datetime import datetime
+from typing import Any
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from scraper_feed.scraper_configs import DEFAULT_EXTRACT_CATEGORIES_FIELD
 
 
 class NutritionType(BaseModel):
-    fats: Optional[float] = None
-    carbohydrates: Optional[float] = None
-    proteins: Optional[float] = None
-    satFats: Optional[float] = None
-    monoFats: Optional[float] = None
-    polyFats: Optional[float] = None
-    salt: Optional[float] = None
-    polyols: Optional[float] = None
-    fibers: Optional[float] = None
-    starch: Optional[float] = None
-    sugars: Optional[float] = None
-    kcals: Optional[float] = None
+    fats: float | None = None
+    carbohydrates: float | None = None
+    proteins: float | None = None
+    satFats: float | None = None
+    monoFats: float | None = None
+    polyFats: float | None = None
+    salt: float | None = None
+    polyols: float | None = None
+    fibers: float | None = None
+    starch: float | None = None
+    sugars: float | None = None
+    kcals: float | None = None
 
 
 class QuantityFieldsMixin(BaseModel):
-    quantity_unit: Optional[str]
-    quantity_amount: Optional[float]
-    quantity_standard_amount: Optional[float]
+    quantity_unit: str | None
+    quantity_amount: float | None
+    quantity_standard_amount: float | None
 
 
 class MarketInfoFieldsMixin(BaseModel):
     market: str
     title: str
-    description: Optional[str]
-    subtitle: Optional[str]
-    short_description: Optional[str]
-    brand_key: Optional[str]
-    vendor_key: Optional[str]
+    description: str | None
+    subtitle: str | None
+    short_description: str | None
+    brand_key: str | None
+    vendor_key: str | None
 
 
 class ProductInfo(QuantityFieldsMixin):
-    nutrition: Optional[NutritionType]
-    merged_to: Optional[UUID]
+    nutrition: NutritionType | None
+    merged_to: UUID | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -52,8 +53,8 @@ class DbProductInfo(ProductInfo):
 
 class MarketInfo(MarketInfoFieldsMixin):
     context: str
-    category_key: Optional[str]
-    category_keys: Optional[List[str]]
+    category_key: str | None
+    category_keys: list[str] | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -87,51 +88,51 @@ class ProductHasIngredient(BaseModel):
 
 
 class PreparedData(BaseModel):
-    offer_gtins: Set[str]
-    offer_has_gtin_list: List[Dict[str, str]]
-    gtin_offer_map: Dict[str, Set[str]]
-    gtin_market_info_map: Dict[str, MarketInfo]
-    gtin_product_map: Dict[str, ProductInfo]
-    offer_to_gtins: Dict[str, List[str]]
-    gtin_offer_object_map: Dict[str, Any]
+    offer_gtins: set[str]
+    offer_has_gtin_list: list[dict[str, str]]
+    gtin_offer_map: dict[str, set[str]]
+    gtin_market_info_map: dict[str, MarketInfo]
+    gtin_product_map: dict[str, ProductInfo]
+    offer_to_gtins: dict[str, list[str]]
+    gtin_offer_object_map: dict[str, Any]
 
 
 class PgOffer(BaseModel):
     uri: str
-    dealer_key: Optional[str]
+    dealer_key: str | None
     href: str
-    image: Optional[str]
-    mpn_stock: Optional[str]
-    price: Optional[float]
-    currency: Optional[str]
-    pre_price: Optional[float]
-    price_unit: Optional[str]
+    image: str | None
+    mpn_stock: str | None
+    price: float | None
+    currency: str | None
+    pre_price: float | None
+    price_unit: str | None
     provenance: str
     provenance_id: str
-    quantity_unit: Optional[str]
-    quantity_amount: Optional[float]
-    quantity_standard_amount: Optional[float]
+    quantity_unit: str | None
+    quantity_amount: float | None
+    quantity_standard_amount: float | None
     context: str
-    subtitle: Optional[str]
+    subtitle: str | None
     title: str
     valid_from: datetime
     valid_through: datetime
-    value_unit: Optional[str]
-    value_amount: Optional[float]
-    value_standard_amount: Optional[float]
-    brand: Optional[str]
-    description: Optional[str]
-    short_description: Optional[str]
-    item_condition: Optional[str]
-    mpn: Optional[str]
-    upc: Optional[str]
-    ahref: Optional[str]
-    is_partner: Optional[bool]
+    value_unit: str | None
+    value_amount: float | None
+    value_standard_amount: float | None
+    brand: str | None
+    description: str | None
+    short_description: str | None
+    item_condition: str | None
+    mpn: str | None
+    upc: str | None
+    ahref: str | None
+    is_partner: bool | None
     market: str
-    is_promotion_restricted: Optional[bool]
+    is_promotion_restricted: bool | None
     scrape_batch_id: str
-    brand_key: Optional[str]
-    vendor_key: Optional[str]
+    brand_key: str | None
+    vendor_key: str | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -143,13 +144,13 @@ class PydanticHandleConfig(BaseModel):
     context: str
     market: str
     is_partner: bool = False
-    categoriesLimits: List[int] = Field(default_factory=list)
-    filters: List[Any] = Field(default_factory=list)
-    fieldMapping: List[Any] = Field(default_factory=list)
-    extractQuantityFields: List[str] = Field(default_factory=list)
+    categoriesLimits: list[int] = Field(default_factory=list)
+    filters: list[Any] = Field(default_factory=list)
+    fieldMapping: list[Any] = Field(default_factory=list)
+    extractQuantityFields: list[str] = Field(default_factory=list)
     categoriesField: str = DEFAULT_EXTRACT_CATEGORIES_FIELD
-    extractPropertiesFields: List[str] = Field(default_factory=list)
-    extractIngredientsFields: List[str] = Field(default_factory=list)
+    extractPropertiesFields: list[str] = Field(default_factory=list)
+    extractIngredientsFields: list[str] = Field(default_factory=list)
     ignore_none: bool = False
 
     model_config = ConfigDict(from_attributes=True)

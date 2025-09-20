@@ -1,16 +1,12 @@
 import json
 from datetime import datetime
-from multiprocessing import Value
-from typing import Union
-
-from util.enums import currency_codes, select_methods
 
 
 def flatten(l: list) -> list:
     return [item for sublist in l for item in sublist]
 
 
-def get_nested(gettable, path: Union[list, str], default=None):
+def get_nested(gettable, path: list | str, default=None):
     """Gets a nested value of a dict.
     Does not support number keys if path is string.
     """
@@ -64,7 +60,7 @@ def json_time_to_datetime(json_time_string: str) -> datetime:
 
 
 def get_product_uri(provenance: str, _id: str) -> str:
-    return "{}:product:{}".format(provenance, _id)
+    return f"{provenance}:product:{_id}"
 
 
 def get_difference_percentage(original: float, new: float) -> float:

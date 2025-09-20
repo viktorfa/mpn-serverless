@@ -42,9 +42,9 @@ quantity_units = sorted(
     [key for key in [*si_mappings.keys(), *alt_unit_map.keys()]], key=len, reverse=True
 )
 
-quantity_value_units = ["/{}".format(x) for x in quantity_units]
-quantity_value_units.extend(["kr/{}".format(x) for x in quantity_units])
-quantity_value_units.extend(["kr{}".format(x) for x in quantity_units])
-piece_value_units = ["/{}".format(x) for x in piece_units]
-piece_value_units.extend(["kr/{}".format(x) for x in piece_units])
-piece_value_units.extend(["kr{}".format(x) for x in piece_units])
+quantity_value_units = [f"/{x}" for x in quantity_units]
+quantity_value_units.extend([f"kr/{x}" for x in quantity_units])
+quantity_value_units.extend([f"kr{x}" for x in quantity_units])
+piece_value_units = [f"/{x}" for x in piece_units]
+piece_value_units.extend([f"kr/{x}" for x in piece_units])
+piece_value_units.extend([f"kr{x}" for x in piece_units])

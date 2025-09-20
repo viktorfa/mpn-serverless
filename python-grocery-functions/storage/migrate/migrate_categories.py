@@ -1,14 +1,15 @@
+import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-import json
 
 from config.vars import POSTGRES_URL
 from storage.postgres.postgres_tables import CategoriesTable
 
 
-def topological_sort(categories: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def topological_sort(categories: list[dict[str, Any]]) -> list[dict[str, Any]]:
     from collections import defaultdict, deque
 
     # Build the graph
@@ -61,7 +62,7 @@ def migrate_data(json_file_path, database_url):
     engine = create_engine(database_url)
 
     # Read the JSON file
-    with open(json_file_path, "r") as f:
+    with open(json_file_path) as f:
         data = json.load(f)
 
     try:

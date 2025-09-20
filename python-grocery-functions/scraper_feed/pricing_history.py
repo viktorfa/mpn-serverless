@@ -1,8 +1,7 @@
 from datetime import timedelta
-from typing import List
-from amp_types.amp_product import HandleConfig, PriceHistoryForOffer, PriceHistoryRecord
 from statistics import mean
 
+from amp_types.amp_product import HandleConfig, PriceHistoryForOffer, PriceHistoryRecord
 from util.helpers import get_difference_percentage
 
 
@@ -151,7 +150,7 @@ def get_price_difference_update_set(
     return update_set
 
 
-def get_differences_for_series(prices: List[PriceHistoryRecord], current_price: float):
+def get_differences_for_series(prices: list[PriceHistoryRecord], current_price: float):
     mean_price = mean(x["price"] for x in prices)
     difference = current_price - mean_price
     difference_percentage = get_difference_percentage(mean_price, current_price)

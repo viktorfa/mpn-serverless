@@ -1,13 +1,15 @@
 from unittest import TestCase
 
-from scraper_feed.helpers import get_provenance_id
 from scraper_feed.handle_shopgun_offers import get_shopgun_quantity
+from scraper_feed.helpers import get_provenance_id
 
 
 class TestHelpers(TestCase):
     def test_get_shopgun_quantity_simple(self):
         shopgun_quantity = dict(
-            unit=None, size={"from": 1, "to": 1}, pieces={"from": 1, "to": 1},
+            unit=None,
+            size={"from": 1, "to": 1},
+            pieces={"from": 1, "to": 1},
         )
         actual = get_shopgun_quantity(shopgun_quantity)
 

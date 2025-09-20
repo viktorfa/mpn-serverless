@@ -1,6 +1,7 @@
 import logging
-from pydash import get
 from typing import Any, NotRequired, TypedDict
+
+from pydash import get
 
 
 class AdditionalProperty(TypedDict):

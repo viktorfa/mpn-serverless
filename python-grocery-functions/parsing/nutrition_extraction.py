@@ -1,11 +1,9 @@
-from typing import Dict, TypedDict
 import pydash
-import logging
 
+from amp_types.amp_product import HandleConfig, NutritionalData, ScraperOffer
+from parsing.parsing import extract_number, extract_number_unit_pairs
 from storage.postgres.pydantic_models import NutritionType
 from transform.offer import get_field_from_scraper_offer
-from amp_types.amp_product import HandleConfig, NutritionalData, ScraperOffer
-from parsing.parsing import extract_number_unit_pairs, extract_number
 
 macro_names = [
     "fats",
@@ -113,7 +111,7 @@ new_macro_names = [
 
 
 def extract_nutritional_data_new(
-    nutrition_data: Dict[str, NutritionalData],
+    nutrition_data: dict[str, NutritionalData],
 ) -> NutritionType:
     data = {}
 

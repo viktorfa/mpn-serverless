@@ -1,13 +1,13 @@
-from typing import Optional
-from sqlalchemy import create_engine
-from config.vars import POSTGRES_URL
 
+from sqlalchemy import create_engine
+
+from config.vars import POSTGRES_URL
 
 # Create an engine and metadata
 engine = create_engine(POSTGRES_URL, pool_pre_ping=True)
 
 
-def get_pg_engine(db_url: Optional[str] = None):
+def get_pg_engine(db_url: str | None = None):
     if db_url:
         return create_engine(db_url, pool_pre_ping=True)
     return engine

@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 from urllib.parse import quote
 
 from amp_types.amp_product import MpnOffer
@@ -36,9 +36,9 @@ def add_se_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn00e-21'
+            f"{product['href']}&tag=mpn00e-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn00e-21'
+            else f"{product['href']}?tag=mpn00e-21"
         )
 
     return {**product, "ahref": ahref}
@@ -48,9 +48,9 @@ def add_de_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn06e-21'
+            f"{product['href']}&tag=mpn06e-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn06e-21'
+            else f"{product['href']}?tag=mpn06e-21"
         )
 
     return {**product, "ahref": ahref}
@@ -60,9 +60,9 @@ def add_com_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=epstein0b-20'
+            f"{product['href']}&tag=epstein0b-20"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=epstein0b-20'
+            else f"{product['href']}?tag=epstein0b-20"
         )
 
     return {**product, "ahref": ahref}
@@ -72,9 +72,9 @@ def add_sg_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn00-22'
+            f"{product['href']}&tag=mpn00-22"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn00-22'
+            else f"{product['href']}?tag=mpn00-22"
         )
 
     return {**product, "ahref": ahref}
@@ -84,9 +84,9 @@ def add_uk_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn0cb-21'
+            f"{product['href']}&tag=mpn0cb-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn0cb-21'
+            else f"{product['href']}?tag=mpn0cb-21"
         )
 
     return {**product, "ahref": ahref}
@@ -96,9 +96,9 @@ def add_fr_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn029-21'
+            f"{product['href']}&tag=mpn029-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn029-21'
+            else f"{product['href']}?tag=mpn029-21"
         )
 
     return {**product, "ahref": ahref}
@@ -108,9 +108,9 @@ def add_nl_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn01-21'
+            f"{product['href']}&tag=mpn01-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn01-21'
+            else f"{product['href']}?tag=mpn01-21"
         )
 
     return {**product, "ahref": ahref}
@@ -120,9 +120,9 @@ def add_au_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=???'
+            f"{product['href']}&tag=???"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=???'
+            else f"{product['href']}?tag=???"
         )
 
     return {**product, "ahref": ahref}
@@ -132,9 +132,9 @@ def add_es_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn00-21'
+            f"{product['href']}&tag=mpn00-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn00-21'
+            else f"{product['href']}?tag=mpn00-21"
         )
 
     return {**product, "ahref": ahref}
@@ -144,9 +144,9 @@ def add_pl_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=mpn0a-21" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn0a-21'
+            f"{product['href']}&tag=mpn0a-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn0a-21'
+            else f"{product['href']}?tag=mpn0a-21"
         )
 
     return {**product, "ahref": ahref}
@@ -156,9 +156,9 @@ def add_it_amazon_affiliate_link(product: dict) -> dict:
     ahref = product["href"]
     if "tag=" not in product["href"]:
         ahref = (
-            f'{product["href"]}&tag=mpn023-21'
+            f"{product['href']}&tag=mpn023-21"
             if "?" in product["href"]
-            else f'{product["href"]}?tag=mpn023-21'
+            else f"{product['href']}?tag=mpn023-21"
         )
 
     return {**product, "ahref": ahref}

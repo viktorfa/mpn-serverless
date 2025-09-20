@@ -1,9 +1,11 @@
 import logging
-from typing import List, Sequence, Set, Dict, Tuple
+from collections.abc import Sequence
 from uuid import UUID
-from sqlalchemy.orm import Session
-import pydash
 
+import pydash
+from sqlalchemy.orm import Session
+
+from amp_types.amp_product import ProcessedMpnOffer
 from parsing.nutrition_extraction import extract_nutritional_data_new
 from storage.postgres.common import get_pg_engine
 from storage.postgres.gtins import (
@@ -24,26 +26,25 @@ from storage.postgres.products_handling import (
     upsert_product_has_ingredient,
 )
 from storage.postgres.pydantic_models import MarketInfo, PreparedData, ProductInfo
-from amp_types.amp_product import ProcessedMpnOffer
 from storage.postgres.utils import UnionFind
 from util.utils import log_traceback
 
 
 def prepare_offer_data(
     offers: Sequence[ProcessedMpnOffer],
-) -> Tuple[PreparedData, UnionFind]:
-    offer_gtins: Set[str] = set()
-    offer_has_gtin_list: List[Dict[str, str]] = []
-    gtin_offer_map: Dict[str, Set[str]] = {}
-    gtin_market_info_map: Dict[str, MarketInfo] = {}
-    gtin_product_map: Dict[str, ProductInfo] = {}
-    offer_to_gtins: Dict[str, List[str]] = {}
-    gtin_offer_object_map: Dict[str, ProcessedMpnOffer] = {}
+) -> tuple[PreparedData, UnionFind]:
+    offer_gtins: set[str] = set()
+    offer_has_gtin_list: list[dict[str, str]] = []
+    gtin_offer_map: dict[str, set[str]] = {}
+    gtin_market_info_map: dict[str, MarketInfo] = {}
+    gtin_product_map: dict[str, ProductInfo] = {}
+    offer_to_gtins: dict[str, list[str]] = {}
+    gtin_offer_object_map: dict[str, ProcessedMpnOffer] = {}
     uf = UnionFind()
 
     for offer in offers:
         uri_string: str = f"{offer['namespace']}:{offer['provenanceId']}"
-        gtin_list: List[str] = []
+        gtin_list: list[str] = []
         internal_gtin_string = f"_mpn:{uri_string}"
         gtin_offer_object_map[internal_gtin_string] = offer
         gtin_list.append(internal_gtin_string)
@@ -128,7 +129,7 @@ def prepare_offer_data(
     return prepared_data, uf
 
 
-def build_root_to_gtins(uf: UnionFind, offer_gtins: Set[str]) -> Dict[str, Set[str]]:
+def build_root_to_gtins(uf: UnionFind, offer_gtins: set[str]) -> dict[str, set[str]]:
     """
     Builds a dictionary mapping each root GTIN to a set of GTINs that share the same root.
 
@@ -139,7 +140,7 @@ def build_root_to_gtins(uf: UnionFind, offer_gtins: Set[str]) -> Dict[str, Set[s
     Returns:
         Dict[str, Set[str]]: A dictionary where each key is a root GTIN and each value is a set of GTINs that share the same root.
     """
-    root_to_gtins: Dict[str, Set[str]] = {}
+    root_to_gtins: dict[str, set[str]] = {}
     for gtin in offer_gtins:
         root: str = uf.find(gtin)
         if root not in root_to_gtins:
@@ -150,7 +151,7 @@ def build_root_to_gtins(uf: UnionFind, offer_gtins: Set[str]) -> Dict[str, Set[s
 
 def handle_gtins_for_offers(
     offers: Sequence[ProcessedMpnOffer], context: str
-) -> List[UUID] | None:
+) -> list[UUID] | None:
     prepared_data, uf = prepare_offer_data(offers)
 
     with Session(get_pg_engine()) as session:

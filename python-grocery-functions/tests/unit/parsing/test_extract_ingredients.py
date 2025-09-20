@@ -1,8 +1,9 @@
+from unittest import TestCase
+
 from parsing.ingredients_extraction import (
     extract_e_number,
     extract_individual_ingredients,
 )
-from unittest import TestCase
 
 
 class TestExtractIngredientsSimpleMethods(TestCase):

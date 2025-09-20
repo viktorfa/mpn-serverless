@@ -1,16 +1,18 @@
-from datetime import datetime
+import argparse
+import json
 import logging
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from collections.abc import Iterable, Sequence
+from datetime import datetime
+from typing import Any
 from uuid import UUID
+
+from config.mongo import get_collection
 from pydantic import BaseModel, ValidationError
 from pymongo import UpdateOne
 from slugify import slugify
 from sqlalchemy.orm import Session
-import json
-import argparse
 
 from amp_types.amp_product import ProcessedMpnOffer
-from config.mongo import get_collection
 from storage.postgres.common import get_pg_engine
 from storage.postgres.denormalized_products import update_denormalized_products
 from storage.postgres.gtins import (
@@ -38,7 +40,6 @@ from storage.postgres.products_handling import (
 from util.logging import configure_lambda_logging
 from util.mappings import get_offer_context_from_site_collection
 from util.timer import Timer
-
 
 # For old offers without scrapeBatchId
 DEFAULT_SCRAPE_BATCH_ID = "6ut_Kt.jk4NvVE.ycCN1xDy5ihGv_OWX"
@@ -297,49 +298,49 @@ example_mongo_offer2 = {
 
 class MongoOffer(BaseModel):
     uri: str
-    ahref: Optional[str]
+    ahref: str | None
     dealer: str
-    brand: Optional[str]
-    vendor: Optional[str]
-    categories: List[str]
-    subtitle: Optional[str]
-    description: Optional[str]
-    shortDescription: Optional[str]
-    gtins: Dict[str, str]
+    brand: str | None
+    vendor: str | None
+    categories: list[str]
+    subtitle: str | None
+    description: str | None
+    shortDescription: str | None
+    gtins: dict[str, str]
     href: str
-    imageUrl: Optional[str]
-    isPartner: Optional[bool]
-    items: Dict[str, int]
+    imageUrl: str | None
+    isPartner: bool | None
+    items: dict[str, int]
     market: str
-    mpnIngredients: Optional[Dict[str, Any]]
-    mpnNutrition: Dict[str, Any]
-    mpnProperties: Dict[str, Any]
-    mpnStock: Optional[str]
-    pricing: Dict[str, Any]
+    mpnIngredients: dict[str, Any] | None
+    mpnNutrition: dict[str, Any]
+    mpnProperties: dict[str, Any]
+    mpnStock: str | None
+    pricing: dict[str, Any]
     provenance: str
     provenanceId: str
-    quantity: Dict[str, Any]
+    quantity: dict[str, Any]
     siteCollection: str
     title: str
     validFrom: datetime
     validThrough: datetime
-    value: Dict[str, Any]
+    value: dict[str, Any]
     scrapeBatchId: str
-    isRecent: Optional[bool]
-    difference: Optional[float]
-    difference30DaysMean: Optional[float]
-    difference30DaysMeanPercentage: Optional[float]
-    difference365DaysMean: Optional[float]
-    difference365DaysMeanPercentage: Optional[float]
-    difference7DaysMean: Optional[float]
-    difference7DaysMeanPercentage: Optional[float]
-    difference90DaysMean: Optional[float]
-    difference90DaysMeanPercentage: Optional[float]
-    differencePercentage: Optional[float]
-    price30DaysMean: Optional[float]
-    price365DaysMean: Optional[float]
-    price7DaysMean: Optional[float]
-    price90DaysMean: Optional[float]
+    isRecent: bool | None
+    difference: float | None
+    difference30DaysMean: float | None
+    difference30DaysMeanPercentage: float | None
+    difference365DaysMean: float | None
+    difference365DaysMeanPercentage: float | None
+    difference7DaysMean: float | None
+    difference7DaysMeanPercentage: float | None
+    difference90DaysMean: float | None
+    difference90DaysMeanPercentage: float | None
+    differencePercentage: float | None
+    price30DaysMean: float | None
+    price365DaysMean: float | None
+    price7DaysMean: float | None
+    price90DaysMean: float | None
 
 
 class OfferForMigration(ProcessedMpnOffer):
@@ -406,9 +407,9 @@ def migrate_data(limit: int, batch_size: int):
     timer.stop("Get collection")
 
     offer_counter = 0
-    offers_for_context: Dict[str, List[OfferForMigration]] = {}
+    offers_for_context: dict[str, list[OfferForMigration]] = {}
 
-    migrated_offer_ids: List[str] = []
+    migrated_offer_ids: list[str] = []
 
     timer.start("Save mongo batch")
     for _offer in cursor:
@@ -507,7 +508,7 @@ def migrate_data(limit: int, batch_size: int):
         # Convert the MongoDB offer to a ProcessedMpnOffer object
         vendor_key = slugify(offer.vendor, separator="_") if offer.vendor else None
         brand_key = slugify(offer.brand, separator="_") if offer.brand else None
-        raw_ingredients: List[str] = []
+        raw_ingredients: list[str] = []
         try:
             for k, v in offer.mpnIngredients.get("ingredients", {}).items():
                 raw_ingredients.append(v["text"] + " " + k)
@@ -686,7 +687,7 @@ def handle_store_offer_batch(offers: Sequence[OfferForMigration], context: str):
             )
 
             # After determining gtin_to_product_map and offer_to_gtins
-            offer_to_product_id: Dict[str, UUID] = {}
+            offer_to_product_id: dict[str, UUID] = {}
             for offer_uri, gtins in prepared_data.offer_to_gtins.items():
                 for gtin in gtins:
                     product_id = gtin_to_product_map.get(gtin)

@@ -1,6 +1,7 @@
 """
 Pytest configuration and shared fixtures for all tests.
 """
+
 import json
 import os
 import sys
@@ -29,9 +30,11 @@ def fixtures_path():
 @pytest.fixture
 def load_feed_fixture(fixtures_path):
     """Factory fixture to load test feed data."""
+
     def _load_feed(filename):
         with open(fixtures_path / "feeds" / filename) as f:
             return json.load(f)
+
     return _load_feed
 
 
@@ -42,7 +45,7 @@ def mock_s3_client():
     mock.get_object.return_value = {
         "Body": MagicMock(),
         "LastModified": "2024-01-01T00:00:00Z",
-        "VersionId": "test-version-id"
+        "VersionId": "test-version-id",
     }
     return mock
 
@@ -61,7 +64,7 @@ def sample_offer():
         "dealer": "Test Dealer",
         "availability": "InStock",
         "categories": ["Test Category"],
-        "gtin": "1234567890123"
+        "gtin": "1234567890123",
     }
 
 
@@ -80,5 +83,5 @@ def sample_config():
         "extractIngredientsFields": [],
         "extractNutritionFields": [],
         "ignore_none": False,
-        "collection_name": "testoffers"
+        "collection_name": "testoffers",
     }

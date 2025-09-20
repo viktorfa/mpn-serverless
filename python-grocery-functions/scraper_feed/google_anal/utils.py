@@ -1,7 +1,6 @@
-import json
+from google.analytics import data_v1beta
 from googleapiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
-from google.analytics import data_v1beta
 
 KEY_FILE_LOCATION = "scraper_feed/google_anal/_SECRET_mpnmpn-779aa439f931.json"
 SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]

@@ -1,5 +1,6 @@
 import json
 import os
+
 import boto3
 
 is_in_aws = os.getenv("AWS_EXECUTION_ENV") is not None

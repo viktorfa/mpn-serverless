@@ -1,18 +1,15 @@
-import logging
 import pydash
-from typing import List
 
+from amp_types.amp_product import HandleConfig
 from scraper_feed.scraper_configs import (
+    DEFAULT_EXTRACT_CATEGORIES_FIELD,
     DEFAULT_EXTRACT_INGREDIENTS_FIELDS,
     DEFAULT_EXTRACT_PROPERTIES_FIELDS,
-    get_field_mapping,
     DEFAULT_EXTRACT_QUANTITY_FIELDS,
-    DEFAULT_EXTRACT_CATEGORIES_FIELD,
+    get_field_mapping,
 )
-from amp_types.amp_product import HandleConfig
 from storage.postgres.postgres_tables import HandleConfigsTable
 from storage.postgres.pydantic_models import PydanticHandleConfig
-from util.errors import NoHandleConfigError
 
 
 def generate_handle_config(config: dict) -> HandleConfig:
@@ -70,8 +67,6 @@ def generate_handle_config(config: dict) -> HandleConfig:
         config, ["additionalConfig", "ignoreNone"], False
     )
     return result
-
-
 
 
 def generate_handle_config_postgres(config: HandleConfigsTable) -> PydanticHandleConfig:

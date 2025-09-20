@@ -1,9 +1,8 @@
-import pydash
-from typing import List
-
-from amp_types.amp_product import ScraperOffer
 from unittest import TestCase
 
+import pydash
+
+from amp_types.amp_product import ScraperOffer
 from scraper_feed.scraper_configs import MappingConfigField
 from transform.transform import transform_fields
 
@@ -11,7 +10,7 @@ from transform.transform import transform_fields
 class TestTransformScraperOffer(TestCase):
     def test_replace_flat_field(self):
         scraper_offer: ScraperOffer = {"price": 22, "UnitPrice": 12, "sku": "12334323"}
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {"replace_type": "key", "source": "sku", "destination": "ean"}
         ]
         actual = transform_fields(scraper_offer, field_mapping)
@@ -25,7 +24,7 @@ class TestTransformScraperOffer(TestCase):
             "sku": "12334323",
             "image": "//coop.no/static/lfkjgf.png",
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {"replace_type": "key", "source": "sku", "destination": "ean"},
             {"replace_type": "key", "source": "image", "destination": "imageUrl"},
         ]
@@ -42,7 +41,7 @@ class TestTransformScraperOffer(TestCase):
                 {"key": "Manufacturer Number", "value": "JSK-3434"}
             ],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "replace_type": "key",
                 "source": "Manufacturer Number",
@@ -63,7 +62,7 @@ class TestTransformScraperOffer(TestCase):
                 {"key": "AltPrice", "value": 100},
             ],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "replace_type": "key",
                 "source": "Manufacturer Number",
@@ -89,7 +88,7 @@ class TestTransformScraperOffer(TestCase):
                 {"key": "AltPrice", "value": 100},
             ],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "replace_type": "key",
                 "source": "Manufacturer Number",
@@ -113,7 +112,7 @@ class TestTransformScraperOffer(TestCase):
             "sku": "12334323",
             "additionalProperties": [],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "replace_type": "key",
                 "source": "Manufacturer Number",
@@ -127,7 +126,7 @@ class TestTransformScraperOffer(TestCase):
 
     def test_replace_with_fixed_value(self):
         scraper_offer: ScraperOffer = {"price": 22, "UnitPrice": 12, "sku": "12334323"}
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "destination": "dealer",
                 "replace_type": "fixed",
@@ -145,7 +144,7 @@ class TestTransformScraperOffer(TestCase):
             "sku": "12334323",
             "additionalProperties": [{"key": "PriceUnit", "value": "m2"}],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "source": "PriceUnit",
                 "destination": "additionalProperties.priceUnit",
@@ -167,7 +166,7 @@ class TestTransformScraperOffer(TestCase):
             "ean": "Kjempeprodukt",
             "additionalProperties": [{"key": "PriceUnit", "value": "m2"}],
         }
-        field_mapping: List[MappingConfigField] = [
+        field_mapping: list[MappingConfigField] = [
             {
                 "source": "PriceUnit",
                 "destination": "additionalProperties.priceUnit",

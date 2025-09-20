@@ -1,8 +1,8 @@
 from unittest import TestCase
+
 import pydash
 
 from parsing.quantity_extraction import parse_quantity
-
 
 """
 We test a bunch of input strings and see how well the parser is able to extract
@@ -105,9 +105,7 @@ class TestQuantityExtractionBenchmark(TestCase):
         # print(errors)
         print("RESULT")
         print(
-            "{} correct, {} wrong".format(
-                len(input_assertions_pairs) - len(errors), len(errors)
-            )
+            f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong"
         )
 
     def test_extract(self):
@@ -168,9 +166,16 @@ class TestQuantityExtractionBenchmark(TestCase):
             ),
             (
                 ["7x6-pk 29,90/stk"],
-                [(lambda x: pydash.get(x, "quantity.pieces.amount.min"), 42),],
+                [
+                    (lambda x: pydash.get(x, "quantity.pieces.amount.min"), 42),
+                ],
             ),
-            (["7x6-pk 29,90/stk"], [(lambda x: pydash.get(x, "items.min"), 7),]),
+            (
+                ["7x6-pk 29,90/stk"],
+                [
+                    (lambda x: pydash.get(x, "items.min"), 7),
+                ],
+            ),
             (
                 ["Kina, 400 g"],
                 [
@@ -319,9 +324,7 @@ class TestQuantityExtractionBenchmark(TestCase):
         # print(errors)
         print("RESULT")
         print(
-            "{} correct, {} wrong".format(
-                len(input_assertions_pairs) - len(errors), len(errors)
-            )
+            f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong"
         )
 
     def test_extract_false(self):
@@ -409,7 +412,5 @@ class TestQuantityExtractionBenchmark(TestCase):
         # print(errors)
         print("RESULT")
         print(
-            "{} true negatives (correct), {} false positives (wrong)".format(
-                len(input_assertions_pairs) - len(errors), len(errors)
-            )
+            f"{len(input_assertions_pairs) - len(errors)} true negatives (correct), {len(errors)} false positives (wrong)"
         )

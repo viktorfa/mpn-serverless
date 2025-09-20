@@ -1,13 +1,12 @@
 import unittest
 from dataclasses import dataclass
-from typing import Dict, Optional, List, Tuple
 
 from storage.postgres.categories import get_categories_for_market_info
 
 
 @dataclass
 class CategoryMappingsTable:
-    source: List[str]
+    source: list[str]
     target: str
 
 
@@ -15,7 +14,7 @@ class CategoryMappingsTable:
 class CategoriesTable:
     key: str
     level: int
-    parent: Optional[str]
+    parent: str | None
     title: str
 
 
@@ -54,9 +53,9 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
         ]
 
         # Build data structures for quick lookup
-        categories_by_key: Dict[str, CategoriesTable] = {}
-        categories_by_name: Dict[str, CategoriesTable] = {}
-        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+        categories_by_key: dict[str, CategoriesTable] = {}
+        categories_by_name: dict[str, CategoriesTable] = {}
+        source_cat_map: dict[tuple[str, ...], CategoryMappingsTable] = {}
 
         for category, mapping in category_mappings:
             categories_by_key[category.key] = category
@@ -107,9 +106,9 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
         ]
 
         # Build data structures for quick lookup
-        categories_by_key: Dict[str, CategoriesTable] = {}
-        categories_by_name: Dict[str, CategoriesTable] = {}
-        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+        categories_by_key: dict[str, CategoriesTable] = {}
+        categories_by_name: dict[str, CategoriesTable] = {}
+        source_cat_map: dict[tuple[str, ...], CategoryMappingsTable] = {}
 
         for category, mapping in category_mappings:
             categories_by_key[category.key] = category
@@ -150,9 +149,9 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
         ]
 
         # Build data structures for quick lookup
-        categories_by_key: Dict[str, CategoriesTable] = {}
-        categories_by_name: Dict[str, CategoriesTable] = {}
-        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+        categories_by_key: dict[str, CategoriesTable] = {}
+        categories_by_name: dict[str, CategoriesTable] = {}
+        source_cat_map: dict[tuple[str, ...], CategoryMappingsTable] = {}
 
         for category, mapping in category_mappings:
             categories_by_key[category.key] = category
@@ -186,9 +185,9 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
         ]
 
         # Build data structures for quick lookup
-        categories_by_key: Dict[str, CategoriesTable] = {}
-        categories_by_name: Dict[str, CategoriesTable] = {}
-        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+        categories_by_key: dict[str, CategoriesTable] = {}
+        categories_by_name: dict[str, CategoriesTable] = {}
+        source_cat_map: dict[tuple[str, ...], CategoryMappingsTable] = {}
 
         for category, mapping in category_mappings:
             categories_by_key[category.key] = category

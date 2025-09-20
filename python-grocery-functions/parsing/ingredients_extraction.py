@@ -1,10 +1,9 @@
 import re
-from typing import List, Sequence
-from typing import Mapping
+from collections.abc import Mapping, Sequence
 
+from amp_types.amp_product import HandleConfig, IngredientType, ScraperOffer
 from storage.migrate.migrate_ingredients import IngredientsTable
 from transform.offer import get_field_from_scraper_offer
-from amp_types.amp_product import HandleConfig, ScraperOffer, IngredientType
 
 
 def extract_e_number(string: str):
@@ -25,7 +24,7 @@ def sort_db_ingredient_key(ingredient: IngredientType):
         return -len(ingredient["key"])
 
 
-def extract_individual_ingredients(raw_ingredients: str) -> List[str]:
+def extract_individual_ingredients(raw_ingredients: str) -> list[str]:
     return raw_ingredients.split(", ")
 
 
@@ -59,9 +58,9 @@ def get_extracted_ingredients(
 
 
 def get_extracted_ingredients_postgres(
-    raw_ingredients: Sequence[str], ingredients_data: List[IngredientsTable]
-) -> List[IngredientsTable]:
-    result: List[IngredientsTable] = []
+    raw_ingredients: Sequence[str], ingredients_data: list[IngredientsTable]
+) -> list[IngredientsTable]:
+    result: list[IngredientsTable] = []
     for string in raw_ingredients:
         e_number = extract_e_number(string)
         if e_number:
@@ -88,7 +87,7 @@ def get_ingredients_data(
     config: HandleConfig,
     ingredients_data: Mapping[str, IngredientType],
 ):
-    raw_ingredients_values: List[str] = get_raw_ingredients_list(offer, config)
+    raw_ingredients_values: list[str] = get_raw_ingredients_list(offer, config)
 
     if not raw_ingredients_values:
         return None
@@ -109,8 +108,8 @@ def get_ingredients_data(
     return {"ingredients": extracted_ingredients, "processedScore": processed_score}
 
 
-def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> List[str]:
-    raw_ingredients_fields: List[str] = []
+def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> list[str]:
+    raw_ingredients_fields: list[str] = []
     for key in config["extractIngredientsFields"]:
         raw_ingredients = get_field_from_scraper_offer(offer, key)
         if raw_ingredients and type(raw_ingredients) is str:
@@ -121,8 +120,8 @@ def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> List[
     return get_raw_ingredients_from_strings(raw_ingredients_fields)
 
 
-def get_raw_ingredients_from_strings(raw_ingredients: List[str]) -> List[str]:
-    result: List[str] = []
+def get_raw_ingredients_from_strings(raw_ingredients: list[str]) -> list[str]:
+    result: list[str] = []
     for raw_ingredient_string in raw_ingredients:
         result.extend(extract_individual_ingredients(raw_ingredient_string))
 

@@ -1,14 +1,11 @@
-import os
 import json
-import logging
-
+import os
 
 import sentry_sdk
 from sentry_sdk.integrations.aws_lambda import AwsLambdaIntegration
 
-from book_feed.process_books import process_books, merge_similar_books
+from book_feed.process_books import merge_similar_books, process_books
 from util.logging import configure_lambda_logging
-
 
 if not os.getenv("IS_LOCAL"):
     sentry_sdk.init(

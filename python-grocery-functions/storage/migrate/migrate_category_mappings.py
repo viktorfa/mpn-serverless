@@ -1,7 +1,8 @@
+import json
 from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-import json
 
 from config.vars import POSTGRES_URL
 from storage.postgres.postgres_tables import CategoryMappingsTable
@@ -12,7 +13,7 @@ def migrate_data(json_file_path, database_url):
     engine = create_engine(database_url)
 
     # Read the JSON file
-    with open(json_file_path, "r") as f:
+    with open(json_file_path) as f:
         data = json.load(f)
 
     with Session(engine) as session:

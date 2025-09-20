@@ -1,18 +1,19 @@
 import logging
-from typing import List, Set, Dict, Tuple, TypedDict
+from typing import TypedDict
 from uuid import UUID
+
+from sqlalchemy import bindparam
 from sqlalchemy.orm import Session
 from uuid_extensions import uuid7
-from sqlalchemy import bindparam
 
-from parsing.ingredients_extraction import get_extracted_ingredients_postgres
-from storage.postgres.pydantic_models import DbProductInfo, NutritionType, ProductInfo
 from amp_types.amp_product import ProcessedMpnOffer
+from parsing.ingredients_extraction import get_extracted_ingredients_postgres
 from storage.postgres.postgres_tables import (
     OffersTable,
     ProductHasIngredientTable,
     ProductsTable,
 )
+from storage.postgres.pydantic_models import DbProductInfo, NutritionType, ProductInfo
 from storage.postgres.utils import get_offer_from_gtin
 
 
@@ -23,11 +24,11 @@ class OfferProductUpdate(TypedDict):
 
 def update_offers_with_product_id(
     session: Session,
-    offer_to_gtins: Dict[str, List[str]],
-    gtin_to_product_map: Dict[str, UUID],
+    offer_to_gtins: dict[str, list[str]],
+    gtin_to_product_map: dict[str, UUID],
 ) -> None:
     if offer_to_gtins:
-        offer_product_updates: List[OfferProductUpdate] = []
+        offer_product_updates: list[OfferProductUpdate] = []
         for offer_uri, gtin_list in offer_to_gtins.items():
             # Get the product_id from any GTIN in the gtin_list
             product_id = None
@@ -68,11 +69,11 @@ def update_offers_with_product_id(
 
 def update_products(
     session: Session,
-    products_to_update: Dict[UUID, DbProductInfo],
-    root_to_gtins: Dict[str, Set[str]],
-    gtin_to_product_map: Dict[str, ProductInfo],
-    existing_gtins: Set[str],
-    gtin_to_product_id_map: Dict[str, UUID],
+    products_to_update: dict[UUID, DbProductInfo],
+    root_to_gtins: dict[str, set[str]],
+    gtin_to_product_map: dict[str, ProductInfo],
+    existing_gtins: set[str],
+    gtin_to_product_id_map: dict[str, UUID],
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
@@ -81,7 +82,7 @@ def update_products(
         .filter(ProductsTable.id.in_(products_to_update))
         .all()
     )
-    product_updates: Dict[UUID, ProductInfo] = {}
+    product_updates: dict[UUID, ProductInfo] = {}
     for gtin, component_gtins in root_to_gtins.items():
         if gtin not in existing_gtins:
             continue
@@ -160,7 +161,7 @@ def update_products(
         logging.info("No products to update.")
 
 
-def insert_products(session: Session, new_products: List[DbProductInfo]) -> None:
+def insert_products(session: Session, new_products: list[DbProductInfo]) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     products_entries = [product.model_dump() for product in new_products]
@@ -178,21 +179,21 @@ def insert_products(session: Session, new_products: List[DbProductInfo]) -> None
 
 
 def determine_product_ids(
-    root_to_gtins: Dict[str, Set[str]],
-    gtin_to_product_map: Dict[str, UUID],
-    gtin_product_map: Dict[str, ProductInfo],
-) -> Tuple[
-    Dict[str, UUID],
-    List[DbProductInfo],
-    Dict[UUID, DbProductInfo],
+    root_to_gtins: dict[str, set[str]],
+    gtin_to_product_map: dict[str, UUID],
+    gtin_product_map: dict[str, ProductInfo],
+) -> tuple[
+    dict[str, UUID],
+    list[DbProductInfo],
+    dict[UUID, DbProductInfo],
 ]:
-    component_product_id: Dict[str, UUID] = {}  # Map from root to product_id
-    new_products: List[DbProductInfo] = []
-    products_to_update: Dict[UUID, DbProductInfo] = {}
+    component_product_id: dict[str, UUID] = {}  # Map from root to product_id
+    new_products: list[DbProductInfo] = []
+    products_to_update: dict[UUID, DbProductInfo] = {}
 
     for root, component_gtins in root_to_gtins.items():
         # Collect product_ids associated with GTINs in the component
-        product_ids_in_component: Set[UUID] = set()
+        product_ids_in_component: set[UUID] = set()
         for gtin in component_gtins:
             if gtin in gtin_to_product_map:
                 product_ids_in_component.add(gtin_to_product_map[gtin])
@@ -282,20 +283,21 @@ def merge_product_info(existing: ProductInfo, new: ProductInfo) -> ProductInfo:
 
 def upsert_product_has_ingredient(
     session: Session,
-    gtin_product_map: Dict[str, ProductInfo],
-    gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
-    gtin_to_product_map: Dict[str, UUID],
+    gtin_product_map: dict[str, ProductInfo],
+    gtin_offer_object_map: dict[str, ProcessedMpnOffer],
+    gtin_to_product_map: dict[str, UUID],
 ) -> None:
-    from storage.postgres.postgres_tables import IngredientsTable
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-    to_upsert: List[Dict] = []
+    from storage.postgres.postgres_tables import IngredientsTable
 
-    ingredients: List[IngredientsTable] = None
+    to_upsert: list[dict] = []
+
+    ingredients: list[IngredientsTable] = None
 
     for gtin, product_info in gtin_product_map.items():
         offer = get_offer_from_gtin(gtin_offer_object_map, gtin)
-        offer_ingredients: List[str] = offer.get("rawIngredients")
+        offer_ingredients: list[str] = offer.get("rawIngredients")
         if not offer_ingredients:
             continue
 

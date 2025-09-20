@@ -1,16 +1,16 @@
 import logging
-from typing import List, Set, Optional, Dict, Tuple
 from uuid import UUID
+
 from sqlalchemy.orm import Session
 
+from amp_types.amp_product import ProcessedMpnOffer
 from storage.migrate.migrate_categories import CategoriesTable
 from storage.postgres.categories import get_categories_for_market_info
-from storage.postgres.pydantic_models import DbMarketInfo, MarketInfo
-from amp_types.amp_product import ProcessedMpnOffer
 from storage.postgres.postgres_tables import (
     CategoryMappingsTable,
     ProductMarketInfoTable,
 )
+from storage.postgres.pydantic_models import DbMarketInfo, MarketInfo
 from storage.postgres.utils import get_offer_from_gtin
 
 
@@ -36,12 +36,12 @@ def merge_market_info(existing: MarketInfo, new: MarketInfo) -> MarketInfo:
 def collect_product_market_info_entries(
     session: Session,
     context: str,
-    root_to_gtins: Dict[str, Set[str]],
-    gtin_to_product_map: Dict[str, UUID],
-    gtin_market_info_map: Dict[str, MarketInfo],
-    gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
-) -> Dict[str, DbMarketInfo]:
-    product_market_info_entries: Dict[str, DbMarketInfo] = {}
+    root_to_gtins: dict[str, set[str]],
+    gtin_to_product_map: dict[str, UUID],
+    gtin_market_info_map: dict[str, MarketInfo],
+    gtin_offer_object_map: dict[str, ProcessedMpnOffer],
+) -> dict[str, DbMarketInfo]:
+    product_market_info_entries: dict[str, DbMarketInfo] = {}
 
     [_, market] = context.split("-")
 
@@ -65,9 +65,9 @@ def collect_product_market_info_entries(
 
     if category_mappings:
         # Build data structures for quick lookup
-        categories_by_key: Dict[str, CategoriesTable] = {}
-        categories_by_name: Dict[str, CategoriesTable] = {}
-        source_cat_map: Dict[Tuple[str, ...], CategoryMappingsTable] = {}
+        categories_by_key: dict[str, CategoriesTable] = {}
+        categories_by_name: dict[str, CategoriesTable] = {}
+        source_cat_map: dict[tuple[str, ...], CategoryMappingsTable] = {}
 
         for category, mapping in category_mappings:
             categories_by_key[category.key] = category
@@ -101,7 +101,7 @@ def collect_product_market_info_entries(
                 ),
                 None,
             )
-            market_info_entry: Optional[MarketInfo] = gtin_market_info_map.get(gtin)
+            market_info_entry: MarketInfo | None = gtin_market_info_map.get(gtin)
             if not market_info_entry:
                 raise Exception(f"Market info not found for GTIN {gtin}")
 
@@ -140,16 +140,16 @@ def collect_product_market_info_entries(
 
 
 def upsert_product_market_info(
-    session: Session, product_market_info_entries: List[DbMarketInfo]
+    session: Session, product_market_info_entries: list[DbMarketInfo]
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     if product_market_info_entries:
         # Remove duplicates based on (product_id, market)
-        unique_entries_dict: Dict[Tuple[UUID, str], DbMarketInfo] = {
+        unique_entries_dict: dict[tuple[UUID, str], DbMarketInfo] = {
             (e.product_id, e.market): e for e in product_market_info_entries
         }
-        unique_entries: List[DbMarketInfo] = list(unique_entries_dict.values())
+        unique_entries: list[DbMarketInfo] = list(unique_entries_dict.values())
         entries_to_insert = [entry.model_dump() for entry in unique_entries]
         product_market_info_stmt = pg_insert(ProductMarketInfoTable.__table__).values(
             entries_to_insert
@@ -176,8 +176,8 @@ def upsert_product_market_info(
 def populate_market_info_with_categories(
     session: Session,
     context: str,
-    product_market_info_entries: Dict[str, DbMarketInfo],
-    gtin_offer_object_map: Dict[str, ProcessedMpnOffer],
+    product_market_info_entries: dict[str, DbMarketInfo],
+    gtin_offer_object_map: dict[str, ProcessedMpnOffer],
 ) -> None:
     category_mappings = (
         session.query(CategoryMappingsTable)
@@ -197,7 +197,7 @@ def populate_market_info_with_categories(
         if not offer_cats:
             continue
 
-        matched_categories: List[CategoryMappingsTable] = []
+        matched_categories: list[CategoryMappingsTable] = []
         for cat in offer_cats:
             for mapping in category_mappings:
                 if cat in mapping.source:

@@ -1,17 +1,17 @@
 import logging
 import os
-from dramatiq_app.redis_file import ensure_broker_initialized
-from scraper_feed.handle_config import generate_handle_config_postgres
-from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
-from storage.postgres.scraper_feed import get_handle_config_by_id, get_handle_configs
-from util.logging import configure_lambda_logging
-from util.utils import log_traceback
+
 import botocore.response
 import dramatiq
 
 from amp_types.amp_product import EventHandleConfig
+from dramatiq_app.redis_file import ensure_broker_initialized
+from scraper_feed.handle_config import generate_handle_config_postgres
+from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
+from storage.postgres.scraper_feed import get_handle_config_by_id, get_handle_configs
 from storage.s3 import get_s3_object
-
+from util.logging import configure_lambda_logging
+from util.utils import log_traceback
 
 ensure_broker_initialized()
 is_online = not os.getenv("IS_LOCAL")

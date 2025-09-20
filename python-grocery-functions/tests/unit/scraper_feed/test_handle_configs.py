@@ -1,13 +1,12 @@
 from unittest import TestCase, mock
 
-from storage.postgres.scraper_feed import get_handle_configs
 from storage.postgres.postgres_tables import HandleConfigsTable
-from util.errors import NoHandleConfigError
+from storage.postgres.scraper_feed import get_handle_configs
 
 
 class TestHandleConfig(TestCase):
-    @mock.patch('storage.postgres.scraper_feed.Session')
-    @mock.patch('storage.postgres.scraper_feed.pg_engine')
+    @mock.patch("storage.postgres.scraper_feed.Session")
+    @mock.patch("storage.postgres.scraper_feed.pg_engine")
     def test_get_handle_config(self, mock_pg_engine, mock_session_class):
         # Mock the session and query
         mock_session = mock.MagicMock()
@@ -31,8 +30,8 @@ class TestHandleConfig(TestCase):
         self.assertEqual(result[0].market, "no")
         mock_session.query.assert_called_once_with(HandleConfigsTable)
 
-    @mock.patch('storage.postgres.scraper_feed.Session')
-    @mock.patch('storage.postgres.scraper_feed.pg_engine')
+    @mock.patch("storage.postgres.scraper_feed.Session")
+    @mock.patch("storage.postgres.scraper_feed.pg_engine")
     def test_get_handle_config_without_config(self, mock_pg_engine, mock_session_class):
         # Mock the session and query to return empty result
         mock_session = mock.MagicMock()

@@ -1,4 +1,3 @@
-from typing import Dict
 
 from amp_types.amp_product import ProcessedMpnOffer
 
@@ -6,7 +5,7 @@ from amp_types.amp_product import ProcessedMpnOffer
 # Union-Find data structure for grouping GTINs
 class UnionFind:
     def __init__(self) -> None:
-        self.parent: Dict[str, str] = {}
+        self.parent: dict[str, str] = {}
 
     def find(self, x: str) -> str:
         # Path compression
@@ -25,6 +24,6 @@ class UnionFind:
 
 
 def get_offer_from_gtin(
-    gtin_offer_object_map: Dict[str, ProcessedMpnOffer], gtin: str
+    gtin_offer_object_map: dict[str, ProcessedMpnOffer], gtin: str
 ) -> ProcessedMpnOffer:
     return gtin_offer_object_map[gtin]

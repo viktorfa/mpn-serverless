@@ -1,17 +1,17 @@
-from datetime import datetime, timezone
-import logging
-from typing import Sequence, List
-from pydantic import BaseModel, ValidationError
-from sqlalchemy.orm import Session
 import argparse
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+import logging
+from collections.abc import Sequence
+from datetime import UTC, datetime
 
 from config.mongo import get_collection
+from pydantic import BaseModel, ValidationError
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.orm import Session
+
 from storage.postgres.common import get_pg_engine
 from storage.postgres.postgres_tables import OfferPricesTable, OffersTable
 from util.logging import configure_lambda_logging
 from util.timer import Timer
-
 
 OFFER_LIMIT = 1024 * 2
 BATCH_SIZE = 1024
@@ -24,7 +24,7 @@ class HistoryItem(BaseModel):
 
 
 class MongoPricingHistory(BaseModel):
-    history: List[HistoryItem]
+    history: list[HistoryItem]
     uri: str
     _id: str
 
@@ -50,7 +50,7 @@ def migrate_data(limit: int, batch_size: int):
             handle_store_offer_prices_batch(session, offer_uris)
             logging.info(f"Processed prices for {len(offer_uris)} offers")
             session.query(OffersTable).filter(OffersTable.uri.in_(offer_uris)).update(
-                {"prices_migrated_at": datetime.now(timezone.utc)},
+                {"prices_migrated_at": datetime.now(UTC)},
                 synchronize_session=False,
             )
 
@@ -72,7 +72,7 @@ def handle_store_offer_prices_batch(session: Session, offer_uris: Sequence[str])
 
     collection = get_collection("offerpricinghistories")
 
-    legacy_uris: List[str] = []
+    legacy_uris: list[str] = []
     for uri in offer_uris:
         namespace, sku = uri.split(":")
         legacy_uris.append(f"{namespace}:product:{sku}")

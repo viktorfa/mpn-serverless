@@ -1,22 +1,21 @@
-from amp_types.quantity_types import MpnUnit
-import re
 import logging
-from typing import Optional
+import re
 
 import pydash
 
+from amp_types.quantity_types import MpnUnit
 from parsing.constants import (
-    quantity_units,
-    si_mappings,
+    alt_unit_map,
     piece_units,
     piece_value_units,
+    quantity_units,
     quantity_value_units,
-    alt_unit_map,
+    si_mappings,
 )
 from parsing.enums import unit_types
 
 
-def extract_number(string: str) -> Optional[float]:
+def extract_number(string: str) -> float | None:
     try:
         pattern = r"(\d+[,\.\:]\d+)"
         matches = re.findall(pattern, string)
@@ -29,7 +28,7 @@ def extract_number(string: str) -> Optional[float]:
         return None
 
 
-def extract_numbers_with_context(string: str) -> Optional[list]:
+def extract_numbers_with_context(string: str) -> list | None:
     """
     Finds numbers and returns a list of tuples with the number and its prefix and suffix.
     TODO Support different decimal separators such as "," or ":"
@@ -92,7 +91,7 @@ def extract_units_from_number_context(context: list) -> list:
     return result
 
 
-def extract_number_unit_pairs(string: str) -> Optional[list]:
+def extract_number_unit_pairs(string: str) -> list | None:
     try:
         # matches formats like "kr 50,00" or "kr 5"
         number_pattern = r"(\d+(?:,\d+)?)"
@@ -105,12 +104,12 @@ def extract_number_unit_pairs(string: str) -> Optional[list]:
 
         number_of_pairs = min(len(number_matches), len(unit_matches))
         if number_of_pairs > 0:
-            return list(zip(number_matches, unit_matches))
+            return list(zip(number_matches, unit_matches, strict=False))
     except AttributeError:
         return None
 
 
-def format_number(string: str, loader_context: dict = dict()) -> Optional[str]:
+def format_number(string: str, loader_context: dict = dict()) -> str | None:
     try:
         return string.replace(",", ".").replace(":", ".")
     except AttributeError as exc:
@@ -123,7 +122,7 @@ def format_number(string: str, loader_context: dict = dict()) -> Optional[str]:
         return None
 
 
-def extract_unit(string: str) -> Optional[MpnUnit]:
+def extract_unit(string: str) -> MpnUnit | None:
     string = string.lower()
     quantity_unit_pattern = r"^({})".format(r"|".join(quantity_units))
     quantity_unit_matches = re.findall(quantity_unit_pattern, string)
@@ -157,20 +156,20 @@ def extract_unit(string: str) -> Optional[MpnUnit]:
         return dict(symbol="x", type=unit_types.MULTIPLIER)
 
 
-def extract_quantity_unit(string: str) -> Optional[str]:
+def extract_quantity_unit(string: str) -> str | None:
     quantity_unit_pattern = r"({})".format(r"|".join(quantity_units))
     quantity_unit_matches = re.findall(quantity_unit_pattern, string)
     if quantity_unit_matches:
         return quantity_unit_matches[0]
 
 
-def extract_piece_unit(string: str) -> Optional[str]:
+def extract_piece_unit(string: str) -> str | None:
     piece_unit_pattern = r"({})".format(r"|".join(piece_units))
     piece_unit_matches = re.findall(piece_unit_pattern, string)
     if piece_unit_matches:
         return piece_unit_matches[0]
 
 
-def get_si(unit: str) -> Optional[dict]:
+def get_si(unit: str) -> dict | None:
     unit = alt_unit_map[unit] if unit in alt_unit_map.keys() else unit
     return si_mappings[unit] if unit in si_mappings.keys() else None

@@ -1,12 +1,12 @@
+from amp_types.amp_product import HandleConfig, MpnOffer
 from parsing.constants import quantity_units
+from parsing.quantity_extraction import parse_quantity
+from scraper_feed.helpers import get_product_pricing, get_provenance_id
 from util.helpers import (
+    get_product_uri,
     get_shopgun_href,
     json_time_to_datetime,
-    get_product_uri,
 )
-from scraper_feed.helpers import get_provenance_id, get_product_pricing
-from parsing.quantity_extraction import parse_quantity
-from amp_types.amp_product import HandleConfig, MpnOffer
 
 
 def transform_shopgun_product(product: dict, config: HandleConfig) -> MpnOffer:

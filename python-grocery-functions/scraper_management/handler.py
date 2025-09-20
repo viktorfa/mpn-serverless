@@ -2,10 +2,11 @@ import json
 import logging
 
 from boto3 import client as boto_client
-import os
 
-from storage.postgres.spider_configs import get_spider_config_by_id, get_spider_config_by_mongo_id
-from scraper_feed.handle_config import generate_handle_config
+from storage.postgres.spider_configs import (
+    get_spider_config_by_id,
+    get_spider_config_by_mongo_id,
+)
 
 lambda_client = boto_client("lambda")
 
@@ -55,11 +56,13 @@ def handle_scrape(event, context):
 
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "message": "Scraping triggered successfully",
-                "spider_name": spider_config.spider_name,
-                "config_id": str(spider_config.id)
-            })
+            "body": json.dumps(
+                {
+                    "message": "Scraping triggered successfully",
+                    "spider_name": spider_config.spider_name,
+                    "config_id": str(spider_config.id),
+                }
+            ),
         }
 
     except Exception as e:
@@ -80,12 +83,16 @@ def handle_feed(event, context):
 
     # TODO: Spider runs not yet migrated to PostgreSQL
     # Need to create SpiderRunsTable and migration script
-    logging.warning(f"Handle feed called for run {scraper_run_id} but spider runs not yet migrated to PostgreSQL")
+    logging.warning(
+        f"Handle feed called for run {scraper_run_id} but spider runs not yet migrated to PostgreSQL"
+    )
 
     return {
         "statusCode": 501,
-        "body": json.dumps({
-            "message": "Spider runs not yet migrated to PostgreSQL",
-            "run_id": scraper_run_id
-        })
+        "body": json.dumps(
+            {
+                "message": "Spider runs not yet migrated to PostgreSQL",
+                "run_id": scraper_run_id,
+            }
+        ),
     }

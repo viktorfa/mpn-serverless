@@ -1,7 +1,8 @@
 import logging
-from typing import List, Mapping
-import pydash
+from collections.abc import Mapping
 from datetime import datetime
+
+import pydash
 
 
 def match_offers_with_gtins_map(offers, gtin_offer_map):
@@ -31,7 +32,7 @@ def match_offers_with_gtins_map(offers, gtin_offer_map):
 
 def get_lists_of_offers_with_same_gtins(source_offers, target_offers):
     now = datetime.now()
-    gtin_offer_map: Mapping[str, List[dict]] = {}
+    gtin_offer_map: Mapping[str, list[dict]] = {}
     for offer in target_offers:
         for gtin_key, gtin_value in offer.get("gtins", {}).items():
             # gtin13 and ean are different names for the same field

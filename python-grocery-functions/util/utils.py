@@ -1,5 +1,5 @@
-import traceback
 import logging
+import traceback
 
 
 def log_traceback(ex, ex_traceback=None):

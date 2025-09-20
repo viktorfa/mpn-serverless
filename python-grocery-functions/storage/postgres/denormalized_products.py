@@ -1,29 +1,28 @@
 import logging
-from typing import List
+from datetime import UTC, datetime
 from uuid import UUID
-from sqlalchemy.orm import Session, aliased
-from sqlalchemy import bindparam, delete, func, and_, select, update
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-from datetime import datetime, timezone
-from dateutil.parser import isoparse
 
+from dateutil.parser import isoparse
+from sqlalchemy import and_, bindparam, delete, func, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.orm import Session, aliased
 
 from storage.postgres.common import get_pg_engine
 from storage.postgres.postgres_tables import (
-    ProductsTable,
-    ProductMarketInfoTable,
-    IngredientsTable,
-    GtinsTable,
-    ProductHasIngredientTable,
-    OffersTable,
     DealersTable,
-    OfferHasGtinTable,
     DenormalizedProductsTable,
+    GtinsTable,
+    IngredientsTable,
+    OfferHasGtinTable,
+    OffersTable,
+    ProductHasIngredientTable,
+    ProductMarketInfoTable,
+    ProductsTable,
 )
 from util.logging import configure_lambda_logging
 
 
-def update_denormalized_products(affected_product_ids: List[UUID]):
+def update_denormalized_products(affected_product_ids: list[UUID]):
     with Session(get_pg_engine()) as session:
         try:
             # Alias for ProductMarketInfoTable
@@ -235,7 +234,7 @@ def update_denormalized_products_for_valid_offers(event, context):
             total_deleted = 0
             total_updated = 0
 
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             while True:
                 logging.info(
@@ -258,8 +257,8 @@ def update_denormalized_products_for_valid_offers(event, context):
                     # No more rows to process or reached max_products
                     break
 
-                ids_to_delete: List[dict] = []
-                updates: List[dict] = []
+                ids_to_delete: list[dict] = []
+                updates: list[dict] = []
 
                 for dp in products_batch:
                     total_processed += 1

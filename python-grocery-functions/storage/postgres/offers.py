@@ -1,16 +1,16 @@
 import logging
-from datetime import datetime
-from typing import Dict, Sequence
 import re
+from collections.abc import Sequence
+from datetime import datetime
 from string import capwords
 from uuid import UUID
+
+import pydash
 from slugify import slugify
 from sqlalchemy.orm import Session
-import pydash
 
-from storage.postgres.common import get_pg_engine
-from storage.postgres.pydantic_models import PgOffer
 from amp_types.amp_product import ProcessedMpnOffer
+from storage.postgres.common import get_pg_engine
 from storage.postgres.postgres_tables import (
     BrandsTable,
     DealersTable,
@@ -18,6 +18,7 @@ from storage.postgres.postgres_tables import (
     OffersTable,
     VendorsTable,
 )
+from storage.postgres.pydantic_models import PgOffer
 
 pg_engine = get_pg_engine()
 
@@ -213,7 +214,7 @@ def upsert_dealers_postgres(offers: Sequence[ProcessedMpnOffer]):
 def upsert_offers_postgres(
     session: Session,
     offers: Sequence[ProcessedMpnOffer],
-    offer_to_product_id: Dict[str, UUID],
+    offer_to_product_id: dict[str, UUID],
 ) -> int:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 

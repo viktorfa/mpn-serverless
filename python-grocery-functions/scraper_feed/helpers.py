@@ -1,8 +1,9 @@
 import re
 from urllib.parse import urlparse
+
 from gtin import has_valid_check_digit
 
-from amp_types.amp_product import ScraperOffer, PricingField
+from amp_types.amp_product import PricingField, ScraperOffer
 
 
 def format_price(price_str: str | float | int) -> float:
@@ -69,7 +70,7 @@ def transform_key(key: str) -> str:
 
 
 def is_valid_ean(ean: str) -> bool:
-    if not type(ean) is str:
+    if type(ean) is not str:
         return False
     if len(ean) != 13:
         return False
@@ -86,7 +87,7 @@ def is_valid_ean(ean: str) -> bool:
 
 
 def is_valid_gtin12(gtin12: str) -> bool:
-    if not type(gtin12) is str:
+    if type(gtin12) is not str:
         return False
     if len(gtin12) != 12:
         return False

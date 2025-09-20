@@ -1,12 +1,12 @@
 from unittest import TestCase
 
+from parsing.enums import unit_types
 from parsing.parsing import (
     extract_number_unit_pairs,
-    extract_unit,
     extract_numbers_with_context,
+    extract_unit,
     extract_units_from_number_context,
 )
-from parsing.enums import unit_types
 
 
 class ExtractUnitPairs(TestCase):

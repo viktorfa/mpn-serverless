@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import boto3
 
 is_online = not os.getenv("IS_LOCAL")
