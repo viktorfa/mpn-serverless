@@ -1,0 +1,51 @@
+services:
+  dramatiq:
+    image: ${DRAMATIQ_IMAGE_TAG:-fra.vultrcr.com/crvikfandfrankfurt/dramatiq-app-mpn:latest}
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 1024M
+      update_config:
+        parallelism: 1                # update one replica at a time
+        order: start-first            # start new task before stopping old one
+        delay: 5s
+        monitor: 30s
+        failure_action: rollback
+      rollback_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 30s
+    # Give workers time to finish the current message on SIGTERM
+    stop_grace_period: 300s
+    environment:
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD} 
+      STAGE: ${STAGE}
+      DRAMATIQ_NAMESPACE: ${DRAMATIQ_NAMESPACE}
+      POSTGRES_URL: ${POSTGRES_URL}
+      
+      OFFLINE_AWS_ACCESS_KEY_ID: ${OFFLINE_AWS_ACCESS_KEY_ID}
+      OFFLINE_AWS_SECRET_ACCESS_KEY: ${OFFLINE_AWS_SECRET_ACCESS_KEY}
+
+      SCRAPER_FEED_BUCKET: ${SCRAPER_FEED_BUCKET}
+
+    healthcheck:
+      test: ["CMD", "python", "/app/dramatiq_app/healthcheck.py"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+    networks:
+      - traefik-public
+    
+networks:
+  traefik-public:
+    external: true
+    name: traefik-public

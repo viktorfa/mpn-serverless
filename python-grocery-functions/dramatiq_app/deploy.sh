@@ -6,6 +6,10 @@ STAGE=$1
 # Set the app folder name dynamically based on the stage
 APP_FOLDER="dramatiq_app_mpn_${STAGE}"
 
+# Get git short commit hash for tagging
+GIT_HASH=$(git rev-parse --short HEAD)
+IMAGE_TAG="fra.vultrcr.com/crvikfandfrankfurt/dramatiq-app-mpn:${GIT_HASH}"
+
 # Load environment variables based on the stage
 if [ "$STAGE" == "dev" ]; then
   ENV_FILE=".env.dev"
@@ -19,15 +23,18 @@ fi
 # Export environment variables from the env file
 #export $(grep -v '^#' $ENV_FILE | xargs)
 
+# Export the image tag as environment variable for docker-compose
+export DRAMATIQ_IMAGE_TAG="${IMAGE_TAG}"
+
 # Convert docker-compose.yml to canonical form to insert env variables
 docker compose --env-file ./dramatiq_app/${ENV_FILE} -f ./dramatiq_app/docker-compose-${STAGE}.yml config --no-path-resolution | grep -v '^name' > ./dramatiq_app/docker-compose-${STAGE}.canonical.yml
 
 
 
 # Build and push the Docker image
-uv export --format requirements-txt --all-extras > requirements.txt
-docker build --file Dockerfile.dramatiq -t ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest .
-docker -D push ewr.vultrcr.com/vikfandvultryregistry/dramatiq-app-mpn:latest
+uv export --format requirements-txt --group dramatiq --no-dev > requirements-dramatiq.txt
+echo "Building and pushing Docker image: ${IMAGE_TAG}"
+docker -D buildx build --push --progress=plain -t "${IMAGE_TAG}" -f Dockerfile.dramatiq .
 
 # Replace quoted integers in the `published` port with unquoted integers
 sed -i 's/published: "\(.*\)"/published: \1/' ./dramatiq_app/docker-compose-${STAGE}.canonical.yml

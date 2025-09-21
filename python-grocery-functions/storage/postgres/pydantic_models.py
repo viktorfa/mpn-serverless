@@ -144,7 +144,7 @@ class PydanticHandleConfig(BaseModel):
     context: str
     market: str
     is_partner: bool = False
-    categoriesLimits: list[int] = Field(default_factory=list)
+    categoriesLimits: list[int | None] = Field(default_factory=list)
     filters: list[Any] = Field(default_factory=list)
     fieldMapping: list[Any] = Field(default_factory=list)
     extractQuantityFields: list[str] = Field(default_factory=list)

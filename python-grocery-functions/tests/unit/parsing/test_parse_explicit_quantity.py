@@ -11,7 +11,7 @@ with open(fixtures_path / "jemogfix_item.json") as jemogfix_item_file:
 
 class ParseExplicitQuantity(TestCase):
     def test_no_explicit_quantity_fields(self):
-        self.assertDictEqual(parse_explicit_quantity({}, {}), {})
+        self.assertDictEqual(parse_explicit_quantity({}), {})
 
     def test_with_size_and_unit(self):
         actual = parse_explicit_quantity(
@@ -21,7 +21,6 @@ class ParseExplicitQuantity(TestCase):
                     {"key": "quantityUnit", "value": "l"},
                 ]
             },
-            {},
         )
         self.assertEqual(actual["quantity"]["size"]["amount"]["min"], 4)
 
@@ -32,7 +31,6 @@ class ParseExplicitQuantity(TestCase):
                     {"key": "quantityString", "value": "10lm"},
                 ]
             },
-            {},
         )
         self.assertEqual(actual["quantity"]["size"]["amount"]["min"], 10)
 
@@ -43,7 +41,6 @@ class ParseExplicitQuantity(TestCase):
                     {"key": "quantityString", "value": "0.5kr/kvm"},
                 ]
             },
-            {},
         )
         self.assertEqual(actual["value"]["size"]["amount"]["min"], 0.5)
 
@@ -55,7 +52,6 @@ class ParseExplicitQuantity(TestCase):
                     {"key": "unitPriceUnit", "value": "g"},
                 ]
             },
-            {},
         )
         self.assertEqual(actual["value"]["size"]["amount"]["min"], 16)
 

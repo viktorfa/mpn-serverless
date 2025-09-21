@@ -64,7 +64,7 @@ class TestExtractNutrionalData(TestCase):
             "sugars": "9,70 g",
         }
         config = {}
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["sugars"]["value"], 9.7)
 
     def test_with_kolonial_offer_2(self):
@@ -168,7 +168,7 @@ class TestExtractNutrionalData(TestCase):
                 },
             ],
         )
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["proteins"]["value"], 3.7)
 
     def test_with_europris_offer(self):
@@ -197,7 +197,7 @@ class TestExtractNutrionalData(TestCase):
             "sugars": "50",
         }
         config = {}
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["sugars"]["value"], 50)
         self.assertEqual(actual["fats"]["value"], 35.8)
         self.assertEqual(actual["salt"]["value"], 0)
@@ -228,7 +228,7 @@ class TestExtractNutrionalData(TestCase):
             "sugars": "50",
         }
         config = {}
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["sugars"]["value"], 50)
         self.assertEqual(actual["fats"]["value"], 0)
         self.assertEqual(actual["salt"]["value"], 0)
@@ -259,7 +259,7 @@ class TestExtractNutrionalData(TestCase):
             "sugars": "50",
         }
         config = {}
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["energy"]["unit"], "kcal")
         self.assertEqual(actual["energy"]["value"], 133)
 
@@ -289,5 +289,5 @@ class TestExtractNutrionalData(TestCase):
             "sugars": "50",
         }
         config = {}
-        actual = extract_nutritional_data(offer, config)
+        actual = extract_nutritional_data(offer)
         self.assertEqual(actual["energyKcal"]["value"], 558)

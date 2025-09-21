@@ -27,5 +27,12 @@ dramatiq.set_broker(redis_broker)
 
 
 # Make sure actors are registered in the containerized app
+import time
+from pathlib import Path
+
+import dramatiq_app.actors  # noqa: F401 - needed for actor discovery
 
 print("dramatiq_app/app.py finished")
+
+# Signal readiness for the container healthcheck
+Path("/tmp/dramatiq.ready").write_text(str(time.time()))

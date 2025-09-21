@@ -22,6 +22,7 @@ dependencies = [
     "uuid7~=0.1.0",
     "pydantic~=2.9.0",
     "dramatiq[redis,watch]~=1.17.0",
+    "pydantic-settings>=2.10.1",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
@@ -31,12 +32,15 @@ license = {text = "MIT"}
 [dependency-groups]
 dev = [
     "botostubs~=0.15.0",
-    "boto3~=1.35.0",
     "pytest~=8.3.0",
     "pytest-cov~=5.0.0",
     "pytest-mock~=3.14.0",
     "ruff>=0.13.1",
     "pylance>=0.36.0",
+    "polyfactory>=2.22.2",
+]
+dramatiq = [
+    "boto3~=1.35.0",
 ]
 
 [tool.pytest.ini_options]
@@ -65,6 +69,7 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError"
 ]
+skip_empty = true  # Ignore empty files like __init__.py
 
 [tool.ruff]
 lint.select = [
@@ -80,7 +85,7 @@ lint.ignore = [
 ]
 
 # Formatting
-line-length = 88
+line-length = 128
 indent-width = 4
 target-version = "py311"
 
