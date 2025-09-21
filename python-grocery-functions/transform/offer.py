@@ -21,18 +21,18 @@ def get_field_from_scraper_offer(offer: Offer, key: str, default: Any = None):
     elif not key:
         return default
     else:
-        # Get the list of additional properties from the offer, or make it an empty list if the offer does not have an additionalProperties field.
+        # Get the list of additional properties from the offer, or empty list if none exists.
         additional_properties = offer.get("additionalProperties", [])
         # If there are no additional properties, return the default value.
         if not additional_properties:
             return default
 
-        # This loop iterates through the additional properties and finds the item with the correct key/name, or the result is None.
+        # Loop through additional properties to find matching key/name
         result_property = None
-        # A for in loop that breaks when the first item is found, and assigns this item to a variable, accomplishes the same as a find function.
+        # Find first item with matching key or name (case insensitive)
         for additional_property in additional_properties:
-            # Checking if either the additional property key or name in lowercase is equal to the key in lowercase is what the original lambda function did.
-            # If this is true, the result property is set to the first additional property for which it is true and the loop stops iterating.
+            # Check if property key or name matches the search key (case insensitive)
+            # If match found, set result and break
             property_key_lower = additional_property.get("key", "").lower()
             property_name_lower = additional_property.get("name", "").lower()
             if key.lower() in [property_key_lower, property_name_lower]:
@@ -46,26 +46,3 @@ def get_field_from_scraper_offer(offer: Offer, key: str, default: Any = None):
         except KeyError:
             logging.warning("Additional property in scraper offer without value field.")
             logging.warning(result_property)
-
-
-example_offer = {
-    "additionalProperties": [
-        {"key": "key1", "name": "name1", "value": "ap_value1"},
-        {"key": "key2", "name": "name2", "value": "ap_value2"},
-    ],
-    "key1": "offer_value1",
-    "key3": "offer_value3",
-}
-
-print(
-    get_field_from_scraper_offer(example_offer, "key1", "default_value")
-)  # Should print "offer_value1"
-print(
-    get_field_from_scraper_offer(example_offer, "key2", "default_value")
-)  # Should print "ap_value2"
-print(
-    get_field_from_scraper_offer(example_offer, "key3", "default_value")
-)  # Should print "offer_value3"
-print(
-    get_field_from_scraper_offer(example_offer, "key4", "default_value")
-)  # Should print "default_value"

@@ -9,6 +9,7 @@ from parsing.ingredients_extraction import get_raw_ingredients_list
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import extract_dimensions, extract_properties, standardize_additional_properties
 from parsing.quantity_extraction import analyze_quantity, parse_explicit_quantity, parse_quantity, standardize_quantity
+from scraper_feed.affiliate_links import get_affiliate_link_from_href
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import get_gtins, get_product_pricing, get_provenance_id, get_stock_status, remove_none_fields
 from storage.models import mpn_offer_store_fields
@@ -111,6 +112,8 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
         result["provenanceId"] = provenance_id
         result["href"] = offer["url"]
         result["ahref"] = offer.get("trackingUrl")
+        if not result["ahref"]:
+            result["ahref"] = get_affiliate_link_from_href(result.get("href"))
 
         result["uri"] = get_product_uri(namespace, provenance_id)
         result["pricing"] = get_product_pricing({**offer, **result})

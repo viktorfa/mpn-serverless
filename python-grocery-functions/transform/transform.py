@@ -7,9 +7,7 @@ from scraper_feed.scraper_configs import MappingConfigField
 from transform.offer import get_field_from_scraper_offer
 
 
-def add_to_destination(
-    offer: ScraperOffer, value, field_config: MappingConfigField
-) -> ScraperOffer:
+def add_to_destination(offer: ScraperOffer, value, field_config: MappingConfigField) -> ScraperOffer:
     result = {**offer}
     a, *b = field_config["destination"].split(".")
     if a == "additionalProperties":
@@ -31,9 +29,7 @@ def add_to_destination(
             if result.get("additionalPropertyDict"):
                 result["additionalPropertyDict"][destination] = additional_property_item
             else:
-                result["additionalPropertyDict"] = {
-                    destination: additional_property_item
-                }
+                result["additionalPropertyDict"] = {destination: additional_property_item}
     else:
         existing_value = offer.get(a)
         if existing_value:
@@ -49,17 +45,13 @@ def add_to_destination(
     return result
 
 
-def transform_fields(
-    offer: ScraperOffer, field_mapping: list[MappingConfigField]
-) -> ScraperOffer:
+def transform_fields(offer: ScraperOffer, field_mapping: list[MappingConfigField]) -> ScraperOffer:
     """
     Rename , add and remove fields according to config."""
     result = {**offer}
     for field_config in field_mapping:
         if field_config["replace_type"] == "fixed":
-            result = add_to_destination(
-                result, field_config["replace_value"], field_config
-            )
+            result = add_to_destination(result, field_config["replace_value"], field_config)
         elif field_config["replace_type"] == "key":
             value = get_field_from_scraper_offer(offer, field_config["source"])
             result = add_to_destination(result, value, field_config)

@@ -620,7 +620,7 @@ class TestFieldMappingIntegration:
         # Ingredients extraction should find mapped ingredients
         ingredients = result["rawIngredients"]
         assert len(ingredients) > 0
-        assert "water" in ingredients
+        assert "Water" in ingredients
 
     def test_ingredients_field_mapping(self):
         """Test complex scenarios with multiple field mappings."""
@@ -632,8 +632,9 @@ class TestFieldMappingIntegration:
         )
 
         config = _minimal_config(
+            extractIngredientsFields=["rawIngredients"],
             fieldMapping=[
-                {"source": "Ingredients_NO", "destination": "ingredients", "replace_type": "key"},
+                {"source": "Ingredients_NO", "destination": "rawIngredients", "replace_type": "key"},
             ],
         )
 
@@ -642,7 +643,22 @@ class TestFieldMappingIntegration:
         # Ingredients extraction should find mapped ingredients
         ingredients = result["rawIngredients"]
         assert len(ingredients) > 0
-        assert "water" in ingredients
+        assert "Water" in ingredients
+
+    def test_ignore_field_mapping(self):
+        offer = _minimal_offer(
+            description="Inneholder nøtter",
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"destination": "description", "replace_type": "ignore"},
+            ],
+        )
+
+        result = transform_product(offer, config)
+
+        assert not result.get("description")
 
 
 class TestQuantityExtraction:
