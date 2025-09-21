@@ -14,17 +14,15 @@ STAGE = os.getenv("STAGE", "")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", None)
 
-# 1) Ready file check
+# 1) Ready file check - just verify it exists (service has started)
 ready_file = "/tmp/dramatiq.ready"
 try:
     st = os.stat(ready_file)
     age = time.time() - st.st_mtime
     log(f"ready_file={ready_file} age_seconds={age:.1f}")
-    if age > 600:
-        log("ready file is stale (>600s)")
-        sys.exit(1)
+    # Don't check staleness - service should run indefinitely
 except FileNotFoundError:
-    log("ready file missing")
+    log("ready file missing - service not started yet")
     sys.exit(1)
 
 # 2) Redis ping (fast timeouts)
