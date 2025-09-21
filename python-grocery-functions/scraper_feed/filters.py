@@ -12,6 +12,7 @@ from parsing.quantity_extraction import analyze_quantity, parse_explicit_quantit
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
 from scraper_feed.helpers import get_gtins, get_product_pricing, get_provenance_id, get_stock_status, remove_none_fields
 from storage.models import mpn_offer_store_fields
+from storage.postgres.pydantic_models import HandleFeedConfig
 from transform.offer import get_field_from_scraper_offer
 from transform.transform import transform_fields
 from util.helpers import get_product_uri, is_integer_num, json_time_to_datetime
@@ -100,7 +101,8 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
     return offer
 
 
-def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
+def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer:
+    config = config.model_dump()
     time.set_time(config.get("scrape_time", datetime.now(UTC)))
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
