@@ -93,14 +93,6 @@ def filter_product(product: MpnOffer, filters: list[OfferFilterConfig]):
     return False
 
 
-def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
-    for key, value in offer_meta.get("auto", {}).items():
-        offer[key] = value["value"]
-    for key, value in offer_meta.get("manual", {}).items():
-        offer[key] = value["value"]
-    return offer
-
-
 def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer:
     time.set_time(config.scrape_time)
     result: MpnOffer = {}
@@ -193,6 +185,8 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
                 config.categoriesLimits,
             )
         result = {**result, **parsed_quantity}
+        # End handle non-Shopgun offer
+
     if result["validThrough"].timestamp() > time.time.timestamp():
         result["isRecent"] = True
     else:
@@ -251,7 +245,7 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
     return final_result
 
 
-def get_categories(categories, categories_limits):
+def get_categories(categories: list[str], categories_limits: list[int]) -> list[str]:
     """
     Potentially shaves off the first or last or both entries in a product's category list, according
     to the handle config, since breadcrumbs often include the product name and the root category like "Home".
