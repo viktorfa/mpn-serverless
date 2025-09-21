@@ -154,3 +154,12 @@ class PydanticHandleConfig(BaseModel):
     ignore_none: bool = False
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class HandleFeedConfig(PydanticHandleConfig):
+    scrape_time: datetime
+    scrapeBatchId: str
+    model_config = ConfigDict(
+        frozen=True,  # Immutable
+        from_attributes=True,  # Keep existing behavior
+    )

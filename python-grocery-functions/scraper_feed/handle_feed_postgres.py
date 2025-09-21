@@ -3,41 +3,27 @@ import os
 
 import botocore.response
 import ijson
-import pydash
 from ijson.common import IncompleteJSONError
 
-from amp_types.amp_product import HandleConfigNew, ProcessedMpnOffer, ScraperOffer
+from amp_types.amp_product import ProcessedMpnOffer, ScraperOffer
 from scraper_feed.affiliate_links import add_affilite_link_to_product
 from scraper_feed.filters import filter_product, transform_product
-from storage.postgres.scraper_feed import (
-    handle_store_offer_batch,
-    insert_handle_run_batch,
-    update_handle_run_batch_status,
-)
+from storage.postgres.pydantic_models import HandleFeedConfig
+from storage.postgres.scraper_feed import handle_store_offer_batch, insert_handle_run_batch, update_handle_run_batch_status
 
 
-def handle_feed_with_config_postgres(
-    feed_json_stream: botocore.response.StreamingBody, config: HandleConfigNew
-):
+def handle_feed_with_config_postgres(feed_json_stream: botocore.response.StreamingBody, config: HandleFeedConfig):
     logging.info("handle_feed_with_config_postgres")
-    logging.info(config)
-    if not config["namespace"]:
-        raise Exception("Config needs namespace")
-    if not config["context"]:
-        raise Exception("Config needs context")
-    if not config["scrape_time"]:
-        raise Exception("Config needs scrape_time")
-    if not config["scrapeBatchId"]:
-        raise Exception("Config needs scrapeBatchId")
+    logging.info(config.model_dump_json())
 
-    offer_context = config["context"]
+    offer_context = config.context
+    scrape_time = config.scrape_time
+    namespace = config.namespace
+    scrape_batch_id = config.scrapeBatchId
 
-    inserted_scrape_batch = insert_handle_run_batch(
-        config=config,
-    )
+    inserted_scrape_batch = insert_handle_run_batch(scrape_time=scrape_time, scrape_batch_id=scrape_batch_id, id=config.id)
 
-    scrape_batch_id = config["scrapeBatchId"]
-    filters = pydash.get(config, ["filters"], [])
+    filters = config.filters
 
     offer_batch = []
     example_items = []
@@ -48,7 +34,7 @@ def handle_feed_with_config_postgres(
         for offer in ijson.items(feed_json_stream, "item", use_float=True):
             total_offers += 1
             offer: ScraperOffer = offer
-            transformed_offer = transform_product(offer=offer, config=config)
+            transformed_offer = transform_product(offer=offer, config=config.model_dump())
             should_keep = filter_product(product=transformed_offer, filters=filters)
             if not should_keep:
                 continue
@@ -56,9 +42,9 @@ def handle_feed_with_config_postgres(
 
             processed_offer: ProcessedMpnOffer = {
                 **add_affilite_link_to_product(transformed_offer),
-                "context": config["context"],
+                "context": offer_context,
                 "scrapeBatchId": scrape_batch_id,
-                "namespace": config["namespace"],
+                "namespace": namespace,
             }
 
             offer_batch.append(processed_offer)
@@ -73,7 +59,7 @@ def handle_feed_with_config_postgres(
                 logging.info(f"Saving {len(offer_batch)} offers")
                 handle_store_offer_batch(
                     offers=offer_batch,
-                    scrape_time=config["scrape_time"],
+                    scrape_time=scrape_time,
                     context=offer_context,
                 )
                 offer_batch = []
@@ -92,7 +78,7 @@ def handle_feed_with_config_postgres(
 
         handle_store_offer_batch(
             offers=offer_batch,
-            scrape_time=config["scrape_time"],
+            scrape_time=scrape_time,
             context=offer_context,
         )
     # with open(f"./offers_for_save_{config['namespace']}.json", "w") as f:

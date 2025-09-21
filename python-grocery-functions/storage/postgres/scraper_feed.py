@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from amp_types.amp_product import HandleConfig, ProcessedMpnOffer
+from amp_types.amp_product import ProcessedMpnOffer
 from scraper_feed.filters import (
     mpn_categories_version,
     mpn_ingredients_version,
@@ -17,15 +17,8 @@ from scraper_feed.filters import (
 )
 from storage.postgres.common import execute_statement, get_pg_engine
 from storage.postgres.denormalized_products import update_denormalized_products
-from storage.postgres.gtins import (
-    find_existing_gtins,
-    insert_new_gtins,
-    upsert_offer_has_gtin,
-)
-from storage.postgres.market_infos import (
-    collect_product_market_info_entries,
-    upsert_product_market_info,
-)
+from storage.postgres.gtins import find_existing_gtins, insert_new_gtins, upsert_offer_has_gtin
+from storage.postgres.market_infos import collect_product_market_info_entries, upsert_product_market_info
 from storage.postgres.offer_pricing import update_offer_pricing
 from storage.postgres.offers import (
     get_offer_price_object_from_processed_offer,
@@ -52,9 +45,7 @@ def get_handle_configs(provenance: str):
     # Perform the ORM query
     with Session(pg_engine) as session:
         try:
-            stmt = session.query(HandleConfigsTable).filter(
-                HandleConfigsTable.provenance == provenance
-            )
+            stmt = session.query(HandleConfigsTable).filter(HandleConfigsTable.provenance == provenance)
             # Return the result as a list of HandleConfigsTable objects
             return stmt.all()
         except Exception as e:
@@ -74,7 +65,7 @@ def get_handle_config_by_id(id: str):
             raise e
 
 
-def insert_handle_run_batch(config: HandleConfig):
+def insert_handle_run_batch(scrape_time: datetime, scrape_batch_id: str, id: str):
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     with Session(pg_engine) as session:
@@ -83,10 +74,10 @@ def insert_handle_run_batch(config: HandleConfig):
                 pg_insert(HandleRunBatchesTable.__table__)
                 .values(
                     dict(
-                        scrape_time=config["scrape_time"],
+                        scrape_time=scrape_time,
                         status="PROCESSING",
-                        scrape_batch_id=config["scrapeBatchId"],
-                        handle_config_id=config["id"],
+                        scrape_batch_id=scrape_batch_id,
+                        handle_config_id=id,
                         categories_v=mpn_categories_version,
                         ingredients_v=mpn_ingredients_version,
                         nutrition_v=mpn_nutrition_version,
@@ -110,18 +101,12 @@ def insert_handle_run_batch(config: HandleConfig):
 
 
 def update_handle_run_batch_status(id: str, status: str):
-    stmt = (
-        update(HandleRunBatchesTable)
-        .where(HandleRunBatchesTable.id == id)
-        .values(status=status)
-    )
+    stmt = update(HandleRunBatchesTable).where(HandleRunBatchesTable.id == id).values(status=status)
 
     return execute_statement(stmt)
 
 
-def handle_store_offer_batch(
-    offers: Sequence[ProcessedMpnOffer], scrape_time: datetime, context: str
-):
+def handle_store_offer_batch(offers: Sequence[ProcessedMpnOffer], scrape_time: datetime, context: str):
     timer = Timer()
     timer.start("Save batch")
 
@@ -137,16 +122,12 @@ def handle_store_offer_batch(
     with Session(get_pg_engine()) as session:
         try:
             timer.start("Insert gtins")
-            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(
-                session, prepared_data.offer_gtins
-            )
+            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(session, prepared_data.offer_gtins)
             root_to_gtins = build_root_to_gtins(uf, prepared_data.offer_gtins)
-            component_product_id, new_products, products_to_update = (
-                determine_product_ids(
-                    root_to_gtins,
-                    gtin_to_product_map,
-                    prepared_data.gtin_product_map,
-                )
+            component_product_id, new_products, products_to_update = determine_product_ids(
+                root_to_gtins,
+                gtin_to_product_map,
+                prepared_data.gtin_product_map,
             )
             insert_products(session, new_products)
 
@@ -205,9 +186,7 @@ def handle_store_offer_batch(
                 gtin_offer_object_map=prepared_data.gtin_offer_object_map,
                 gtin_to_product_map=gtin_to_product_map,
             )
-            upsert_product_market_info(
-                session, list(product_market_info_entries.values())
-            )
+            upsert_product_market_info(session, list(product_market_info_entries.values()))
 
             product_ids = list(gtin_to_product_map.values())
 
@@ -228,11 +207,7 @@ def handle_store_offer_batch(
     timer.stop("Update denormalized products")
 
     timer.start("Update offer pricing")
-    update_offer_pricing(
-        affected_offer_uris=[
-            f"{offer['namespace']}:{offer['provenanceId']}" for offer in offers
-        ]
-    )
+    update_offer_pricing(affected_offer_uris=[f"{offer['namespace']}:{offer['provenanceId']}" for offer in offers])
     timer.stop("Update offer pricing")
 
     timer.stop("Save batch")

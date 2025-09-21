@@ -4,33 +4,13 @@ from datetime import UTC, datetime, timedelta
 import pydash
 from slugify import slugify
 
-from amp_types.amp_product import (
-    HandleConfig,
-    MpnOffer,
-    OfferFilterConfig,
-    ScraperOffer,
-)
+from amp_types.amp_product import HandleConfig, MpnOffer, OfferFilterConfig, ScraperOffer
 from parsing.ingredients_extraction import get_raw_ingredients_list
 from parsing.nutrition_extraction import extract_nutritional_data
-from parsing.property_extraction import (
-    extract_dimensions,
-    extract_properties,
-    standardize_additional_properties,
-)
-from parsing.quantity_extraction import (
-    analyze_quantity,
-    parse_explicit_quantity,
-    parse_quantity,
-    standardize_quantity,
-)
+from parsing.property_extraction import extract_dimensions, extract_properties, standardize_additional_properties
+from parsing.quantity_extraction import analyze_quantity, parse_explicit_quantity, parse_quantity, standardize_quantity
 from scraper_feed.handle_shopgun_offers import transform_shopgun_product
-from scraper_feed.helpers import (
-    get_gtins,
-    get_product_pricing,
-    get_provenance_id,
-    get_stock_status,
-    remove_none_fields,
-)
+from scraper_feed.helpers import get_gtins, get_product_pricing, get_provenance_id, get_stock_status, remove_none_fields
 from storage.models import mpn_offer_store_fields
 from transform.offer import get_field_from_scraper_offer
 from transform.transform import transform_fields
@@ -181,25 +161,16 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
 
         # Handle quantity from scraper by parsing it like a string
         extra_quantity_string = " ".join(
-            (
-                str(offer[key])
-                for key in ("rawQuantity", "rawValue", "quantityValue", "quantityUnit")
-                if offer.get(key)
-            ),
+            (str(offer[key]) for key in ("rawQuantity", "rawValue", "quantityValue", "quantityUnit") if offer.get(key)),
         )
 
-        parse_quantity_strings = list(
-            get_field_from_scraper_offer(offer, key)
-            for key in config["extractQuantityFields"]
-        )
+        parse_quantity_strings = list(get_field_from_scraper_offer(offer, key) for key in config["extractQuantityFields"])
         if extra_quantity_string:
             parse_quantity_strings.append(extra_quantity_string)
 
         safe_unit_list = ["l", "kg"] if "amp" in config["context"] else None
 
-        parsed_quantity = parse_quantity(
-            list(x for x in parse_quantity_strings if x), safe_unit_list
-        )
+        parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x), safe_unit_list)
         if config["ignore_none"]:
             for k, v in parsed_quantity.items():
                 if remove_none_fields(v):
@@ -279,9 +250,7 @@ def transform_product(offer: ScraperOffer, config: HandleConfig) -> MpnOffer:
     return final_result
 
 
-def transform_and_filter_offers(
-    offers: list[ScraperOffer], config: HandleConfig
-) -> list[MpnOffer]:
+def transform_and_filter_offers(offers: list[ScraperOffer], config: HandleConfig) -> list[MpnOffer]:
     transformed_offers = (transform_product(x, config) for x in offers)
     filters = pydash.get(config, ["filters"], [])
 

@@ -2,15 +2,10 @@ import json
 import logging
 import os
 
-import botocore.response
-
 import aws_config
-from amp_types.amp_product import EventHandleConfig
 from scraper_feed.handle_config import generate_handle_config_postgres
-from scraper_feed.handle_feed_postgres import handle_feed_with_config_postgres
+from storage.postgres.pydantic_models import PydanticHandleConfig
 from storage.postgres.scraper_feed import get_handle_configs
-from storage.s3 import get_s3_object
-from util.aws import invoke_function
 from util.logging import configure_lambda_logging
 from util.utils import log_traceback
 
@@ -26,88 +21,10 @@ def scraper_feed_sns(event, context):
     try:
         sns_message = json.loads(event["Records"][0]["Sns"]["Message"])
         message_record = sns_message["Records"][0]
-        key = message_record["s3"]["object"]["key"]
-        provenance = key.split("/")[0]
+        feed_key = message_record["s3"]["object"]["key"]
+        provenance = feed_key.split("/")[0]
 
-        configs = list(
-            generate_handle_config_postgres(x) for x in get_handle_configs(provenance)
-        )
-
-        logging.debug("configs")
-        logging.debug(configs)
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        return {"message": "Could not get handle configs", "error": str(e)}
-
-    try:
-        from dramatiq_app.actors import trigger_dramatiq_scraper_feed_with_config
-
-        invocations = []
-
-        for config in configs:
-            logging.info("Handlin' feed with dramatiq")
-            handle_args = {
-                "id": config.id,
-                "feed_key": key,
-                "use_postgres": True,
-            }
-            job_result = trigger_dramatiq_scraper_feed_with_config.send(handle_args)
-
-            print("Task sent to the queue", job_result.message_id)
-            invocations.append(job_result.message_id)
-            continue
-            # if is_online:
-            #    invocations.append(
-            #        invoke_function(
-            #            FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-            #            Payload={**config.model_dump(), "feed_key": key},
-            #            InvocationType="Event",
-            #        )
-            #    )
-            if True:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                        Payload={
-                            **config.model_dump(),
-                            "feed_key": key,
-                            "use_postgres": True,
-                        },
-                        InvocationType="Event",
-                    )
-                )
-            # if is_online:
-            #    invocations.append(
-            #        invoke_function(
-            #            FunctionName=os.environ[
-            #                "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
-            #            ],
-            #            Payload={**config.model_dump(), "feed_key": key},
-            #            InvocationType="Event",
-            #        )
-            #    )
-        return f"Invoked {len(invocations)} dramatiq events"
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        return {
-            "message": "Could not invoke lambda functions for handling feed",
-            "error": str(e),
-        }
-
-
-def trigger_scraper_feed(event, context):
-    logging.info("event")
-    logging.info(event)
-    aws_config.lambda_context = context
-
-    try:
-        key = event["feed_key"]
-        provenance: str = key.split("/")[0]
-        configs = list(
-            generate_handle_config_postgres(x) for x in get_handle_configs(provenance)
-        )
+        configs = list(generate_handle_config_postgres(x) for x in get_handle_configs(provenance))
 
         logging.debug("configs")
         logging.debug(configs)
@@ -121,51 +38,41 @@ def trigger_scraper_feed(event, context):
         return {"message": "Could not get handle configs", "error": str(e)}
 
     try:
-        from dramatiq_app.actors import trigger_dramatiq_scraper_feed_with_config
+        invocations = trigger_dramatiq_with_configs(configs, feed_key)
+        return f"Invoked {len(invocations)} dramatiq events"
 
-        invocations = []
-        for config in configs:
-            logging.info("Handlin' feed with dramatiq")
-            handle_args = {
-                "id": config.id,
-                "feed_key": key,
-                "use_postgres": True,
-            }
-            job_result = trigger_dramatiq_scraper_feed_with_config.send(handle_args)
-            print("Task sent to the queue", job_result.message_id)
-            invocations.append(job_result.message_id)
-            continue
-            # if is_online:
-            #    invocations.append(
-            #        invoke_function(
-            #            FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-            #            Payload={**config.model_dump(), "feed_key": key},
-            #            InvocationType="Event",
-            #        )
-            #    )
-            if True:
-                invocations.append(
-                    invoke_function(
-                        FunctionName=os.environ["HANDLE_SCRAPER_FEED_FUNCTION_NAME"],
-                        Payload={
-                            **config.model_dump(),
-                            "feed_key": key,
-                            "use_postgres": True,
-                        },
-                        InvocationType="Event",
-                    )
-                )
-            # if is_online:
-            #    invocations.append(
-            #        invoke_function(
-            #            FunctionName=os.environ[
-            #                "HANDLE_SCRAPER_FEED_PRICING_FUNCTION_NAME"
-            #            ],
-            #            Payload={**config.model_dump(), "feed_key": key},
-            #            InvocationType="Event",
-            #        )
-            #    )
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        return {
+            "message": "Could not invoke dramatiq for handling feed",
+            "error": str(e),
+        }
 
+
+def trigger_scraper_feed(event, context):
+    logging.info("event")
+    logging.info(event)
+    aws_config.lambda_context = context
+
+    try:
+        feed_key = event["feed_key"]
+        provenance: str = feed_key.split("/")[0]
+        configs = list(generate_handle_config_postgres(x) for x in get_handle_configs(provenance))
+
+        logging.debug("configs")
+        logging.debug(configs)
+
+        if not configs:
+            logging.warning(f"No configs found for provenance {provenance}")
+            return {"message": f"No configs found for provenance {provenance}"}
+    except Exception as e:
+        logging.error(e)
+        log_traceback(e)
+        return {"message": "Could not get handle configs", "error": str(e)}
+
+    try:
+        invocations = trigger_dramatiq_with_configs(configs, feed_key)
         return f"Invoked {len(invocations)} dramatiq events"
 
     except Exception as e:
@@ -177,52 +84,19 @@ def trigger_scraper_feed(event, context):
         }
 
 
-def trigger_scraper_feed_with_config(event: EventHandleConfig, context):
-    logging.info("event")
-    logging.info(event)
-    logging.info(type(event))
-    aws_config.lambda_context = context
+def trigger_dramatiq_with_configs(configs: list[PydanticHandleConfig], feed_key: str):
+    from dramatiq_app.actors import DramatiqHandleConfig, trigger_dramatiq_scraper_feed_with_config
 
-    config: EventHandleConfig = event
-
-    try:
-        bucket = os.environ["SCRAPER_FEED_BUCKET"]
-        key = config["feed_key"]
-
-        if not is_online and "id" not in config:
-            logging.info("Getting handle config from key")
-            provenance: str = key.split("/")[0]
-            handle_configs = get_handle_configs(provenance)
-            config = generate_handle_config_postgres(handle_configs[0]).model_dump()
-
-            print("config", config)
-
-        s3_object = get_s3_object(bucket, key)
-        scrape_time = s3_object["LastModified"]
-        file_content_stream: botocore.response.StreamingBody = s3_object["Body"]
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        raise
-
-    if not file_content_stream:
-        logging.warning("No items in scraper feed")
-        return {"message": "No items in scraped feed"}
-
-    try:
-        result = handle_feed_with_config_postgres(
-            file_content_stream,
-            {
-                **config,
-                "scrape_time": scrape_time,
-                "scrapeBatchId": s3_object["VersionId"],
-            },
-        )
-
-        return {
-            "message": "Go Serverless v1.0! Your function executed successfully!",
+    invocations = []
+    for config in configs:
+        logging.info("Handlin' feed with dramatiq")
+        handle_args: DramatiqHandleConfig = {
+            "id": config.id,
+            "feed_key": feed_key,
+            "use_postgres": True,
         }
-    except Exception as e:
-        logging.error(e)
-        log_traceback(e)
-        return {"message": str(e)}
+        job_result = trigger_dramatiq_scraper_feed_with_config.send(handle_args)
+        print("Task sent to the queue", job_result.message_id)
+        invocations.append(job_result.message_id)
+
+    return invocations
