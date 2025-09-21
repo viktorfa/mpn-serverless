@@ -34,7 +34,7 @@ def handle_feed_with_config_postgres(feed_json_stream: botocore.response.Streami
         for offer in ijson.items(feed_json_stream, "item", use_float=True):
             total_offers += 1
             offer: ScraperOffer = offer
-            transformed_offer = transform_product(offer=offer, config=config.model_dump())
+            transformed_offer = transform_product(offer=offer, config=config)
             should_keep = filter_product(product=transformed_offer, filters=filters)
             if not should_keep:
                 continue

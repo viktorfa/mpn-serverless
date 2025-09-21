@@ -16,9 +16,7 @@ def extract_e_number(string: str):
 
 def sort_db_ingredient_key(ingredient: IngredientType):
     if ingredient.get("patterns") and len(ingredient["patterns"]) > 0:
-        longest_pattern = sorted(
-            ingredient["patterns"], key=lambda x: len(x), reverse=True
-        )[0]
+        longest_pattern = sorted(ingredient["patterns"], key=lambda x: len(x), reverse=True)[0]
         return -len(longest_pattern)
     else:
         return -len(ingredient["key"])
@@ -28,9 +26,7 @@ def extract_individual_ingredients(raw_ingredients: str) -> list[str]:
     return raw_ingredients.split(", ")
 
 
-def get_extracted_ingredients(
-    raw_ingredients: Sequence[str], ingredients_data: Mapping[str, IngredientType]
-):
+def get_extracted_ingredients(raw_ingredients: Sequence[str], ingredients_data: Mapping[str, IngredientType]):
     result = {}
     for string in raw_ingredients:
         e_number = extract_e_number(string)
@@ -73,9 +69,7 @@ def get_extracted_ingredients_postgres(
             result.append(database_e_number)
             continue
         for db_ingredient in ingredients_data:
-            for pattern in (
-                db_ingredient.patterns if bool(db_ingredient.patterns) else []
-            ):
+            for pattern in db_ingredient.patterns if bool(db_ingredient.patterns) else []:
                 if re.findall(re.compile(str(pattern), re.IGNORECASE), string):
                     result.append(db_ingredient)
                     break
@@ -92,9 +86,7 @@ def get_ingredients_data(
     if not raw_ingredients_values:
         return None
 
-    extracted_ingredients = get_extracted_ingredients(
-        raw_ingredients_values, ingredients_data
-    )
+    extracted_ingredients = get_extracted_ingredients(raw_ingredients_values, ingredients_data)
 
     processed_score = 0
     for ingredient in extracted_ingredients.values():
@@ -108,9 +100,9 @@ def get_ingredients_data(
     return {"ingredients": extracted_ingredients, "processedScore": processed_score}
 
 
-def get_raw_ingredients_list(offer: ScraperOffer, config: HandleConfig) -> list[str]:
+def get_raw_ingredients_list(offer: ScraperOffer, extractIngredientsFields: list[str]) -> list[str]:
     raw_ingredients_fields: list[str] = []
-    for key in config["extractIngredientsFields"]:
+    for key in extractIngredientsFields:
         raw_ingredients = get_field_from_scraper_offer(offer, key)
         if raw_ingredients and type(raw_ingredients) is str:
             raw_ingredients_fields.append(raw_ingredients)

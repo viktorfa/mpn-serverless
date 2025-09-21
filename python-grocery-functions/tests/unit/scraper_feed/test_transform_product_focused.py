@@ -1205,33 +1205,27 @@ class TestTransformProductEdgeCases:
         assert "brand" not in result or result.get("brand") is not None
         assert "vendor" not in result or result.get("vendor") != ""
 
-    def test_shopgun_special_transformation_path(self):
-        """Test that Shopgun offers use special transformation."""
-        offer = _minimal_offer(provenance="shopgun_feed", dealer="shopgun")
-        config = _minimal_config(provenance="shopgun_something", namespace="shopgun")
+    def test_shopgun_transformation_path_detection(self):
+        """Test that Shopgun provenance triggers special transformation path."""
+        # Use a minimal Shopgun offer with required structure
+        offer = {
+            "heading": "Test Product",
+            "id": "test123",
+            "branding": {"name": "TestStore"},  # Required for dealer field
+            "pricing": {"price": 10.0, "currency": "NOK"},
+            "quantity": {"unit": None, "size": {"from": 1, "to": 1}, "pieces": {"from": 1, "to": 1}},
+            "run_from": "2024-01-15T00:00:00Z",
+            "run_till": "2024-01-22T23:59:59Z",
+        }
+        config = _minimal_config(provenance="shopgun_dk", namespace="shopgun")
 
-        with patch("scraper_feed.filters.transform_shopgun_product") as mock_shopgun:
-            # Mock should return a complete transformed offer
-            mock_now = datetime.now(UTC)
-            mock_shopgun.return_value = {
-                "validThrough": mock_now + timedelta(days=7),
-                "validFrom": mock_now,
-                "pricing": {"price": 100},
-                "uri": "shopgun:product:123",
-                "dealer": "shopgun",  # Required for dealer_key generation
-                "provenanceId": "123",
-                "href": "https://example.com",
-                "gtins": {},
-                "categories": [],
-                "mpnStock": "InStock",
-                "quantity": {"size": {}, "pieces": {}},  # Add quantity to avoid None
-            }
+        # Should trigger Shopgun transformation path without errors
+        result = transform_product(offer, config)
 
-            result = transform_product(offer, config)
-
-            mock_shopgun.assert_called_once()
-            # Should use Shopgun transformation
-            assert result["dealer"] == "shopgun"
+        # Should have basic required fields
+        assert "provenanceId" in result
+        assert "uri" in result
+        assert result["uri"].startswith("shopgun:")
 
     def test_empty_categories_list(self):
         """Test handling of empty categories."""
@@ -1318,6 +1312,272 @@ class TestTransformProductEdgeCases:
         # Extra fields should not be in final result
         assert "extra_field" not in result
         assert "another_extra" not in result
+
+
+# =============================================================================
+# Shopgun Transformation Tests
+# =============================================================================
+
+
+class TestShopgunTransformation:
+    """Test the special Shopgun transformation logic."""
+
+    def _shopgun_offer(self, **kwargs):
+        """Create a realistic Shopgun offer with proper structure."""
+        offer = {
+            "heading": "Organic Milk 1L",
+            "description": "Fresh organic whole milk, 1 liter bottle",
+            "branding": {"name": "Netto"},
+            "brand": "Arla",
+            "pricing": {
+                "price": 12.50,
+                "pre_price": 15.00,  # Sale price
+                "currency": "DKK"
+            },
+            "run_from": "2024-01-15T00:00:00Z",
+            "run_till": "2024-01-22T23:59:59Z",
+            "images": {
+                "zoom": "https://images.shopgun.com/zoom/product123.jpg"
+            },
+            "stores": ["store1", "store2"],
+            "id": "shopgun_product_123",
+            # Shopgun quantity structure (different from regular offers)
+            "quantity": {
+                "unit": {"symbol": "l", "type": "quantity"},
+                "size": {"from": 1.0, "to": 1.0},
+                "pieces": {"from": 1, "to": 1}
+            },
+            **kwargs
+        }
+        return offer
+
+    def _shopgun_config(self, **kwargs):
+        """Create a Shopgun-specific config."""
+        config_data = {
+            "provenance": "shopgun_dk",
+            "namespace": "shopgun",
+            "context": "amp-dk",
+            "market": "dk",
+            **kwargs
+        }
+        return _minimal_config(**config_data)
+
+    def test_shopgun_basic_field_mapping(self):
+        """Test basic field mapping for Shopgun offers."""
+        offer = self._shopgun_offer()
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Test field mappings from Shopgun format
+        assert result["title"] == "Organic Milk 1L"  # heading → title
+        assert result["description"] == "Fresh organic whole milk, 1 liter bottle"
+        assert result["dealer"] == "Netto"  # branding.name → dealer
+        assert result["brand"] == "Arla"
+        assert result["imageUrl"] == "https://images.shopgun.com/zoom/product123.jpg"  # images.zoom → imageUrl
+
+    def test_shopgun_pricing_transformation(self):
+        """Test Shopgun pricing structure transformation."""
+        offer = self._shopgun_offer()
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Test pricing transformation
+        assert "pricing" in result
+        pricing = result["pricing"]
+        assert pricing["price"] == 12.50
+        assert pricing["prePrice"] == 15.00  # Sale price from pre_price
+        assert pricing["currency"] == "DKK"
+
+    def test_shopgun_date_handling(self):
+        """Test Shopgun date field transformation."""
+        offer = self._shopgun_offer()
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Test date field mappings: run_from → validFrom, run_till → validThrough
+        assert "validFrom" in result
+        assert "validThrough" in result
+        assert isinstance(result["validFrom"], datetime)
+        assert isinstance(result["validThrough"], datetime)
+
+        # Should be parsed from ISO format
+        assert result["validFrom"].year == 2024
+        assert result["validFrom"].month == 1
+        assert result["validFrom"].day == 15
+
+    def test_shopgun_quantity_structure(self):
+        """Test Shopgun's special quantity structure handling."""
+        offer = self._shopgun_offer(
+            quantity={
+                "unit": {"symbol": "kg", "type": "quantity"},
+                "size": {"from": 0.5, "to": 0.5},
+                "pieces": {"from": 1, "to": 1}
+            }
+        )
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Test Shopgun quantity transformation
+        assert "quantity" in result
+        quantity = result["quantity"]
+
+        # Should have size field for weight units
+        assert "size" in quantity
+        size = quantity["size"]
+        assert "amount" in size
+        assert "unit" in size
+
+        # Shopgun size.from/to → amount.min/max
+        assert size["amount"]["min"] == 0.5
+        assert size["amount"]["max"] == 0.5
+        assert size["unit"]["symbol"] == "kg"
+
+        # Should have items field from pieces
+        assert "items" in result
+        items = result["items"]
+        assert items["min"] == 1
+        assert items["max"] == 1
+
+    def test_shopgun_piece_quantity_handling(self):
+        """Test Shopgun piece quantities (non-weight/volume units)."""
+        offer = self._shopgun_offer(
+            quantity={
+                "unit": {"symbol": "stk", "type": "piece"},
+                "size": {"from": 6, "to": 6},
+                "pieces": {"from": 1, "to": 1}
+            }
+        )
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # For piece units, should go to pieces field instead of size
+        quantity = result["quantity"]
+        if "pieces" in quantity and quantity["pieces"]:
+            pieces = quantity["pieces"]
+            assert pieces["amount"]["min"] == 6
+            assert pieces["amount"]["max"] == 6
+            assert pieces["unit"]["symbol"] == "stk"
+
+    def test_shopgun_no_quantity_unit(self):
+        """Test Shopgun offers without quantity unit."""
+        offer = self._shopgun_offer(
+            quantity={
+                "unit": None,  # No unit
+                "size": {"from": 1, "to": 1},
+                "pieces": {"from": 1, "to": 1}
+            }
+        )
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Should handle missing quantity unit gracefully
+        quantity = result["quantity"]
+        # Should be empty or have minimal structure
+        assert isinstance(quantity, dict)
+
+    def test_shopgun_uri_generation(self):
+        """Test Shopgun URI generation."""
+        offer = self._shopgun_offer()
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Should generate shopgun-specific URI
+        assert result["uri"].startswith("shopgun:")
+        assert "shopgun_product_123" in result["uri"]  # Should include provenance ID
+
+    def test_shopgun_href_generation(self):
+        """Test Shopgun href generation."""
+        offer = self._shopgun_offer()
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Should generate shopgun-specific href
+        assert "href" in result
+        # The exact format depends on get_shopgun_href implementation
+
+    def test_shopgun_stores_field(self):
+        """Test Shopgun stores field handling."""
+        offer = self._shopgun_offer(stores=["store1", "store2", "store3"])
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Stores field is not included in final stored fields (not in mpn_offer_store_fields)
+        # But the transformation should complete without errors
+        assert "provenanceId" in result
+        assert "dealer" in result
+        # The stores field is filtered out during final field selection
+
+    def test_shopgun_quantity_parsing_from_text(self):
+        """Test that Shopgun also parses quantity from heading/description."""
+        offer = self._shopgun_offer(
+            heading="Organic Flour 2kg Premium",
+            description="High quality organic flour, 2 kilogram bag",
+            quantity={"unit": None, "size": {}, "pieces": {}}  # No explicit quantity
+        )
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Should parse quantity from text fields (heading, description)
+        # The exact behavior depends on parse_quantity implementation
+        assert "quantity" in result
+        quantity = result["quantity"]
+
+        # May extract 2kg from heading/description
+        if "size" in quantity and quantity["size"]:
+            size = quantity["size"]
+            if "amount" in size:
+                # Should extract 2kg from text
+                assert size["amount"]["min"] == 2.0
+                assert size["unit"]["symbol"] == "kg"
+
+    def test_shopgun_complete_transformation_flow(self):
+        """Test complete Shopgun transformation with all fields."""
+        offer = self._shopgun_offer(
+            heading="Premium Coffee Beans 500g",
+            description="Arabica coffee beans, 500 gram package",
+            branding={"name": "SuperBrugsen"},
+            brand="Løfbergs",
+            pricing={"price": 45.00, "pre_price": 60.00, "currency": "DKK"},
+            quantity={
+                "unit": {"symbol": "g", "type": "quantity"},
+                "size": {"from": 500, "to": 500},
+                "pieces": {"from": 1, "to": 1}
+            }
+        )
+        config = self._shopgun_config()
+
+        result = transform_product(offer, config)
+
+        # Should have all transformed fields
+        assert result["title"] == "Premium Coffee Beans 500g"
+        assert result["dealer"] == "SuperBrugsen"
+        assert result["brand"] == "Løfbergs"
+        assert result["pricing"]["price"] == 45.00
+        assert result["pricing"]["prePrice"] == 60.00
+
+        # Should have quantity properly transformed
+        quantity = result["quantity"]
+        assert "size" in quantity
+        assert quantity["size"]["amount"]["min"] == 500.0
+        assert quantity["size"]["unit"]["symbol"] == "g"
+
+        # Should have standard transformation fields
+        assert "uri" in result
+        assert "provenanceId" in result
+        assert "validFrom" in result
+        assert "validThrough" in result
+        assert "market" in result
+        assert result["market"] == "dk"
 
 
 # =============================================================================

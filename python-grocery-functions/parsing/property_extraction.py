@@ -3,10 +3,7 @@ import re
 
 import pydash
 
-from amp_types.amp_product import (
-    HandleConfig,
-    ScraperOffer,
-)
+from amp_types.amp_product import ScraperOffer
 from transform.offer import get_field_from_scraper_offer
 
 known_property_names = {
@@ -16,11 +13,8 @@ known_property_names = {
 }
 
 
-def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig):
-    property_strings = list(
-        get_field_from_scraper_offer(offer, key)
-        for key in config["extractPropertiesFields"]
-    )
+def standardize_additional_properties(offer: ScraperOffer, extractPropertiesFields: list[str]):
+    property_strings = list(get_field_from_scraper_offer(offer, key) for key in extractPropertiesFields)
     property_strings = list(x for x in property_strings if x)
 
     dimensions = extract_dimensions(property_strings)
@@ -29,9 +23,7 @@ def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig)
     for property_config in known_property_names.values():
         offer_value = get_field_from_scraper_offer(offer, property_config["property"])
         if offer_value:
-            direct_properties.append(
-                {"property": property_config["property"], "value": offer_value}
-            )
+            direct_properties.append({"property": property_config["property"], "value": offer_value})
 
     parsed_properties = extract_properties(
         list(
@@ -39,10 +31,7 @@ def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig)
                 str,
                 [
                     *property_strings,
-                    *list(
-                        prop.get("value", "")
-                        for prop in offer.get("additionalProperties", []) or []
-                    ),
+                    *list(prop.get("value", "") for prop in offer.get("additionalProperties", []) or []),
                 ],
             )
         )
@@ -54,9 +43,7 @@ def standardize_additional_properties(offer: ScraperOffer, config: HandleConfig)
     }
 
 
-dimension_pattern = (
-    r"((?:\d+(?:,\d+)?)(?:\s*x\s*\d+(?:,\d+)?){1,2})"  # 30x40 or 40x40x0.5
-)
+dimension_pattern = r"((?:\d+(?:,\d+)?)(?:\s*x\s*\d+(?:,\d+)?){1,2})"  # 30x40 or 40x40x0.5
 
 
 def get_dimensions_object_from_string(dimension_string: str):
@@ -78,13 +65,7 @@ def get_dimensions_object_from_string(dimension_string: str):
 
 def extract_dimensions(strings: list[str]):
     try:
-        matches = pydash.flatten(
-            list(
-                re.findall(dimension_pattern, string.lower())
-                for string in strings
-                if string
-            )
-        )
+        matches = pydash.flatten(list(re.findall(dimension_pattern, string.lower()) for string in strings if string))
         if len(matches) > 0:
             return re.sub(r"\s*", "", matches[0])
         else:

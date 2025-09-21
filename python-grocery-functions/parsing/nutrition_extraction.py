@@ -1,6 +1,6 @@
 import pydash
 
-from amp_types.amp_product import HandleConfig, NutritionalData, ScraperOffer
+from amp_types.amp_product import NutritionalData, ScraperOffer
 from parsing.parsing import extract_number, extract_number_unit_pairs
 from storage.postgres.pydantic_models import NutritionType
 from transform.offer import get_field_from_scraper_offer
@@ -25,7 +25,7 @@ macro_names = [
 ]
 
 
-def extract_nutritional_data(offer: ScraperOffer, config: HandleConfig):
+def extract_nutritional_data(offer: ScraperOffer):
     result = {}
     for key in macro_names:
         value_string = get_field_from_scraper_offer(offer, key)

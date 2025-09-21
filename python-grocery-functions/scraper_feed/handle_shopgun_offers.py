@@ -1,30 +1,24 @@
-from amp_types.amp_product import HandleConfig, MpnOffer
+from amp_types.amp_product import MpnOffer
 from parsing.constants import quantity_units
 from parsing.quantity_extraction import parse_quantity
 from scraper_feed.helpers import get_product_pricing, get_provenance_id
-from util.helpers import (
-    get_product_uri,
-    get_shopgun_href,
-    json_time_to_datetime,
-)
+from util.helpers import get_product_uri, get_shopgun_href, json_time_to_datetime
 
 
-def transform_shopgun_product(product: dict, config: HandleConfig) -> MpnOffer:
-    analyzed_product = parse_quantity(
-        list(v for k, v in product.items() if k in ["description", "heading"] and v)
-    )
+def transform_shopgun_product(product: dict, provenance: str) -> MpnOffer:
+    analyzed_product = parse_quantity(list(v for k, v in product.items() if k in ["description", "heading"] and v))
     provenanceId = get_provenance_id(product)
     quantity = get_shopgun_quantity(product.get("quantity"))
     return dict(
         provenanceId=provenanceId,
-        provenance=config["provenance"],
+        provenance=provenance,
         validFrom=json_time_to_datetime(product.get("run_from")),
         validThrough=json_time_to_datetime(product.get("run_till")),
         dealer=product.get("branding", {}).get("name"),
         title=product.get("heading"),
         description=product.get("description"),
         brand=product.get("brand"),
-        href=get_shopgun_href(product, config["provenance"]),
+        href=get_shopgun_href(product, provenance),
         imageUrl=product.get("images", {}).get("zoom"),
         uri=get_product_uri("shopgun", provenanceId),
         stores=product.get("stores", []),
@@ -70,6 +64,4 @@ def get_shopgun_quantity(quantity: dict) -> dict:
                 unit=quantity.get("unit"),
             )
         )
-    return dict(
-        quantity=_quantity, items=shopgun_amount_to_amount(quantity.get("pieces"))
-    )
+    return dict(quantity=_quantity, items=shopgun_amount_to_amount(quantity.get("pieces")))

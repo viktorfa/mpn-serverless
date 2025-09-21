@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 import pydash
 from slugify import slugify
 
-from amp_types.amp_product import HandleConfig, MpnOffer, OfferFilterConfig, ScraperOffer
+from amp_types.amp_product import MpnOffer, OfferFilterConfig, ScraperOffer
 from parsing.ingredients_extraction import get_raw_ingredients_list
 from parsing.nutrition_extraction import extract_nutritional_data
 from parsing.property_extraction import extract_dimensions, extract_properties, standardize_additional_properties
@@ -102,16 +102,15 @@ def replace_offer_fields_with_meta(offer: ScraperOffer, offer_meta):
 
 
 def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer:
-    config = config.model_dump()
-    time.set_time(config.get("scrape_time", datetime.now(UTC)))
+    time.set_time(config.scrape_time)
     result: MpnOffer = {}
     # Still handle Shopgun offers a little differently..
-    namespace = config["namespace"]
-    if "shopgun" in config["provenance"]:
-        result = transform_shopgun_product(offer, config)
+    namespace = config.namespace
+    if "shopgun" in config.provenance:
+        result = transform_shopgun_product(offer, provenance=config.provenance)
     else:
         # Start here for everything not Shopgun offer.
-        offer = transform_fields(offer, config["fieldMapping"])
+        offer = transform_fields(offer, config.fieldMapping)
 
         provenance_id = get_provenance_id(offer)
 
@@ -166,40 +165,40 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
             (str(offer[key]) for key in ("rawQuantity", "rawValue", "quantityValue", "quantityUnit") if offer.get(key)),
         )
 
-        parse_quantity_strings = list(get_field_from_scraper_offer(offer, key) for key in config["extractQuantityFields"])
+        parse_quantity_strings = list(get_field_from_scraper_offer(offer, key) for key in config.extractQuantityFields)
         if extra_quantity_string:
             parse_quantity_strings.append(extra_quantity_string)
 
-        safe_unit_list = ["l", "kg"] if "amp" in config["context"] else None
+        safe_unit_list = ["l", "kg"] if "amp" in config.context else None
 
         parsed_quantity = parse_quantity(list(x for x in parse_quantity_strings if x), safe_unit_list)
-        if config["ignore_none"]:
+        if config.ignore_none:
             for k, v in parsed_quantity.items():
                 if remove_none_fields(v):
                     parsed_quantity[k] = v
                 else:
                     parsed_quantity[k] = {}
 
-        parsed_explicit_quantity = parse_explicit_quantity(offer, config)
+        parsed_explicit_quantity = parse_explicit_quantity(offer)
         parsed_quantity = {
             **parsed_quantity,
             **parsed_explicit_quantity,
         }
         result["mpnStock"] = get_stock_status(offer)
-        if config["provenance"] in ["meny_api_spider"]:
+        if config.provenance in ["meny_api_spider"]:
             result["categories"] = pydash.get(offer, "slugCategories", [])
         else:
             result["categories"] = get_categories(
                 pydash.get(offer, "categories"),
-                config["categoriesLimits"],
+                config.categoriesLimits,
             )
         result = {**result, **parsed_quantity}
     if result["validThrough"].timestamp() > time.time.timestamp():
         result["isRecent"] = True
     else:
         result["isRecent"] = False
-    result["market"] = config["market"]
-    result["isPartner"] = config.get("is_partner", False)
+    result["market"] = config.market
+    result["isPartner"] = config.is_partner
     dealer_key = slugify(result["dealer"], separator="_")
     vendor_key = slugify(offer.get("vendor", "") or "", separator="_")
     brand_key = slugify(offer.get("brand", "") or "", separator="_")
@@ -210,11 +209,11 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
     if brand_key:
         result["brandKey"] = brand_key
 
-    result["mpnProperties"] = standardize_additional_properties(offer, config)
+    result["mpnProperties"] = standardize_additional_properties(offer, config.extractPropertiesFields)
 
-    result["rawIngredients"] = get_raw_ingredients_list(offer, config)
+    result["rawIngredients"] = get_raw_ingredients_list(offer, config.extractIngredientsFields)
 
-    result["mpnNutrition"] = extract_nutritional_data(offer, config)
+    result["mpnNutrition"] = extract_nutritional_data(offer)
 
     result = analyze_quantity({**offer, **result})
     result = standardize_quantity(result)
@@ -244,24 +243,12 @@ def transform_product(offer: ScraperOffer, config: HandleFeedConfig) -> MpnOffer
         "mpnQuantityV": mpn_quantity_version,
     }
 
-    if config["ignore_none"]:
+    if config.ignore_none:
         # Some offers with 2 provenances such as Byggmax.no and Byggmax feed will have ignore quantity
         # on Byggmax feed
         final_result = remove_none_fields(final_result)
 
     return final_result
-
-
-def transform_and_filter_offers(offers: list[ScraperOffer], config: HandleConfig) -> list[MpnOffer]:
-    transformed_offers = (transform_product(x, config) for x in offers)
-    filters = pydash.get(config, ["filters"], [])
-
-    if len(filters) == 0:
-        return list(transformed_offers)
-
-    filtered_offers = list(x for x in transformed_offers if filter_product(x, filters))
-
-    return filtered_offers
 
 
 def get_categories(categories, categories_limits):
