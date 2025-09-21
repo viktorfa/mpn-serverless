@@ -81,9 +81,7 @@ class ExtractUnit(TestCase):
 
     def test_with_suffix(self):
         string = "hgKrok"
-        expected = dict(
-            symbol="hg", type=unit_types.QUANTITY, si=dict(symbol="kg", factor=0.1)
-        )
+        expected = dict(symbol="hg", type=unit_types.QUANTITY, si=dict(symbol="kg", factor=0.1))
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
@@ -98,17 +96,13 @@ class ExtractUnit(TestCase):
 
     def test_value(self):
         string = "/l"
-        expected = dict(
-            symbol="l", type=unit_types.QUANTITY_VALUE, si=dict(symbol="l", factor=1)
-        )
+        expected = dict(symbol="l", type=unit_types.QUANTITY_VALUE, si=dict(symbol="l", factor=1))
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
     def test_value_with_currency(self):
         string = "kr/kg"
-        expected = dict(
-            symbol="kg", type=unit_types.QUANTITY_VALUE, si=dict(symbol="kg", factor=1)
-        )
+        expected = dict(symbol="kg", type=unit_types.QUANTITY_VALUE, si=dict(symbol="kg", factor=1))
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
@@ -123,9 +117,7 @@ class ExtractUnit(TestCase):
 
     def test_with_varying_case(self):
         string = "MlBendit"
-        expected = dict(
-            symbol="ml", type=unit_types.QUANTITY, si=dict(symbol="l", factor=0.001)
-        )
+        expected = dict(symbol="ml", type=unit_types.QUANTITY, si=dict(symbol="l", factor=0.001))
         actual = extract_unit(string)
         self.assertDictEqual(actual, expected)
 
@@ -158,9 +150,7 @@ class ExtractNumbersWithContext(TestCase):
         actual = extract_numbers_with_context("1,5lx8 flaske")
         print("actual")
         print(actual)
-        actual = extract_numbers_with_context(
-            "kr 180,77/kgHomestyle 4x130g KandaPepperburger"
-        )
+        actual = extract_numbers_with_context("kr 180,77/kgHomestyle 4x130g KandaPepperburger")
         print("actual")
         print(actual)
         actual = extract_numbers_with_context("2 varianter. 4 x 125 g. 179,80/kg")
@@ -195,9 +185,7 @@ class ExtractQuantity(TestCase):
         actual = extract_numbers_with_context("1,5lx8 flaske")
         print("actual")
         print(actual)
-        actual = extract_numbers_with_context(
-            "kr 180,77/kgHomestyle 4x130g KandaPepperburger"
-        )
+        actual = extract_numbers_with_context("kr 180,77/kgHomestyle 4x130g KandaPepperburger")
         print("actual")
         print(actual)
 

@@ -48,10 +48,7 @@ def update_offers_with_product_id(
 
         if offer_product_updates:
             # Prepare data for bulk update
-            update_values = [
-                {"b_uri": item["uri"], "b_product_id": item["product_id"]}
-                for item in offer_product_updates
-            ]
+            update_values = [{"b_uri": item["uri"], "b_product_id": item["product_id"]} for item in offer_product_updates]
 
             stmt = (
                 OffersTable.__table__.update()
@@ -62,9 +59,7 @@ def update_offers_with_product_id(
             # Execute the bulk update
             session.execute(stmt, update_values)
 
-            logging.info(
-                f"Updated {len(offer_product_updates)} offers with product_id."
-            )
+            logging.info(f"Updated {len(offer_product_updates)} offers with product_id.")
 
 
 def update_products(
@@ -77,11 +72,7 @@ def update_products(
 ) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
-    existing_products = (
-        session.query(ProductsTable)
-        .filter(ProductsTable.id.in_(products_to_update))
-        .all()
-    )
+    existing_products = session.query(ProductsTable).filter(ProductsTable.id.in_(products_to_update)).all()
     product_updates: dict[UUID, ProductInfo] = {}
     for gtin, component_gtins in root_to_gtins.items():
         if gtin not in existing_gtins:
@@ -102,38 +93,26 @@ def update_products(
             )
 
             if existing_product_info_row is None:
-                raise Exception(
-                    f"Product with ID {product_id} not found in existing products."
-                )
+                raise Exception(f"Product with ID {product_id} not found in existing products.")
             existing_product_info = ProductInfo(
                 quantity_unit=str(existing_product_info_row.quantity_unit),
                 quantity_amount=float(existing_product_info_row.quantity_amount)
                 if existing_product_info_row.quantity_amount
                 else None,
-                quantity_standard_amount=float(
-                    existing_product_info_row.quantity_standard_amount
-                )
+                quantity_standard_amount=float(existing_product_info_row.quantity_standard_amount)
                 if existing_product_info_row.quantity_standard_amount
                 else None,
                 nutrition=NutritionType(**existing_product_info_row.nutrition),
-                merged_to=UUID(str(existing_product_info_row.merged_to))
-                if existing_product_info_row.merged_to
-                else None,
+                merged_to=UUID(str(existing_product_info_row.merged_to)) if existing_product_info_row.merged_to else None,
             )
-            merged_product_info = merge_product_info(
-                existing_product_info, new_product_info
-            )
+            merged_product_info = merge_product_info(existing_product_info, new_product_info)
 
         if len(component_gtins) > 1:
-            product_to_merge_to = min(
-                [gtin_to_product_id_map[gtin] for gtin in component_gtins]
-            )
+            product_to_merge_to = min([gtin_to_product_id_map[gtin] for gtin in component_gtins])
             merged_product_info.merged_to = product_to_merge_to
             for component_gtin in component_gtins:
                 product_id = gtin_to_product_id_map[component_gtin]
-                product_updates[product_id] = ProductInfo(
-                    **merged_product_info.model_dump()
-                )
+                product_updates[product_id] = ProductInfo(**merged_product_info.model_dump())
         else:
             if merged_product_info == existing_product_info:
                 continue
@@ -219,12 +198,8 @@ def determine_product_ids(
                     new_value = getattr(gtin_product_info, key)
                     old_value = getattr(product_data, key)
                     if key == "nutrition":
-                        new_n_filled_keys = sum(
-                            1 for k in new_value.model_dump().values() if k
-                        )
-                        old_n_filled_keys = sum(
-                            1 for k in old_value.model_dump().values() if k
-                        )
+                        new_n_filled_keys = sum(1 for k in new_value.model_dump().values() if k)
+                        old_n_filled_keys = sum(1 for k in old_value.model_dump().values() if k)
                         if new_n_filled_keys > old_n_filled_keys:
                             setattr(product_data, key, new_value)
                     elif new_value and not old_value:
@@ -247,35 +222,22 @@ def determine_product_ids(
                 gtin_to_product_map[root] = product_id
                 for gtin in component_gtins:
                     gtin_to_product_map[gtin] = product_id
-                products_to_update[product_id] = DbProductInfo(
-                    id=product_id, **product_data.model_dump()
-                )
+                products_to_update[product_id] = DbProductInfo(id=product_id, **product_data.model_dump())
 
     return component_product_id, new_products, products_to_update
 
 
 def merge_product_info(existing: ProductInfo, new: ProductInfo) -> ProductInfo:
     n_existing_nutrition_keys = sum(
-        1
-        for k in (
-            existing.nutrition.model_dump().values() if existing.nutrition else {}
-        )
-        if k is not None
+        1 for k in (existing.nutrition.model_dump().values() if existing.nutrition else {}) if k is not None
     )
-    n_new_nutrition_keys = sum(
-        1 for k in (new.nutrition.model_dump().values() if new.nutrition else {}) if k
-    )
-    nutrition = (
-        existing.nutrition
-        if n_existing_nutrition_keys > n_new_nutrition_keys
-        else new.nutrition
-    )
+    n_new_nutrition_keys = sum(1 for k in (new.nutrition.model_dump().values() if new.nutrition else {}) if k)
+    nutrition = existing.nutrition if n_existing_nutrition_keys > n_new_nutrition_keys else new.nutrition
 
     return ProductInfo(
         quantity_unit=existing.quantity_unit or new.quantity_unit,
         quantity_amount=existing.quantity_amount or new.quantity_amount,
-        quantity_standard_amount=existing.quantity_standard_amount
-        or new.quantity_standard_amount,
+        quantity_standard_amount=existing.quantity_standard_amount or new.quantity_standard_amount,
         nutrition=nutrition,
         merged_to=existing.merged_to or new.merged_to,
     )
@@ -307,9 +269,7 @@ def upsert_product_has_ingredient(
             if not ingredients:
                 return
 
-        matched_ingredients = get_extracted_ingredients_postgres(
-            offer_ingredients, ingredients
-        )
+        matched_ingredients = get_extracted_ingredients_postgres(offer_ingredients, ingredients)
 
         if not matched_ingredients:
             continue

@@ -16,9 +16,7 @@ class TestHelpers(TestCase):
     def test_get_provenance_id(self):
         self.assertEqual(get_provenance_id({"sku": "123"}), "123")
         self.assertEqual(get_provenance_id({"url": "https://hei.com/123"}), "123")
-        self.assertEqual(
-            get_provenance_id({"sku": "321", "url": "https://hei.com/123"}), "321"
-        )
+        self.assertEqual(get_provenance_id({"sku": "321", "url": "https://hei.com/123"}), "321")
 
     def test_get_shopgun_quantity_size(self):
         shopgun_quantity = {

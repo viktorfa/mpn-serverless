@@ -24,9 +24,7 @@ class DramatiqQueueHandler:
         DRAMATIQ_NAMESPACE = os.environ["DRAMATIQ_NAMESPACE"]
 
         # Initialize Redis client
-        self.redis_client = redis.Redis(
-            host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, password=REDIS_PASSWORD
-        )
+        self.redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, password=REDIS_PASSWORD)
 
         # Initialize Dramatiq Redis broker
         self.redis_broker = RedisBroker(
@@ -45,9 +43,7 @@ class DramatiqQueueHandler:
 
     def print_dlq(self, n_items: int = 100, print_details=False):
         # Fetch message IDs from the DLQ sorted set
-        message_ids: list[bytes] = self.redis_client.zrange(
-            self.dlq_sorted_set_key, 0, n_items - 1
-        )
+        message_ids: list[bytes] = self.redis_client.zrange(self.dlq_sorted_set_key, 0, n_items - 1)
 
         print(f"Fetched {len(message_ids)} messages from the DLQ")
 
@@ -149,42 +145,22 @@ if __name__ == "__main__":
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Command: print-queue
-    parser_print_queue = subparsers.add_parser(
-        "print-queue", help="Print messages in the queue"
-    )
-    parser_print_queue.add_argument(
-        "--details", action="store_true", help="Print message details"
-    )
-    parser_print_queue.add_argument(
-        "--n-items", type=int, default=100, help="Number of items to display"
-    )
+    parser_print_queue = subparsers.add_parser("print-queue", help="Print messages in the queue")
+    parser_print_queue.add_argument("--details", action="store_true", help="Print message details")
+    parser_print_queue.add_argument("--n-items", type=int, default=100, help="Number of items to display")
 
     # Command: print-dlq
-    parser_print_dlq = subparsers.add_parser(
-        "print-dlq", help="Print messages in the DLQ"
-    )
-    parser_print_dlq.add_argument(
-        "--details", action="store_true", help="Print message details"
-    )
-    parser_print_dlq.add_argument(
-        "--n-items", type=int, default=100, help="Number of items to display"
-    )
+    parser_print_dlq = subparsers.add_parser("print-dlq", help="Print messages in the DLQ")
+    parser_print_dlq.add_argument("--details", action="store_true", help="Print message details")
+    parser_print_dlq.add_argument("--n-items", type=int, default=100, help="Number of items to display")
 
     # Command: requeue-message
-    parser_requeue_message = subparsers.add_parser(
-        "requeue-message", help="Requeue a single message"
-    )
-    parser_requeue_message.add_argument(
-        "message_id", help="ID of the message to requeue"
-    )
+    parser_requeue_message = subparsers.add_parser("requeue-message", help="Requeue a single message")
+    parser_requeue_message.add_argument("message_id", help="ID of the message to requeue")
 
     # Command: retry-dlq
-    parser_retry_dlq = subparsers.add_parser(
-        "retry-dlq", help="Requeue messages in the DLQ"
-    )
-    parser_retry_dlq.add_argument(
-        "--n-items", type=int, default=100, help="Number of items to requeue"
-    )
+    parser_retry_dlq = subparsers.add_parser("retry-dlq", help="Requeue messages in the DLQ")
+    parser_retry_dlq.add_argument("--n-items", type=int, default=100, help="Number of items to requeue")
 
     args = parser.parse_args()
 

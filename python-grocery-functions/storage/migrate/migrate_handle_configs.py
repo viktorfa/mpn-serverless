@@ -40,9 +40,7 @@ def migrate_data(json_file_path, database_url):
                 additional_config = item.get("additionalConfig", {})
                 field_mapping = item.get("fieldMapping")
                 extract_quantity_fields = item.get("extractQuantityFields")
-                context = get_offer_context_from_site_collection(
-                    item.get("collection_name")
-                )
+                context = get_offer_context_from_site_collection(item.get("collection_name"))
                 namespace = item.get("namespace")
                 is_partner = item.get("is_partner", False)
                 market = item.get("market")

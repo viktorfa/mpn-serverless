@@ -40,9 +40,7 @@ def get_shopgun_href(product, provenance: str) -> str:
     base_url = "etilbudsavis.no"
     if "se_" in provenance:
         base_url = "ereklamblad.se"
-    return "https://{}/publications/paged/{}/pages/{}".format(
-        base_url, product.get("catalog_id"), product.get("catalog_page")
-    )
+    return "https://{}/publications/paged/{}/pages/{}".format(base_url, product.get("catalog_id"), product.get("catalog_page"))
 
 
 def json_handler(obj):

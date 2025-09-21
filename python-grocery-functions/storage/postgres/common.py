@@ -1,4 +1,3 @@
-
 from sqlalchemy import create_engine
 
 from config.vars import POSTGRES_URL

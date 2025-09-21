@@ -145,12 +145,8 @@ class TestStandarizeQuantity(TestCase):
 
         actual = standardize_quantity(offer)
         self.assertIsInstance(actual, dict)
-        self.assertEqual(
-            pydash.get(actual, ["quantity", "size", "standard", "min"]), 0.1
-        )
-        self.assertEqual(
-            pydash.get(actual, ["quantity", "size", "standard", "max"]), 0.1
-        )
+        self.assertEqual(pydash.get(actual, ["quantity", "size", "standard", "min"]), 0.1)
+        self.assertEqual(pydash.get(actual, ["quantity", "size", "standard", "max"]), 0.1)
 
     def test_value_basic_2(self):
         offer = {

@@ -23,9 +23,7 @@ configure_lambda_logging()
 
 
 def migrate_data(limit: int, batch_size: int):
-    logging.info(
-        f"Starting populating denormalized products offers with limit {limit} and batch size {batch_size}"
-    )
+    logging.info(f"Starting populating denormalized products offers with limit {limit} and batch size {batch_size}")
 
     timer = Timer()
     timer.start("Migrate data")
@@ -38,9 +36,7 @@ def migrate_data(limit: int, batch_size: int):
                 session.query(OffersTable)
                 .join(ProductsTable, OffersTable.product_id == ProductsTable.id)
                 .filter(OffersTable.valid_through > datetime.now())
-                .filter(
-                    ~OffersTable.product_id.in_(select(subquery))
-                )  # Exclude product_ids found in denormalized_products
+                .filter(~OffersTable.product_id.in_(select(subquery)))  # Exclude product_ids found in denormalized_products
                 .options(joinedload(OffersTable.product))
                 .yield_per(batch_size)
             )
@@ -72,12 +68,8 @@ def migrate_data(limit: int, batch_size: int):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Populate denormalized_products.")
-    parser.add_argument(
-        "--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration"
-    )
+    parser.add_argument("--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate")
+    parser.add_argument("--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration")
 
     args = parser.parse_args()
 

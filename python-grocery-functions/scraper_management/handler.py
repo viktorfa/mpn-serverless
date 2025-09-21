@@ -83,9 +83,7 @@ def handle_feed(event, context):
 
     # TODO: Spider runs not yet migrated to PostgreSQL
     # Need to create SpiderRunsTable and migration script
-    logging.warning(
-        f"Handle feed called for run {scraper_run_id} but spider runs not yet migrated to PostgreSQL"
-    )
+    logging.warning(f"Handle feed called for run {scraper_run_id} but spider runs not yet migrated to PostgreSQL")
 
     return {
         "statusCode": 501,

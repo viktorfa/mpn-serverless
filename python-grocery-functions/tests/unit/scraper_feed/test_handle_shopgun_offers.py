@@ -48,9 +48,7 @@ class TestHandleShopgunOffers(TestCase):
             },
         }
 
-        actual = transform_shopgun_product(
-            shopgun_product, {"provenance": "shopgun_grocery"}
-        )
+        actual = transform_shopgun_product(shopgun_product, {"provenance": "shopgun_grocery"})
         self.assertEqual(actual["title"], shopgun_product["heading"])
         self.assertEqual(
             pydash.get(actual, ["quantity", "size", "amount", "min"]),
@@ -60,6 +58,4 @@ class TestHandleShopgunOffers(TestCase):
             pydash.get(actual, ["quantity", "size", "unit", "symbol"]),
             "g",
         )
-        self.assertEqual(
-            actual["validThrough"], datetime.fromisoformat("2019-01-20T22:59:59")
-        )
+        self.assertEqual(actual["validThrough"], datetime.fromisoformat("2019-01-20T22:59:59"))

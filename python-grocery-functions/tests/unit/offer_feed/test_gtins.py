@@ -18,9 +18,7 @@ class TestMatchOffersWithGtinsMap(TestCase):
         self.assertIsInstance(actual, list)
 
     def test_match_offers_with_gtins_map_with_matching_offers(self):
-        offers = [
-            {"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}
-        ]
+        offers = [{"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}]
         gtins_map = {"gtin13_1234567890123": [{"uri": "abc", "provenance": "kolonial"}]}
 
         actual = match_offers_with_gtins_map(offers, gtins_map)
@@ -35,9 +33,7 @@ class TestMatchOffersWithGtinsMap(TestCase):
         self.assertIsInstance(actual, list)
 
     def test_get_lists_of_offers_with_same_gtins_with_matching_offers(self):
-        source_offers = [
-            {"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}
-        ]
+        source_offers = [{"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}]
         target_offers = [
             {
                 "gtins": {"gtin13": "1234567890123"},
@@ -53,9 +49,7 @@ class TestMatchOffersWithGtinsMap(TestCase):
     def test_get_lists_of_offers_with_same_gtins_with_matching_offers_ean_and_gtin13(
         self,
     ):
-        source_offers = [
-            {"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}
-        ]
+        source_offers = [{"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}]
         target_offers = [
             {
                 "gtins": {"ean": "1234567890123"},
@@ -69,9 +63,7 @@ class TestMatchOffersWithGtinsMap(TestCase):
         self.assertGreater(actual, [])
 
     def test_get_lists_of_offers_with_same_gtins_without_matching_offers(self):
-        source_offers = [
-            {"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}
-        ]
+        source_offers = [{"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}]
         target_offers = [
             {
                 "gtins": {"gtin13": "1234567890120"},
@@ -85,9 +77,7 @@ class TestMatchOffersWithGtinsMap(TestCase):
         self.assertEqual(len(actual), 0)
 
     def test_get_lists_of_offers_with_same_gtins_with_matching_offers_same_uri(self):
-        source_offers = [
-            {"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}
-        ]
+        source_offers = [{"gtins": {"gtin13": "1234567890123"}, "uri": "123", "provenance": "meny"}]
         target_offers = [
             {
                 "gtins": {"gtin13": "1234567890123"},

@@ -37,10 +37,7 @@ def extract_numbers_with_context(string: str) -> list | None:
     compiled_number_pattern = re.compile(number_pattern, re.A)
     number_matches = re.finditer(number_pattern, string)
     number_matches = list(number_matches)
-    result = list(
-        [string[: x.span(0)[0]], x.group(0), string[x.span(0)[1] :]]
-        for x in number_matches
-    )
+    result = list([string[: x.span(0)[0]], x.group(0), string[x.span(0)[1] :]] for x in number_matches)
     return result
 
 
@@ -113,12 +110,7 @@ def format_number(string: str, loader_context: dict = dict()) -> str | None:
     try:
         return string.replace(",", ".").replace(":", ".")
     except AttributeError as exc:
-        logging.warning(
-            ""
-            + str(exc)
-            + "Could not extract number from: "
-            + str(loader_context.items())
-        )
+        logging.warning("" + str(exc) + "Could not extract number from: " + str(loader_context.items()))
         return None
 
 

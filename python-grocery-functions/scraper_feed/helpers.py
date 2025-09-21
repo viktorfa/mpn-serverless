@@ -127,9 +127,7 @@ def get_gtins(offer: ScraperOffer) -> dict:
 def get_book_gtins(offer: ScraperOffer) -> dict:
     result = {}
     for k, v in {
-        _k: _v
-        for _k, _v in offer.items()
-        if _k in ["isbn", "isbn10", "isbn13"] and re.match(r"^\d+$", str(_v))
+        _k: _v for _k, _v in offer.items() if _k in ["isbn", "isbn10", "isbn13"] and re.match(r"^\d+$", str(_v))
     }.items():
         if len(v) == 10:
             result["isbn10"] = v

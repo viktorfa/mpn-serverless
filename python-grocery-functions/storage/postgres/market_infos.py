@@ -56,8 +56,7 @@ def collect_product_market_info_entries(
         session.query(CategoriesTable, CategoryMappingsTable)
         .outerjoin(
             CategoryMappingsTable,
-            (CategoryMappingsTable.context == CategoriesTable.context)
-            & (CategoryMappingsTable.target == CategoriesTable.key),
+            (CategoryMappingsTable.context == CategoriesTable.context) & (CategoryMappingsTable.target == CategoriesTable.key),
         )
         .filter(CategoriesTable.context == context)
         .all()
@@ -94,11 +93,7 @@ def collect_product_market_info_entries(
         )
         for gtin in component_gtins:
             existing_market_info = next(
-                (
-                    mi
-                    for mi in existing_market_infos
-                    if UUID(str(mi.product_id)) == product_id
-                ),
+                (mi for mi in existing_market_infos if UUID(str(mi.product_id)) == product_id),
                 None,
             )
             market_info_entry: MarketInfo | None = gtin_market_info_map.get(gtin)
@@ -132,16 +127,12 @@ def collect_product_market_info_entries(
 
             product_market_info_entries[gtin] = entry
 
-    logging.info(
-        f"Collected {len(product_market_info_entries)} product market info entries."
-    )
+    logging.info(f"Collected {len(product_market_info_entries)} product market info entries.")
 
     return product_market_info_entries
 
 
-def upsert_product_market_info(
-    session: Session, product_market_info_entries: list[DbMarketInfo]
-) -> None:
+def upsert_product_market_info(session: Session, product_market_info_entries: list[DbMarketInfo]) -> None:
     from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     if product_market_info_entries:
@@ -151,9 +142,7 @@ def upsert_product_market_info(
         }
         unique_entries: list[DbMarketInfo] = list(unique_entries_dict.values())
         entries_to_insert = [entry.model_dump() for entry in unique_entries]
-        product_market_info_stmt = pg_insert(ProductMarketInfoTable.__table__).values(
-            entries_to_insert
-        )
+        product_market_info_stmt = pg_insert(ProductMarketInfoTable.__table__).values(entries_to_insert)
         update_columns = {
             "title": product_market_info_stmt.excluded.title,
             "description": product_market_info_stmt.excluded.description,
@@ -179,11 +168,7 @@ def populate_market_info_with_categories(
     product_market_info_entries: dict[str, DbMarketInfo],
     gtin_offer_object_map: dict[str, ProcessedMpnOffer],
 ) -> None:
-    category_mappings = (
-        session.query(CategoryMappingsTable)
-        .filter(CategoryMappingsTable.context == context)
-        .all()
-    )
+    category_mappings = session.query(CategoryMappingsTable).filter(CategoryMappingsTable.context == context).all()
 
     if not category_mappings:
         logging.info(f"No category mappings found for context {context}")

@@ -63,6 +63,4 @@ def save_to_s3(bucket: str, key: str, data):
     Saves a json string as a file to S3.
     """
     s3_client = get_s3_client()
-    return s3_client.put_object(
-        Key=key, Bucket=bucket, Body=data, ContentType="application/json"
-    )
+    return s3_client.put_object(Key=key, Bucket=bucket, Body=data, ContentType="application/json")

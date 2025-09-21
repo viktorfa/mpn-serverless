@@ -172,9 +172,7 @@ def initialize_analyticsreporting():
     Returns:
       An authorized Analytics Reporting API V4 service object.
     """
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        KEY_FILE_LOCATION, SCOPES
-    )
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE_LOCATION, SCOPES)
 
     # Build the service object.
     analytics = build("analyticsreporting", "v4", credentials=credentials)
@@ -183,7 +181,7 @@ def initialize_analyticsreporting():
 
 
 def get_analytics_data_client() -> data_v1beta.BetaAnalyticsDataClient:
-    client: data_v1beta.BetaAnalyticsDataClient = (
-        data_v1beta.BetaAnalyticsDataClient.from_service_account_json(KEY_FILE_LOCATION)
+    client: data_v1beta.BetaAnalyticsDataClient = data_v1beta.BetaAnalyticsDataClient.from_service_account_json(
+        KEY_FILE_LOCATION
     )
     return client

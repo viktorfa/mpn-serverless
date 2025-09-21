@@ -1,4 +1,3 @@
-
 from amp_types.amp_product import ProcessedMpnOffer
 
 
@@ -23,7 +22,5 @@ class UnionFind:
             self.parent[yroot] = xroot
 
 
-def get_offer_from_gtin(
-    gtin_offer_object_map: dict[str, ProcessedMpnOffer], gtin: str
-) -> ProcessedMpnOffer:
+def get_offer_from_gtin(gtin_offer_object_map: dict[str, ProcessedMpnOffer], gtin: str) -> ProcessedMpnOffer:
     return gtin_offer_object_map[gtin]

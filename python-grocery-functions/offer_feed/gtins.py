@@ -23,9 +23,7 @@ def match_offers_with_gtins_map(offers, gtin_offer_map):
         if len(unique_identical_offers) > 1:
             offers_list.append(unique_identical_offers)
 
-    logging.debug(
-        f"{datetime.now() - now} Matched offers to gtin map {len(offers_list)}"
-    )
+    logging.debug(f"{datetime.now() - now} Matched offers to gtin map {len(offers_list)}")
 
     return offers_list
 
@@ -44,8 +42,6 @@ def get_lists_of_offers_with_same_gtins(source_offers, target_offers):
             except KeyError:
                 gtin_offer_map[gtin] = [offer]
 
-    logging.debug(
-        f"{datetime.now() - now} Made gtin offer map {len(gtin_offer_map.keys())}"
-    )
+    logging.debug(f"{datetime.now() - now} Made gtin offer map {len(gtin_offer_map.keys())}")
 
     return match_offers_with_gtins_map(source_offers, gtin_offer_map)

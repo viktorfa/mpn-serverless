@@ -114,9 +114,7 @@ def get_quantity(product: VetDuAtProduct):
 def get_product_data(product: VetDuAtProduct, product_id: UUID) -> DbProductInfo:
     nutrition = NutritionType(
         fats=product["fats"]["amount"] if "fats" in product else None,
-        carbohydrates=product["carbohydrates"]["amount"]
-        if "carbohydrates" in product
-        else None,
+        carbohydrates=product["carbohydrates"]["amount"] if "carbohydrates" in product else None,
         proteins=product["proteins"]["amount"] if "proteins" in product else None,
         satFats=product["satFats"]["amount"] if "satFats" in product else None,
         monoFats=None,
@@ -135,9 +133,7 @@ def get_product_data(product: VetDuAtProduct, product_id: UUID) -> DbProductInfo
         id=product_id,
         quantity_unit=quantity["size"]["unit"]["symbol"] if quantity else None,
         quantity_amount=quantity["size"]["amount"]["min"] if quantity else None,
-        quantity_standard_amount=quantity["size"]["standard"]["min"]
-        if quantity
-        else None,
+        quantity_standard_amount=quantity["size"]["standard"]["min"] if quantity else None,
         nutrition=nutrition,
         merged_to=product_id,
     )
@@ -151,9 +147,7 @@ def get_market_info(product: VetDuAtProduct, product_id: UUID) -> DbMarketInfo:
         description=product.get("informasjonstekst"),
         subtitle=None,
         short_description=None,
-        brand_key=slugify(product["varemerke"], separator="_")
-        if product["varemerke"]
-        else None,
+        brand_key=slugify(product["varemerke"], separator="_") if product["varemerke"] else None,
         vendor_key=None,
         context="amp-no",
         category_key=None,
@@ -162,9 +156,7 @@ def get_market_info(product: VetDuAtProduct, product_id: UUID) -> DbMarketInfo:
 
 
 def migrate_data(limit: int, batch_size: int):
-    logging.info(
-        f"Starting migration of vetduat products with limit {limit} and batch size {batch_size}"
-    )
+    logging.info(f"Starting migration of vetduat products with limit {limit} and batch size {batch_size}")
     vetduat_collection = get_collection("vetduat_items")
 
     # mpnoffers_collection = get_collection("mpnoffers")
@@ -183,9 +175,7 @@ def migrate_data(limit: int, batch_size: int):
     # return
 
     vetduat_products: Iterable[VetDuAtProduct] = (
-        vetduat_collection.find(
-            {"detailFetchedAt": {"$exists": True}, "migrated_pg_at": {"$exists": False}}
-        )
+        vetduat_collection.find({"detailFetchedAt": {"$exists": True}, "migrated_pg_at": {"$exists": False}})
         .limit(limit)
         .batch_size(batch_size)
     )
@@ -204,9 +194,7 @@ def migrate_data(limit: int, batch_size: int):
                     break
                 migrated_mongo_ids.add(product["_id"])
                 if not is_valid_ean(product["gtin"]):
-                    logging.warning(
-                        f"Invalid ean {product['gtin']} {product['fellesProduktnavn']}"
-                    )
+                    logging.warning(f"Invalid ean {product['gtin']} {product['fellesProduktnavn']}")
                     continue
                 product_counter += 1
                 product_batch.append(product)
@@ -274,14 +262,10 @@ def insert_batch(
             gtin_key = f"ean:{product['gtin']}"
             ean_gtins.append(gtin_key)
         else:
-            raise ValueError(
-                f"Invalid ean {product['gtin']} {product['fellesProduktnavn']}"
-            )
+            raise ValueError(f"Invalid ean {product['gtin']} {product['fellesProduktnavn']}")
         epd_gtin = f"epd:{product['epdNr']}"
         epd_gtins.append(epd_gtin)
-    existing_gtins = session.query(GtinsTable).filter(
-        GtinsTable.gtin.in_([*epd_gtins, *ean_gtins])
-    )
+    existing_gtins = session.query(GtinsTable).filter(GtinsTable.gtin.in_([*epd_gtins, *ean_gtins]))
     existing_products_map: dict[str, UUID] = {}
     for row in existing_gtins:
         existing_products_map[str(row.gtin)] = UUID(str(row.product_id))
@@ -295,9 +279,7 @@ def insert_batch(
     for product in product_batch:
         ean_gtin = f"ean:{product['gtin']}"
         epd_gtin = f"epd:{product['epdNr']}"
-        existing_product_id: UUID | None = existing_products_map.get(
-            epd_gtin
-        ) or existing_products_map.get(gtin_key)
+        existing_product_id: UUID | None = existing_products_map.get(epd_gtin) or existing_products_map.get(gtin_key)
 
         product_id: UUID = existing_product_id or uuid7()
 
@@ -327,9 +309,7 @@ def insert_batch(
         offer_ingredients = product.get("parsedIngredients")
         raw_ingredients = get_raw_ingredients_from_strings([offer_ingredients])
         if offer_ingredients:
-            matched_ingredients = get_extracted_ingredients_postgres(
-                raw_ingredients, ingredients
-            )
+            matched_ingredients = get_extracted_ingredients_postgres(raw_ingredients, ingredients)
 
             if matched_ingredients:
                 for ingredient in matched_ingredients:
@@ -341,19 +321,12 @@ def insert_batch(
                     )
 
     if len(brands_to_upsert) > 0:
-        brands_update_stmt = pg_insert(BrandsTable.__table__).values(
-            [x.model_dump() for x in brands_to_upsert]
-        )
-        brands_update_stmt = brands_update_stmt.on_conflict_do_nothing(
-            index_elements=["key", "market"]
-        )
+        brands_update_stmt = pg_insert(BrandsTable.__table__).values([x.model_dump() for x in brands_to_upsert])
+        brands_update_stmt = brands_update_stmt.on_conflict_do_nothing(index_elements=["key", "market"])
         session.execute(brands_update_stmt)
 
     products_update_stmt = pg_insert(ProductsTable.__table__).values(
-        [
-            {**x.model_dump(), "nutrition": x.nutrition.model_dump(exclude_none=True)}
-            for x in products_to_upsert
-        ]
+        [{**x.model_dump(), "nutrition": x.nutrition.model_dump(exclude_none=True)} for x in products_to_upsert]
     )
 
     products_update_stmt = products_update_stmt.on_conflict_do_update(
@@ -380,43 +353,29 @@ def insert_batch(
         },
     )
     session.execute(market_info_update_stmt)
-    gtins_update_stmt = pg_insert(GtinsTable.__table__).values(
-        [x.model_dump() for x in gtins_to_upsert]
-    )
-    gtins_update_stmt = gtins_update_stmt.on_conflict_do_nothing(
-        index_elements=["gtin"]
-    )
+    gtins_update_stmt = pg_insert(GtinsTable.__table__).values([x.model_dump() for x in gtins_to_upsert])
+    gtins_update_stmt = gtins_update_stmt.on_conflict_do_nothing(index_elements=["gtin"])
     session.execute(gtins_update_stmt)
 
     if product_has_ingredient_to_upsert:
-        product_has_ingredient_update_stmt = pg_insert(
-            ProductHasIngredientTable.__table__
-        ).values([x.model_dump() for x in product_has_ingredient_to_upsert])
-        product_has_ingredient_update_stmt = (
-            product_has_ingredient_update_stmt.on_conflict_do_nothing(
-                index_elements=["product_id", "ingredient_id"]
-            )
+        product_has_ingredient_update_stmt = pg_insert(ProductHasIngredientTable.__table__).values(
+            [x.model_dump() for x in product_has_ingredient_to_upsert]
+        )
+        product_has_ingredient_update_stmt = product_has_ingredient_update_stmt.on_conflict_do_nothing(
+            index_elements=["product_id", "ingredient_id"]
         )
         session.execute(product_has_ingredient_update_stmt)
 
     logging.info(f"Upserted {len(products_to_upsert)} products")
     logging.info(f"Upserted {len(market_infos_to_upsert)} market infos")
     logging.info(f"Upserted {len(gtins_to_upsert)} gtins")
-    logging.info(
-        f"Upserted {len(product_has_ingredient_to_upsert)} product_has_ingredient"
-    )
+    logging.info(f"Upserted {len(product_has_ingredient_to_upsert)} product_has_ingredient")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Migrate vetduat products from MongoDB to PostgreSQL."
-    )
-    parser.add_argument(
-        "--limit", type=int, default=LIMIT, help="Limit of offers to migrate"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration"
-    )
+    parser = argparse.ArgumentParser(description="Migrate vetduat products from MongoDB to PostgreSQL.")
+    parser.add_argument("--limit", type=int, default=LIMIT, help="Limit of offers to migrate")
+    parser.add_argument("--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration")
 
     args = parser.parse_args()
 

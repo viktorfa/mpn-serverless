@@ -10,9 +10,7 @@ from transform.transform import transform_fields
 class TestTransformScraperOffer(TestCase):
     def test_replace_flat_field(self):
         scraper_offer: ScraperOffer = {"price": 22, "UnitPrice": 12, "sku": "12334323"}
-        field_mapping: list[MappingConfigField] = [
-            {"replace_type": "key", "source": "sku", "destination": "ean"}
-        ]
+        field_mapping: list[MappingConfigField] = [{"replace_type": "key", "source": "sku", "destination": "ean"}]
         actual = transform_fields(scraper_offer, field_mapping)
         self.assertIsInstance(actual, dict)
         self.assertEqual(pydash.get(actual, "ean"), "12334323")
@@ -37,9 +35,7 @@ class TestTransformScraperOffer(TestCase):
             "price": 22,
             "UnitPrice": 12,
             "sku": "12334323",
-            "additionalProperties": [
-                {"key": "Manufacturer Number", "value": "JSK-3434"}
-            ],
+            "additionalProperties": [{"key": "Manufacturer Number", "value": "JSK-3434"}],
         }
         field_mapping: list[MappingConfigField] = [
             {
@@ -154,9 +150,7 @@ class TestTransformScraperOffer(TestCase):
         actual = transform_fields(scraper_offer, field_mapping)
         self.assertIsInstance(actual, dict)
         self.assertIsInstance(pydash.get(actual, ["additionalPropertyDict"]), dict)
-        self.assertEqual(
-            pydash.get(actual, ["additionalPropertyDict", "priceUnit", "value"]), "m2"
-        )
+        self.assertEqual(pydash.get(actual, ["additionalPropertyDict", "priceUnit", "value"]), "m2")
 
     def test_ignore_field(self):
         scraper_offer: ScraperOffer = {

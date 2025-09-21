@@ -11,13 +11,9 @@ class TestHandleProducts(TestCase):
         fixtures_path = Path(__file__).parent.parent.parent / "fixtures" / "feeds"
         with open(fixtures_path / "obsbygg-scraper-feed.json") as obsbygg_products_json:
             self.obsbygg_products = json.load(obsbygg_products_json)
-        with open(
-            fixtures_path / "swecandy-scraper-feed.json"
-        ) as swecandy_products_json:
+        with open(fixtures_path / "swecandy-scraper-feed.json") as swecandy_products_json:
             self.swecandy_products = json.load(swecandy_products_json)
-        with open(
-            fixtures_path / "shopgun-scraper-feed-new.json"
-        ) as shopgun_products_json:
+        with open(fixtures_path / "shopgun-scraper-feed-new.json") as shopgun_products_json:
             self.shopgun_products = json.load(shopgun_products_json)
 
     def test_transform_product(self):
@@ -118,12 +114,7 @@ class TestHandleProducts(TestCase):
             "context": "amp-no",
         }
 
-        actual = list(
-            [
-                transform_product(product, config)
-                for product in self.shopgun_products[:100]
-            ]
-        )
+        actual = list([transform_product(product, config) for product in self.shopgun_products[:100]])
         self.assertIsNotNone(actual[0].get("validThrough"))
         self.assertIn("shopgun", actual[0]["uri"])
 

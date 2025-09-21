@@ -43,9 +43,7 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
         provenance_id=offer["provenanceId"],
         quantity_unit=pydash.get(offer, ["quantity", "size", "unit", "symbol"]),
         quantity_amount=pydash.get(offer, ["quantity", "size", "amount", "max"]),
-        quantity_standard_amount=pydash.get(
-            offer, ["quantity", "size", "standard", "max"]
-        ),
+        quantity_standard_amount=pydash.get(offer, ["quantity", "size", "standard", "max"]),
         context=offer["context"],
         subtitle=offer.get("subtitle"),
         title=offer["title"],
@@ -67,9 +65,7 @@ def processed_offer_to_pg_offer(offer: ProcessedMpnOffer) -> PgOffer:
     )
 
 
-def get_offer_price_object_from_processed_offer(
-    offer: ProcessedMpnOffer, scrape_time: datetime
-):
+def get_offer_price_object_from_processed_offer(offer: ProcessedMpnOffer, scrape_time: datetime):
     uri = f"{offer['namespace']}:{offer['provenanceId']}"
     return {
         "uri": uri,
@@ -91,9 +87,7 @@ def upsert_brands_postgres(offers: Sequence[ProcessedMpnOffer]):
 
         if brand_key and brand_key not in brand_keys:
             brand_keys.add(brand_key)
-            brand_entries.append(
-                {"key": brand_key, "title": brand_title, "market": market}
-            )
+            brand_entries.append({"key": brand_key, "title": brand_title, "market": market})
 
     if len(brand_entries) == 0:
         return 0
@@ -128,9 +122,7 @@ def upsert_vendors_postgres(offers: Sequence[ProcessedMpnOffer]):
 
         if vendor_key and vendor_key not in vendor_keys:
             vendor_keys.add(vendor_key)
-            vendor_entries.append(
-                {"key": vendor_key, "title": vendor_title, "market": market}
-            )
+            vendor_entries.append({"key": vendor_key, "title": vendor_title, "market": market})
 
     if len(vendor_entries) == 0:
         return 0
@@ -222,10 +214,7 @@ def upsert_offers_postgres(
 
     # Prepare the insert statement with the list of offers
     stmt = pg_insert(OffersTable.__table__).values(
-        [
-            {**offer.model_dump(), "product_id": offer_to_product_id[offer.uri]}
-            for offer in pg_offers
-        ]
+        [{**offer.model_dump(), "product_id": offer_to_product_id[offer.uri]} for offer in pg_offers]
     )
 
     # Define the `ON CONFLICT` clause

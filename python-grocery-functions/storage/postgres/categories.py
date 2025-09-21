@@ -51,9 +51,7 @@ def get_categories_for_market_info(
 
     # Rest of the function remains the same
     if not matched_categories:
-        logging.debug(
-            f"No matching categories found for offer categories: {offer_cats}"
-        )
+        logging.debug(f"No matching categories found for offer categories: {offer_cats}")
         return []
 
     matched_category = max(matched_categories, key=lambda c: c.level)

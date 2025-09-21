@@ -30,21 +30,14 @@ class MongoPricingHistory(BaseModel):
 
 
 def migrate_data(limit: int, batch_size: int):
-    logging.info(
-        f"Starting migration of mongo offers with limit {limit} and batch size {batch_size}"
-    )
+    logging.info(f"Starting migration of mongo offers with limit {limit} and batch size {batch_size}")
 
     timer = Timer()
     timer.start("Migrate data")
 
     with Session(get_pg_engine()) as session:
         try:
-            cursor = (
-                session.query(OffersTable.uri)
-                .filter(OffersTable.prices_migrated_at.is_(None))
-                .limit(batch_size)
-                .all()
-            )
+            cursor = session.query(OffersTable.uri).filter(OffersTable.prices_migrated_at.is_(None)).limit(batch_size).all()
 
             offer_uris = [str(row.uri) for row in cursor]
             handle_store_offer_prices_batch(session, offer_uris)
@@ -117,15 +110,9 @@ def handle_store_offer_prices_batch(session: Session, offer_uris: Sequence[str])
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Migrate offers from MongoDB to PostgreSQL."
-    )
-    parser.add_argument(
-        "--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration"
-    )
+    parser = argparse.ArgumentParser(description="Migrate offers from MongoDB to PostgreSQL.")
+    parser.add_argument("--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate")
+    parser.add_argument("--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration")
 
     args = parser.parse_args()
 

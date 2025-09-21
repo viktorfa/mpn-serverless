@@ -104,9 +104,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                     correct = False
         # print(errors)
         print("RESULT")
-        print(
-            f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong"
-        )
+        print(f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong")
 
     def test_extract(self):
         input_assertions_pairs = [
@@ -132,18 +130,14 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
-                [
-                    "SMART KUPP. MAKS 5 STK PR HUSSTAND. NORVEGIA. Original. 1,3 kg. Pr kg 76,15"
-                ],
+                ["SMART KUPP. MAKS 5 STK PR HUSSTAND. NORVEGIA. Original. 1,3 kg. Pr kg 76,15"],
                 [
                     (lambda x: pydash.get(x, "quantity.size.amount.min"), 1.3),
                     (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "kg"),
                 ],
             ),
             (
-                [
-                    "SMART KUPP. MAKS 5 STK PR HUSSTAND. NORVEGIA. Original. 1,3 kg. Pr kg 76,15"
-                ],
+                ["SMART KUPP. MAKS 5 STK PR HUSSTAND. NORVEGIA. Original. 1,3 kg. Pr kg 76,15"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), 76.15),
                     (lambda x: pydash.get(x, "value.size.unit.symbol"), "kg"),
@@ -212,9 +206,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
-                [
-                    "200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"
-                ],
+                ["200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"],
                 [
                     (lambda x: pydash.get(x, "quantity.size.amount.min"), 0.8),
                     (lambda x: pydash.get(x, "quantity.size.unit.symbol"), "l"),
@@ -323,9 +315,7 @@ class TestQuantityExtractionBenchmark(TestCase):
                     correct = False
         # print(errors)
         print("RESULT")
-        print(
-            f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong"
-        )
+        print(f"{len(input_assertions_pairs) - len(errors)} correct, {len(errors)} wrong")
 
     def test_extract_false(self):
         """
@@ -349,18 +339,14 @@ class TestQuantityExtractionBenchmark(TestCase):
                 ],
             ),
             (
-                [
-                    "200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"
-                ],
+                ["200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"],
                 [
                     (lambda x: pydash.get(x, "value.pieces.amount.min"), None),
                     (lambda x: pydash.get(x, "value.pieces.unit.symbol"), None),
                 ],
             ),
             (
-                [
-                    "200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"
-                ],
+                ["200 Pr. FUN LIGHT. 14 varianter. 0,8 l. Fra 3,13/l ferdig blandet. 1 flaske fra 37,90 Fra"],
                 [
                     (lambda x: pydash.get(x, "value.size.amount.min"), None),
                     (lambda x: pydash.get(x, "value.size.unit.symbol"), None),
@@ -411,6 +397,4 @@ class TestQuantityExtractionBenchmark(TestCase):
                     correct = False
         # print(errors)
         print("RESULT")
-        print(
-            f"{len(input_assertions_pairs) - len(errors)} true negatives (correct), {len(errors)} false positives (wrong)"
-        )
+        print(f"{len(input_assertions_pairs) - len(errors)} true negatives (correct), {len(errors)} false positives (wrong)")

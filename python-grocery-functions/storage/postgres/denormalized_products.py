@@ -102,12 +102,8 @@ def update_denormalized_products(affected_product_ids: list[UUID]):
                     pm_info.context,
                     pm_info.category_key,
                     # Include category hierarchy using the database function
-                    func.get_category_hierarchy(
-                        pm_info.category_key, pm_info.context
-                    ).label("category_keys"),
-                    func.array_agg(func.distinct(OffersTable.dealer_key)).label(
-                        "dealer_keys"
-                    ),
+                    func.get_category_hierarchy(pm_info.category_key, pm_info.context).label("category_keys"),
+                    func.array_agg(func.distinct(OffersTable.dealer_key)).label("dealer_keys"),
                 )
                 .select_from(ProductsTable)
                 # Join ProductMarketInfoTable
@@ -196,9 +192,7 @@ def update_denormalized_products(affected_product_ids: list[UUID]):
 
             # Perform bulk insert with on_conflict_do_update
             if insert_data_list:
-                insert_stmt = pg_insert(DenormalizedProductsTable).values(
-                    insert_data_list
-                )
+                insert_stmt = pg_insert(DenormalizedProductsTable).values(insert_data_list)
                 update_columns = {
                     # Exclude primary keys from update
                     key: getattr(insert_stmt.excluded, key)
@@ -237,9 +231,7 @@ def update_denormalized_products_for_valid_offers(event, context):
             now = datetime.now(UTC)
 
             while True:
-                logging.info(
-                    f"Processing batch of {batch_size} starting from product_id: {last_product_id}"
-                )
+                logging.info(f"Processing batch of {batch_size} starting from product_id: {last_product_id}")
                 # Build the query with pagination
                 stmt = select(
                     DenormalizedProductsTable.product_id,
@@ -248,9 +240,7 @@ def update_denormalized_products_for_valid_offers(event, context):
                     DenormalizedProductsTable.valid_through,
                 ).order_by(DenormalizedProductsTable.product_id)
                 if last_product_id is not None:
-                    stmt = stmt.where(
-                        DenormalizedProductsTable.product_id > last_product_id
-                    )
+                    stmt = stmt.where(DenormalizedProductsTable.product_id > last_product_id)
                 products_batch = session.execute(stmt.limit(batch_size)).all()
 
                 if not products_batch or total_processed >= max_products:
@@ -278,17 +268,12 @@ def update_denormalized_products_for_valid_offers(event, context):
                             raise
                         if valid_through > now:
                             valid_offers.append(offer)
-                            if (
-                                not new_valid_through
-                                or valid_through > new_valid_through
-                            ):
+                            if not new_valid_through or valid_through > new_valid_through:
                                 new_valid_through = valid_through
 
                     if not valid_offers:
                         # No valid offers left, mark for deletion
-                        ids_to_delete.append(
-                            dict(product_id=dp.product_id, market=dp.market)
-                        )
+                        ids_to_delete.append(dict(product_id=dp.product_id, market=dp.market))
                         total_deleted += 1
                     elif len(valid_offers) != len(offers):
                         # Update the product with new offers and valid_through
@@ -306,10 +291,7 @@ def update_denormalized_products_for_valid_offers(event, context):
                 # Perform the updates and deletions
                 if ids_to_delete:
                     stmt = delete(DenormalizedProductsTable).where(
-                        (
-                            DenormalizedProductsTable.product_id
-                            == bindparam("product_id")
-                        )
+                        (DenormalizedProductsTable.product_id == bindparam("product_id"))
                         & (DenormalizedProductsTable.market == bindparam("market"))
                     )
                     # Use connection.execute() at the Core level
@@ -332,9 +314,7 @@ def update_denormalized_products_for_valid_offers(event, context):
                     logging.info(f"Reached the max_products limit of {max_products}.")
                     break
 
-            logging.info(
-                f"Finished processing. Total processed: {total_processed}, total deleted: {total_deleted}"
-            )
+            logging.info(f"Finished processing. Total processed: {total_processed}, total deleted: {total_deleted}")
 
         except Exception as e:
             session.rollback()

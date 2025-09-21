@@ -13,9 +13,7 @@ def reset_mongo():
         {"migrated_at": {"$exists": True}},
         {"$unset": {"migrated_at": ""}},
     )
-    print(
-        f"Removed migrated_pg_at from {vetduat_response.modified_count} vetduat items"
-    )
+    print(f"Removed migrated_pg_at from {vetduat_response.modified_count} vetduat items")
     print(f"Removed migrated_at from {offers_response.modified_count} mpnoffers")
     return
 

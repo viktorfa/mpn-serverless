@@ -26,20 +26,12 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
         # Sample category mappings
         category_mappings = [
             (
-                CategoriesTable(
-                    key="sopp_2", level=2, parent="gronnsaker_1", title="Sopp"
-                ),
-                CategoryMappingsTable(
-                    source=["Frukt og grønt", "Grønnsaker", "Sopp"], target="sopp_2"
-                ),
+                CategoriesTable(key="sopp_2", level=2, parent="gronnsaker_1", title="Sopp"),
+                CategoryMappingsTable(source=["Frukt og grønt", "Grønnsaker", "Sopp"], target="sopp_2"),
             ),
             (
-                CategoriesTable(
-                    key="frukt-gront_0", level=0, parent=None, title="Frukt og grønt"
-                ),
-                CategoryMappingsTable(
-                    source=["Frukt og grønt"], target="frukt-gront_0"
-                ),
+                CategoriesTable(key="frukt-gront_0", level=0, parent=None, title="Frukt og grønt"),
+                CategoryMappingsTable(source=["Frukt og grønt"], target="frukt-gront_0"),
             ),
             (
                 CategoriesTable(
@@ -67,9 +59,7 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
 
         expected_category_keys = ["frukt-gront_0", "gronnsaker_1"]
 
-        result = get_categories_for_market_info(
-            offer_cats, categories_by_key, categories_by_name, source_cat_map
-        )
+        result = get_categories_for_market_info(offer_cats, categories_by_key, categories_by_name, source_cat_map)
 
         print("result", result)
         self.assertEqual(result, expected_category_keys)
@@ -79,12 +69,8 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
 
         category_mappings = [
             (
-                CategoriesTable(
-                    key="laptops_2", level=2, parent="computers_1", title="Laptops"
-                ),
-                CategoryMappingsTable(
-                    source=["Electronics", "Computers", "Laptops"], target="laptops_2"
-                ),
+                CategoriesTable(key="laptops_2", level=2, parent="computers_1", title="Laptops"),
+                CategoryMappingsTable(source=["Electronics", "Computers", "Laptops"], target="laptops_2"),
             ),
             (
                 CategoriesTable(
@@ -93,14 +79,10 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
                     parent="electronics_0",
                     title="Computers",
                 ),
-                CategoryMappingsTable(
-                    source=["Electronics", "Computers"], target="computers_1"
-                ),
+                CategoryMappingsTable(source=["Electronics", "Computers"], target="computers_1"),
             ),
             (
-                CategoriesTable(
-                    key="electronics_0", level=0, parent=None, title="Electronics"
-                ),
+                CategoriesTable(key="electronics_0", level=0, parent=None, title="Electronics"),
                 CategoryMappingsTable(source=["Electronics"], target="electronics_0"),
             ),
         ]
@@ -120,9 +102,7 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
 
         expected_category_keys = ["electronics_0", "computers_1", "laptops_2"]
 
-        result = get_categories_for_market_info(
-            offer_cats, categories_by_key, categories_by_name, source_cat_map
-        )
+        result = get_categories_for_market_info(offer_cats, categories_by_key, categories_by_name, source_cat_map)
 
         self.assertEqual(result, expected_category_keys)
 
@@ -135,15 +115,11 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
                 None,
             ),
             (
-                CategoriesTable(
-                    key="kitchen_1", level=1, parent="home_0", title="Kitchen"
-                ),
+                CategoriesTable(key="kitchen_1", level=1, parent="home_0", title="Kitchen"),
                 None,
             ),
             (
-                CategoriesTable(
-                    key="appliances_2", level=2, parent="kitchen_1", title="Appliances"
-                ),
+                CategoriesTable(key="appliances_2", level=2, parent="kitchen_1", title="Appliances"),
                 None,
             ),
         ]
@@ -163,9 +139,7 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
 
         expected_category_keys = ["home_0", "kitchen_1", "appliances_2"]
 
-        result = get_categories_for_market_info(
-            offer_cats, categories_by_key, categories_by_name, source_cat_map
-        )
+        result = get_categories_for_market_info(offer_cats, categories_by_key, categories_by_name, source_cat_map)
         self.assertEqual(result, expected_category_keys)
 
     def test_mapping_and_direct_match(self):
@@ -177,9 +151,7 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
                 CategoryMappingsTable(source=["Books"], target="books_0"),
             ),
             (
-                CategoriesTable(
-                    key="fiction_1", level=1, parent="books_0", title="Fiction"
-                ),
+                CategoriesTable(key="fiction_1", level=1, parent="books_0", title="Fiction"),
                 None,
             ),
         ]
@@ -199,9 +171,7 @@ class TestGetCategoriesForMarketInfo(unittest.TestCase):
 
         expected_category_keys = ["books_0", "fiction_1"]
 
-        result = get_categories_for_market_info(
-            offer_cats, categories_by_key, categories_by_name, source_cat_map
-        )
+        result = get_categories_for_market_info(offer_cats, categories_by_key, categories_by_name, source_cat_map)
         self.assertEqual(result, expected_category_keys)
 
 

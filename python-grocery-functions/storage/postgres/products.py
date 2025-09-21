@@ -98,9 +98,7 @@ def prepare_offer_data(
         product_info = ProductInfo(
             quantity_unit=pydash.get(offer, ["quantity", "size", "unit", "symbol"]),
             quantity_amount=pydash.get(offer, ["quantity", "size", "amount", "max"]),
-            quantity_standard_amount=pydash.get(
-                offer, ["quantity", "size", "standard", "max"]
-            ),
+            quantity_standard_amount=pydash.get(offer, ["quantity", "size", "standard", "max"]),
             nutrition=extract_nutritional_data_new(offer.get("mpnNutrition", {})),
             merged_to=None,
         )
@@ -110,9 +108,7 @@ def prepare_offer_data(
                 gtin_market_info_map[gtin] = market_info
             existing_product_info = gtin_product_map.get(gtin)
             if existing_product_info:
-                gtin_product_map[gtin] = merge_product_info(
-                    existing_product_info, product_info
-                )
+                gtin_product_map[gtin] = merge_product_info(existing_product_info, product_info)
             else:
                 gtin_product_map[gtin] = product_info
 
@@ -149,23 +145,17 @@ def build_root_to_gtins(uf: UnionFind, offer_gtins: set[str]) -> dict[str, set[s
     return root_to_gtins
 
 
-def handle_gtins_for_offers(
-    offers: Sequence[ProcessedMpnOffer], context: str
-) -> list[UUID] | None:
+def handle_gtins_for_offers(offers: Sequence[ProcessedMpnOffer], context: str) -> list[UUID] | None:
     prepared_data, uf = prepare_offer_data(offers)
 
     with Session(get_pg_engine()) as session:
         try:
-            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(
-                session, prepared_data.offer_gtins
-            )
+            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(session, prepared_data.offer_gtins)
             root_to_gtins = build_root_to_gtins(uf, prepared_data.offer_gtins)
-            component_product_id, new_products, products_to_update = (
-                determine_product_ids(
-                    root_to_gtins,
-                    gtin_to_product_map,
-                    prepared_data.gtin_product_map,
-                )
+            component_product_id, new_products, products_to_update = determine_product_ids(
+                root_to_gtins,
+                gtin_to_product_map,
+                prepared_data.gtin_product_map,
             )
             insert_products(session, new_products)
 
@@ -196,12 +186,8 @@ def handle_gtins_for_offers(
                 gtin_offer_object_map=prepared_data.gtin_offer_object_map,
                 gtin_to_product_map=gtin_to_product_map,
             )
-            upsert_product_market_info(
-                session, list(product_market_info_entries.values())
-            )
-            update_offers_with_product_id(
-                session, prepared_data.offer_to_gtins, gtin_to_product_map
-            )
+            upsert_product_market_info(session, list(product_market_info_entries.values()))
+            update_offers_with_product_id(session, prepared_data.offer_to_gtins, gtin_to_product_map)
 
             session.commit()
 

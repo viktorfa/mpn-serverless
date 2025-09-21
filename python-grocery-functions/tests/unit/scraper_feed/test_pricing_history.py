@@ -177,14 +177,10 @@ class TestPriceDifferencesUpdateSet(TestCase):
         self.assertAlmostEqual(actual["differencePercentage"], 5.263157894736842)
         self.assertAlmostEqual(actual["price7DaysMean"], 19)
         self.assertAlmostEqual(actual["difference7DaysMean"], 1)
-        self.assertAlmostEqual(
-            actual["difference7DaysMeanPercentage"], 5.263157894736842
-        )
+        self.assertAlmostEqual(actual["difference7DaysMeanPercentage"], 5.263157894736842)
         self.assertAlmostEqual(actual["price30DaysMean"], 19.25)
         self.assertAlmostEqual(actual["difference30DaysMean"], 0.75)
-        self.assertAlmostEqual(
-            actual["difference30DaysMeanPercentage"], 3.896103896103896
-        )
+        self.assertAlmostEqual(actual["difference30DaysMeanPercentage"], 3.896103896103896)
         self.assertAlmostEqual(actual["price365DaysMean"], 0)
         self.assertAlmostEqual(actual["difference365DaysMean"], 0)
         self.assertAlmostEqual(actual["difference365DaysMeanPercentage"], 0)

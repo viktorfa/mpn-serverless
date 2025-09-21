@@ -48,11 +48,7 @@ def get_report_ga4(
             )
         ),
         limit=page_size,
-        order_bys=[
-            OrderBy(
-                metric=OrderBy.MetricOrderBy(metric_name="screenPageViews"), desc=True
-            )
-        ],
+        order_bys=[OrderBy(metric=OrderBy.MetricOrderBy(metric_name="screenPageViews"), desc=True)],
     )
     report = client.run_report(request=request)
     uri_to_views_map: Mapping[str, int] = {}
@@ -71,16 +67,10 @@ def get_report_ga4(
     return uri_to_views_map
 
 
-def save_postgres_pageviews(
-    uri_pageviews: Mapping[str, int], market: str, session: Session
-):
+def save_postgres_pageviews(uri_pageviews: Mapping[str, int], market: str, session: Session):
     # Step 1: Fetch offers and map URIs to product IDs
     uris = list(uri_pageviews.keys())
-    offers = (
-        session.query(OffersTable.uri, OffersTable.product_id)
-        .filter(OffersTable.uri.in_(uris))
-        .all()
-    )
+    offers = session.query(OffersTable.uri, OffersTable.product_id).filter(OffersTable.uri.in_(uris)).all()
 
     logging.info(f"Found {len(offers)} offers in the database.")
 
@@ -98,9 +88,7 @@ def save_postgres_pageviews(
 
     existing_pairs = {(row.product_id, row.market) for row in existing_rows}
 
-    logging.info(
-        f"Found {len(existing_pairs)} existing rows in the denormalized table."
-    )
+    logging.info(f"Found {len(existing_pairs)} existing rows in the denormalized table.")
 
     updates = [
         {
@@ -145,15 +133,11 @@ def get_and_save_pageviews_ga4(max_pages=6000):
                             continue
                         transformed_uri_pageviews[new_uri] = views
 
-                    logging.info(
-                        f"Got {len(transformed_uri_pageviews)} pages from GA4 for {site_key}"
-                    )
+                    logging.info(f"Got {len(transformed_uri_pageviews)} pages from GA4 for {site_key}")
 
                     market = site_config["market"]
                     if transformed_uri_pageviews:
-                        save_postgres_pageviews(
-                            transformed_uri_pageviews, market, session
-                        )
+                        save_postgres_pageviews(transformed_uri_pageviews, market, session)
 
                 logging.info("Pageviews have been updated in denormalized_products.")
                 session.commit()

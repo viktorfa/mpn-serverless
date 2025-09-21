@@ -355,9 +355,7 @@ def sanitize_data(offer: OfferForMigration) -> OfferForMigration:
 
 
 def migrate_data(limit: int, batch_size: int):
-    logging.info(
-        f"Starting migration of mongo offers with limit {limit} and batch size {batch_size}"
-    )
+    logging.info(f"Starting migration of mongo offers with limit {limit} and batch size {batch_size}")
 
     timer = Timer()
     timer.start("Migrate data")
@@ -475,21 +473,13 @@ def migrate_data(limit: int, batch_size: int):
                 isRecent=_offer.get("isRecent"),
                 difference=_offer.get("difference"),
                 difference30DaysMean=_offer.get("difference30DaysMean"),
-                difference30DaysMeanPercentage=_offer.get(
-                    "difference30DaysMeanPercentage"
-                ),
+                difference30DaysMeanPercentage=_offer.get("difference30DaysMeanPercentage"),
                 difference365DaysMean=_offer.get("difference365DaysMean"),
-                difference365DaysMeanPercentage=_offer.get(
-                    "difference365DaysMeanPercentage"
-                ),
+                difference365DaysMeanPercentage=_offer.get("difference365DaysMeanPercentage"),
                 difference7DaysMean=_offer.get("difference7DaysMean"),
-                difference7DaysMeanPercentage=_offer.get(
-                    "difference7DaysMeanPercentage"
-                ),
+                difference7DaysMeanPercentage=_offer.get("difference7DaysMeanPercentage"),
                 difference90DaysMean=_offer.get("difference90DaysMean"),
-                difference90DaysMeanPercentage=_offer.get(
-                    "difference90DaysMeanPercentage"
-                ),
+                difference90DaysMeanPercentage=_offer.get("difference90DaysMeanPercentage"),
                 differencePercentage=_offer.get("differencePercentage"),
                 price30DaysMean=_offer.get("price30DaysMean"),
                 price365DaysMean=_offer.get("price365DaysMean"),
@@ -528,22 +518,16 @@ def migrate_data(limit: int, batch_size: int):
         except KeyError:
             pass
         except ValueError:
-            logging.warning(
-                f"Could not convert price to float: {offer.pricing.get('price')}"
-            )
+            logging.warning(f"Could not convert price to float: {offer.pricing.get('price')}")
             offer.pricing["price"] = None
 
         try:
             if type(offer.pricing["prePrice"]) is str:
-                offer.pricing["prePrice"] = float(
-                    offer.pricing["prePrice"].replace(",", ".")
-                )
+                offer.pricing["prePrice"] = float(offer.pricing["prePrice"].replace(",", "."))
         except KeyError:
             pass
         except ValueError:
-            logging.warning(
-                f"Could not convert prePrice to float: {offer.pricing.get('prePrice')}"
-            )
+            logging.warning(f"Could not convert prePrice to float: {offer.pricing.get('prePrice')}")
             offer.pricing["prePrice"] = None
 
         processed_offer = OfferForMigration(
@@ -594,9 +578,7 @@ def migrate_data(limit: int, batch_size: int):
                 if len(offers) > 1:
                     for offer in offers:
                         if offer["context"] != c:
-                            raise ValueError(
-                                f"Offer context {offer['context']} does not match site collection {c}"
-                            )
+                            raise ValueError(f"Offer context {offer['context']} does not match site collection {c}")
                     try:
                         handle_store_offer_batch(offers, c)
                     except Exception:
@@ -621,9 +603,7 @@ def migrate_data(limit: int, batch_size: int):
         if len(offers) > 0:
             for offer in offers:
                 if offer["context"] != c:
-                    raise ValueError(
-                        f"Offer context {offer['context']} does not match site collection {c}"
-                    )
+                    raise ValueError(f"Offer context {offer['context']} does not match site collection {c}")
             try:
                 handle_store_offer_batch(offers, c)
             except Exception:
@@ -662,16 +642,12 @@ def handle_store_offer_batch(offers: Sequence[OfferForMigration], context: str):
     with Session(get_pg_engine()) as session:
         try:
             timer.start("Insert gtins")
-            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(
-                session, prepared_data.offer_gtins
-            )
+            gtin_to_product_map, existing_gtins, new_gtins = find_existing_gtins(session, prepared_data.offer_gtins)
             root_to_gtins = build_root_to_gtins(uf, prepared_data.offer_gtins)
-            component_product_id, new_products, products_to_update = (
-                determine_product_ids(
-                    root_to_gtins,
-                    gtin_to_product_map,
-                    prepared_data.gtin_product_map,
-                )
+            component_product_id, new_products, products_to_update = determine_product_ids(
+                root_to_gtins,
+                gtin_to_product_map,
+                prepared_data.gtin_product_map,
             )
             insert_products(session, new_products)
 
@@ -718,9 +694,7 @@ def handle_store_offer_batch(offers: Sequence[OfferForMigration], context: str):
                 gtin_offer_object_map=prepared_data.gtin_offer_object_map,
                 gtin_to_product_map=gtin_to_product_map,
             )
-            upsert_product_market_info(
-                session, list(product_market_info_entries.values())
-            )
+            upsert_product_market_info(session, list(product_market_info_entries.values()))
 
             product_ids = list(gtin_to_product_map.values())
 
@@ -749,15 +723,9 @@ def handle_store_offer_batch(offers: Sequence[OfferForMigration], context: str):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Migrate offers from MongoDB to PostgreSQL."
-    )
-    parser.add_argument(
-        "--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate"
-    )
-    parser.add_argument(
-        "--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration"
-    )
+    parser = argparse.ArgumentParser(description="Migrate offers from MongoDB to PostgreSQL.")
+    parser.add_argument("--limit", type=int, default=OFFER_LIMIT, help="Limit of offers to migrate")
+    parser.add_argument("--batch_size", type=int, default=BATCH_SIZE, help="Batch size for migration")
 
     args = parser.parse_args()
 
