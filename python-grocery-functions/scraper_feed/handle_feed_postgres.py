@@ -6,7 +6,6 @@ import ijson
 from ijson.common import IncompleteJSONError
 
 from amp_types.amp_product import ProcessedMpnOffer, ScraperOffer
-from scraper_feed.affiliate_links import add_affilite_link_to_product
 from scraper_feed.filters import filter_product, transform_product
 from storage.postgres.pydantic_models import HandleFeedConfig
 from storage.postgres.scraper_feed import handle_store_offer_batch, insert_handle_run_batch, update_handle_run_batch_status
@@ -25,8 +24,8 @@ def handle_feed_with_config_postgres(feed_json_stream: botocore.response.Streami
 
     filters = config.filters
 
-    offer_batch = []
-    example_items = []
+    offer_batch: list[ProcessedMpnOffer] = []
+    example_items: list[ProcessedMpnOffer] = []
     total_offers = 0
     total_filtered_offers = 0
 
@@ -41,7 +40,7 @@ def handle_feed_with_config_postgres(feed_json_stream: botocore.response.Streami
             total_filtered_offers += 1
 
             processed_offer: ProcessedMpnOffer = {
-                **add_affilite_link_to_product(transformed_offer),
+                **transformed_offer,
                 "context": offer_context,
                 "scrapeBatchId": scrape_batch_id,
                 "namespace": namespace,

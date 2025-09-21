@@ -434,6 +434,216 @@ class TestFieldMapping:
         assert result["href"] == "https://store.com/product/123"
         assert result["ahref"] == "https://affiliate.com/track/123"
 
+    def test_get_ahref_for_dealer_with_affiliate_config(self):
+        """Test trackingUrl is mapped to ahref field."""
+        offer = _minimal_offer(url="https://amazon.se/dp/kjsdfkjsd")
+        config = _minimal_config()
+
+        result = transform_product(offer, config)
+
+        assert result["href"] == "https://amazon.se/dp/kjsdfkjsd"
+        assert result["ahref"] == "https://amazon.se/dp/kjsdfkjsd?tag=mpn00e-21"
+
+
+class TestFieldMappingIntegration:
+    """Comprehensive tests for field mapping integration with different extraction processes."""
+
+    def test_basic_field_mapping_creates_top_level_fields(self):
+        """Test that field mapping creates accessible top-level fields."""
+        offer = _minimal_offer(
+            additionalProperties=[
+                {"key": "CustomTitle", "value": "Mapped Title"},
+                {"key": "CustomBrand", "value": "Mapped Brand"},
+            ]
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "CustomTitle", "destination": "title", "replace_type": "key", "force_replace": True},
+                {"source": "CustomBrand", "destination": "brand", "replace_type": "key"},
+            ]
+        )
+
+        result = transform_product(offer, config)
+
+        # Field mapping should override original title
+        assert result["title"] == "Mapped Title"
+        # Field mapping should create brand field
+        assert result.get("brand") == "Mapped Brand"
+
+    def test_nutrition_field_mapping_end_to_end(self):
+        """Test the complete nutrition field mapping pipeline."""
+        offer = _minimal_offer(
+            additionalProperties=[
+                {"key": "Protein", "value": "20 g"},
+                {"key": "Fett", "value": "15g"},
+                {"key": "Karbohydrater", "value": "30 g"},
+            ]
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "Protein", "destination": "proteins", "replace_type": "key"},
+                {"source": "Fett", "destination": "fats", "replace_type": "key"},
+                {"source": "Karbohydrater", "destination": "carbohydrates", "replace_type": "key"},
+            ]
+        )
+
+        result = transform_product(offer, config)
+        nutrition = result["mpnNutrition"]
+
+        # All mapped nutrition fields should be extracted
+        assert "proteins" in nutrition
+        assert "fats" in nutrition
+        assert "carbohydrates" in nutrition
+
+        # Values should be correctly parsed
+        assert nutrition["proteins"]["value"] == 20.0
+        assert nutrition["fats"]["value"] == 15.0
+        assert nutrition["carbohydrates"]["value"] == 30.0
+
+    def test_quantity_field_mapping_with_string(self):
+        """Test the complete nutrition field mapping pipeline."""
+        offer = _minimal_offer(
+            additionalProperties=[
+                {"key": "Størrelse", "value": "20 g"},
+            ]
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "Størrelse", "destination": "quantityString", "replace_type": "key"},
+            ]
+        )
+
+        result = transform_product(offer, config)
+
+        # Should extract 20g as quantity
+        assert "quantity" in result
+        quantity = result["quantity"]
+        assert isinstance(quantity, dict)
+
+        # Should have size field with liter unit
+        assert "size" in quantity
+        size = quantity["size"]
+        assert "amount" in size
+        assert "unit" in size
+
+        # Should extract 1 liter
+        assert size["amount"]["min"] == 20.0
+        assert size["amount"]["max"] == 20.0
+        assert size["unit"]["symbol"] == "g"
+        assert size["unit"]["type"] == "quantity"
+
+    def test_quantity_field_mapping_with_values(self):
+        """Test the complete nutrition field mapping pipeline."""
+        offer = _minimal_offer(
+            subtitle="100g",
+            additionalProperties=[
+                {"key": "Størrelse", "value": "20"},
+                {"key": "Enhet", "value": "g"},
+            ],
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "Størrelse", "destination": "quantityValue", "replace_type": "key"},
+                {"source": "Enhet", "destination": "quantityUnit", "replace_type": "key"},
+            ]
+        )
+
+        result = transform_product(offer, config)
+
+        # Should extract 20g as quantity
+        assert "quantity" in result
+        quantity = result["quantity"]
+        assert isinstance(quantity, dict)
+
+        # Should have size field with liter unit
+        assert "size" in quantity
+        size = quantity["size"]
+        assert "amount" in size
+        assert "unit" in size
+
+        # Should extract 1 liter
+        assert size["amount"]["min"] == 20.0
+        assert size["amount"]["max"] == 20.0
+        assert size["unit"]["symbol"] == "g"
+        assert size["unit"]["type"] == "quantity"
+
+    def test_fixed_field_mapping(self):
+        """Test the complete nutrition field mapping pipeline."""
+        offer = _minimal_offer(
+            dealer="Original Dealer Name",
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"destination": "dealer", "replace_type": "fixed", "force_replace": True, "replace_value": "www.byggmax.se"}
+            ]
+        )
+
+        result = transform_product(offer, config)
+
+        # Dealer name should be overridden
+        assert result["dealer"] == "www.byggmax.se"
+        assert result["dealerKey"] == "www_byggmax_se"
+
+    def test_complex_multi_step_field_mapping(self):
+        """Test complex scenarios with multiple field mappings."""
+        offer = _minimal_offer(
+            additionalProperties=[
+                {"key": "Protein_NO", "value": "25g"},
+                {"key": "Energy_NO", "value": "500 kcal"},
+                {"key": "Ingredients_NO", "value": "Water, Sugar, Salt"},
+                {"key": "Brand_NO", "value": "TestBrand"},
+            ]
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "Protein_NO", "destination": "proteins", "replace_type": "key"},
+                {"source": "Energy_NO", "destination": "energy", "replace_type": "key"},
+                {"source": "Ingredients_NO", "destination": "ingredients", "replace_type": "key"},
+                {"source": "Brand_NO", "destination": "brand", "replace_type": "key"},
+            ],
+            extractIngredientsFields=["ingredients"],
+        )
+
+        result = transform_product(offer, config)
+
+        # Nutrition extraction should find mapped protein
+        nutrition = result["mpnNutrition"]
+        assert "proteins" in nutrition
+        assert nutrition["proteins"]["value"] == 25.0
+
+        # Ingredients extraction should find mapped ingredients
+        ingredients = result["rawIngredients"]
+        assert len(ingredients) > 0
+        assert "water" in ingredients
+
+    def test_ingredients_field_mapping(self):
+        """Test complex scenarios with multiple field mappings."""
+        offer = _minimal_offer(
+            additionalProperties=[
+                {"key": "Ingredients_NO", "value": "Water, Sugar, Salt"},
+            ],
+            description="Inneholder nøtter",
+        )
+
+        config = _minimal_config(
+            fieldMapping=[
+                {"source": "Ingredients_NO", "destination": "ingredients", "replace_type": "key"},
+            ],
+        )
+
+        result = transform_product(offer, config)
+
+        # Ingredients extraction should find mapped ingredients
+        ingredients = result["rawIngredients"]
+        assert len(ingredients) > 0
+        assert "water" in ingredients
+
 
 class TestQuantityExtraction:
     """Test quantity parsing and extraction from configured fields."""
@@ -489,14 +699,8 @@ class TestQuantityExtraction:
 
     def test_quantity_extracted_from_description(self):
         """Test quantity extraction from product description field."""
-        offer = _minimal_offer(
-            title="Fresh Milk",
-            description="Premium organic whole milk, 1.5 liter carton"
-        )
-        config = _minimal_config(
-            extractQuantityFields=["description"],
-            context="amp-no"
-        )
+        offer = _minimal_offer(title="Fresh Milk", description="Premium organic whole milk, 1.5 liter carton")
+        config = _minimal_config(extractQuantityFields=["description"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should extract 1.5L from description
@@ -513,10 +717,7 @@ class TestQuantityExtraction:
     def test_quantity_with_grams_converted_to_standard_si(self):
         """Test that gram quantities are extracted and converted to kg SI units."""
         offer = _minimal_offer(title="Coffee Beans 500g")
-        config = _minimal_config(
-            extractQuantityFields=["title"],
-            context="amp-no"
-        )
+        config = _minimal_config(extractQuantityFields=["title"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should extract 500g as quantity
@@ -539,10 +740,7 @@ class TestQuantityExtraction:
     def test_quantity_with_milliliters_converted_to_standard_si(self):
         """Test that milliliter quantities are extracted and converted to liter SI units."""
         offer = _minimal_offer(title="Vanilla Extract 250ml")
-        config = _minimal_config(
-            extractQuantityFields=["title"],
-            context="amp-no"
-        )
+        config = _minimal_config(extractQuantityFields=["title"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should extract 250ml as quantity
@@ -569,10 +767,7 @@ class TestQuantityExtraction:
             quantityValue="0.5",  # Explicit 0.5
             quantityUnit="l",  # Explicit liters
         )
-        config = _minimal_config(
-            extractQuantityFields=["title"],
-            context="amp-no"
-        )
+        config = _minimal_config(extractQuantityFields=["title"], context="amp-no")
         result = transform_product(offer, config)
 
         # Explicit quantity should override parsed quantity
@@ -589,10 +784,7 @@ class TestQuantityExtraction:
     def test_quantity_with_pieces_units(self):
         """Test extraction of piece quantities (stk, boks, flaske)."""
         offer = _minimal_offer(title="Beer Pack 6 stk")
-        config = _minimal_config(
-            extractQuantityFields=["title"],
-            context="amp-no"
-        )
+        config = _minimal_config(extractQuantityFields=["title"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should extract piece quantity
@@ -617,7 +809,7 @@ class TestQuantityExtraction:
         # amp context should restrict to safe units (l, kg) - should not extract meters
         config_amp = _minimal_config(
             extractQuantityFields=["title"],
-            context="amp-no"  # Grocery context - safe units ["l", "kg"]
+            context="amp-no",  # Grocery context - safe units ["l", "kg"]
         )
         result_amp = transform_product(offer_meter, config_amp)
 
@@ -629,7 +821,7 @@ class TestQuantityExtraction:
         # non-amp context should allow all units including meters
         config_bygg = _minimal_config(
             extractQuantityFields=["title"],
-            context="bygg-no"  # Building supplies context - no safe units restriction
+            context="bygg-no",  # Building supplies context - no safe units restriction
         )
         result_bygg = transform_product(offer_meter, config_bygg)
 
@@ -643,10 +835,7 @@ class TestQuantityExtraction:
     def test_multiplier_handling_in_quantity_parsing(self):
         """Test that multiplier units (x) are handled correctly."""
         offer = _minimal_offer(title="Pasta 4 x 500g")
-        config = _minimal_config(
-            extractQuantityFields=["title"],
-            context="amp-no"
-        )
+        config = _minimal_config(extractQuantityFields=["title"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should handle multiplier and extract total quantity
@@ -662,14 +851,8 @@ class TestQuantityExtraction:
 
     def test_quantity_extraction_from_multiple_fields(self):
         """Test quantity extraction when multiple fields are configured."""
-        offer = _minimal_offer(
-            title="Organic Coffee",
-            description="Premium arabica coffee beans, 1kg bag"
-        )
-        config = _minimal_config(
-            extractQuantityFields=["title", "description"],
-            context="amp-no"
-        )
+        offer = _minimal_offer(title="Organic Coffee", description="Premium arabica coffee beans, 1kg bag")
+        config = _minimal_config(extractQuantityFields=["title", "description"], context="amp-no")
         result = transform_product(offer, config)
 
         # Should extract quantity from description since title has none
@@ -688,7 +871,7 @@ class TestQuantityExtraction:
         offer = _minimal_offer(title="Milk 1L")
         config = _minimal_config(
             extractQuantityFields=[],  # No fields configured
-            context="amp-no"
+            context="amp-no",
         )
         result = transform_product(offer, config)
 
@@ -1332,34 +1515,26 @@ class TestShopgunTransformation:
             "pricing": {
                 "price": 12.50,
                 "pre_price": 15.00,  # Sale price
-                "currency": "DKK"
+                "currency": "DKK",
             },
             "run_from": "2024-01-15T00:00:00Z",
             "run_till": "2024-01-22T23:59:59Z",
-            "images": {
-                "zoom": "https://images.shopgun.com/zoom/product123.jpg"
-            },
+            "images": {"zoom": "https://images.shopgun.com/zoom/product123.jpg"},
             "stores": ["store1", "store2"],
             "id": "shopgun_product_123",
             # Shopgun quantity structure (different from regular offers)
             "quantity": {
                 "unit": {"symbol": "l", "type": "quantity"},
                 "size": {"from": 1.0, "to": 1.0},
-                "pieces": {"from": 1, "to": 1}
+                "pieces": {"from": 1, "to": 1},
             },
-            **kwargs
+            **kwargs,
         }
         return offer
 
     def _shopgun_config(self, **kwargs):
         """Create a Shopgun-specific config."""
-        config_data = {
-            "provenance": "shopgun_dk",
-            "namespace": "shopgun",
-            "context": "amp-dk",
-            "market": "dk",
-            **kwargs
-        }
+        config_data = {"provenance": "shopgun_dk", "namespace": "shopgun", "context": "amp-dk", "market": "dk", **kwargs}
         return _minimal_config(**config_data)
 
     def test_shopgun_basic_field_mapping(self):
@@ -1414,7 +1589,7 @@ class TestShopgunTransformation:
             quantity={
                 "unit": {"symbol": "kg", "type": "quantity"},
                 "size": {"from": 0.5, "to": 0.5},
-                "pieces": {"from": 1, "to": 1}
+                "pieces": {"from": 1, "to": 1},
             }
         )
         config = self._shopgun_config()
@@ -1445,11 +1620,7 @@ class TestShopgunTransformation:
     def test_shopgun_piece_quantity_handling(self):
         """Test Shopgun piece quantities (non-weight/volume units)."""
         offer = self._shopgun_offer(
-            quantity={
-                "unit": {"symbol": "stk", "type": "piece"},
-                "size": {"from": 6, "to": 6},
-                "pieces": {"from": 1, "to": 1}
-            }
+            quantity={"unit": {"symbol": "stk", "type": "piece"}, "size": {"from": 6, "to": 6}, "pieces": {"from": 1, "to": 1}}
         )
         config = self._shopgun_config()
 
@@ -1469,7 +1640,7 @@ class TestShopgunTransformation:
             quantity={
                 "unit": None,  # No unit
                 "size": {"from": 1, "to": 1},
-                "pieces": {"from": 1, "to": 1}
+                "pieces": {"from": 1, "to": 1},
             }
         )
         config = self._shopgun_config()
@@ -1521,7 +1692,7 @@ class TestShopgunTransformation:
         offer = self._shopgun_offer(
             heading="Organic Flour 2kg Premium",
             description="High quality organic flour, 2 kilogram bag",
-            quantity={"unit": None, "size": {}, "pieces": {}}  # No explicit quantity
+            quantity={"unit": None, "size": {}, "pieces": {}},  # No explicit quantity
         )
         config = self._shopgun_config()
 
@@ -1551,8 +1722,8 @@ class TestShopgunTransformation:
             quantity={
                 "unit": {"symbol": "g", "type": "quantity"},
                 "size": {"from": 500, "to": 500},
-                "pieces": {"from": 1, "to": 1}
-            }
+                "pieces": {"from": 1, "to": 1},
+            },
         )
         config = self._shopgun_config()
 
