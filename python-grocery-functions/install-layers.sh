@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-PYTHON_VERSION=3.11
+PYTHON_VERSION=3.12
 uv export --no-dev --no-group dramatiq --no-editable --no-hashes --format requirements-txt > ./requirements-lambda.txt
 rm -rf ./layer/common && mkdir -p ./layer/common
 uv pip install --no-installer-metadata --no-compile-bytecode --python-platform x86_64-manylinux2014 --python $PYTHON_VERSION --prefix ./layer/common/python -r ./requirements-lambda.txt

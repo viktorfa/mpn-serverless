@@ -19,7 +19,7 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: python3.11
+  runtime: python3.12
   region: eu-central-1
   logRetentionInDays: ${self:custom.logRetentionInDays.${sls:stage}, self:custom.logRetentionInDays.other}
   profile: serverless-mpn-admin
