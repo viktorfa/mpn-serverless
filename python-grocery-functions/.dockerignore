@@ -1,0 +1,53 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Development dependencies and cache
+.ruff_cache/
+.pytest_cache/
+node_modules/
+
+# Environment files
+.env*
+!.env.example
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+*.zip
+.serverless/
+.package/
+layer/
+
+# Documentation and development files
+docs/
+README.md
+CLAUDE.md
+
+# Test files
+tests/
+
+# Development scripts
+run_*.sh
+deploy-*.sh
+package.sh
+install-*.sh
+
+# Local development files
+event-data/

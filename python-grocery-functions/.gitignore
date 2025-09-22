@@ -29,3 +29,8 @@ htmlcov/
 *.coverage.*
 __pycache__/
 *.pyc
+
+layer/
+
+.env.prod
+.env.dev

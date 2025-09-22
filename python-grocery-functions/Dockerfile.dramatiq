@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy requirements and install them
 COPY requirements-dramatiq.txt /app/
-RUN pip install --upgrade pip && pip install --quiet --no-cache-dir -r requirements-dramatiq.txt
+RUN pip install --upgrade --quiet --no-cache-dir pip && pip install --quiet --no-cache-dir -r requirements-dramatiq.txt
 
 # Copy the entire project to the working directory
 COPY . /app/
