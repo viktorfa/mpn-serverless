@@ -6,3 +6,7 @@ jspm_packages
 .serverless
 
 assets/
+
+
+env.prod
+env.dev
