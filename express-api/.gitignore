@@ -54,3 +54,6 @@ artifact.zip
 .serverless-offline/
 
 out/
+out-fastify/
+
+docker-compose-*.canonical.yml

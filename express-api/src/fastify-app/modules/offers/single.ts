@@ -19,6 +19,9 @@ export const getSingleSchema = {
     params: Type.Object({
       uri: Type.String(),
     }),
+    query: Type.Object({
+      market: Type.String(),
+    }),
     response: {
       200: Type.Object({
         offer: Type.Object({}, { additionalProperties: true }),
@@ -37,19 +40,37 @@ export const getSingleSchema = {
 export const getSingleHandler = async (
   request: FastifyRequest<{
     Params: Static<typeof getSingleSchema.schema.params>;
+    Querystring: Static<typeof getSingleSchema.schema.query>;
   }>,
   reply: FastifyReply,
   server: FastifyInstance,
 ): Promise<Static<(typeof getSingleSchema.schema.response)["200"]>> => {
-  console.log({ "server.db": server.db });
-
   const uri = getUri(request.params.uri);
 
   const offer = await server.db
     .selectFrom("offers")
-    .selectAll()
+    .select([
+      "offers.uri",
+      "offers.product_id",
+      "offers.market",
+      "offers.price",
+      "offers.pre_price",
+      "offers.currency",
+      "offers.href",
+      "offers.ahref",
+      "offers.title",
+      "offers.subtitle",
+      "offers.description",
+      "offers.short_description",
+      "offers.dealer_key",
+      "offers.image",
+      "offers.mpn_stock",
+      "offers.provenance",
+      "offers.valid_from",
+      "offers.valid_through",
+    ])
     .select((eb) => [
-      jsonObjectFrom(
+      jsonArrayFrom(
         eb
           .selectFrom("dealers")
           .select([
@@ -57,7 +78,9 @@ export const getSingleHandler = async (
             "dealers.title",
             "dealers.logo_url",
             "dealers.url",
+            "dealers.market",
           ])
+          //.where("dealers.market", "=", request.query.market)
           .whereRef("dealers.key", "=", "offers.dealer_key"),
       ).as("dealerObject"),
     ])
@@ -80,13 +103,21 @@ export const getSingleHandler = async (
     const [denormalizedProduct, marketInfo] = await Promise.all([
       server.db
         .selectFrom("denormalized_products")
-        .selectAll()
+        .select([
+          "denormalized_products.offers",
+          "denormalized_products.quantity_unit",
+          "denormalized_products.quantity_amount",
+        ])
         .where("product_id", "=", offer.product_id)
         .where("market", "=", offer.market)
         .executeTakeFirst(),
       server.db
         .selectFrom("product_market_infos")
-        .selectAll()
+        .select([
+          "product_market_infos.product_id",
+          "product_market_infos.brand_key",
+          "product_market_infos.vendor_key",
+        ])
         .select((eb) => [
           jsonObjectFrom(
             eb
@@ -118,7 +149,8 @@ export const getSingleHandler = async (
                 "ingredients",
                 "product_has_ingredient.ingredient_id",
                 "ingredients.id",
-              ),
+              )
+              .distinctOn("ingredients.id"),
           ).as("ingredients"),
         ])
         .select((eb) => [
@@ -157,14 +189,20 @@ export const getSingleHandler = async (
     ]);
 
     if (denormalizedProduct) {
-      identical = denormalizedProduct.offers
+      const offerUris = [];
+      denormalizedProduct.offers
         .filter((o) => o.uri !== uri)
-        .map((o) =>
-          convertDenormalizedOffer({
-            newOffer: o,
-            product: denormalizedProduct,
-          }),
-        );
+        .forEach((o) => {
+          if (!offerUris.includes(o.uri)) {
+            offerUris.push(o.uri);
+            identical.push(
+              convertDenormalizedOffer({
+                newOffer: o,
+                product: denormalizedProduct,
+              }),
+            );
+          }
+        });
     }
 
     const quantity = getQuantity({
@@ -191,18 +229,21 @@ export const getSingleHandler = async (
       }
     });
 
+    const marketDealer = offer.dealerObject.find(
+      (x) => x.market == request.query.market,
+    );
+    const dealerObject = marketDealer || offer.dealerObject[0];
+
     const formattedOffer = {
-      marketInfo,
-      denormalizedProduct,
       uri: legacyUri,
-      dealer: offer.dealerObject?.title,
-      dealerKey: offer.dealer_key,
-      dealerObject: offer.dealerObject,
+      dealer: dealerObject?.title,
+      dealerKey: dealerObject?.key,
+      dealerObject,
       brand: marketInfo.brandObject?.title,
-      brandKey: marketInfo.brand_key,
+      brandKey: marketInfo.brandObject?.key,
       brandObject: marketInfo.brandObject,
       vendor: marketInfo.vendorObject?.title,
-      vendorKey: marketInfo.vendor_key,
+      vendorKey: marketInfo.vendorObject?.key,
       vendorObject: marketInfo.vendorObject,
       href: offer.href,
       imageUrl: offer.image,
@@ -211,13 +252,11 @@ export const getSingleHandler = async (
         price: offer.price,
         currency: offer.currency,
         prePrice: offer.pre_price,
-        priceUnit: offer.price_unit,
       },
       provenance: offer.provenance,
-      quantity: quantity,
+      quantity,
       subtitle: offer.subtitle,
       title: offer.title,
-      validFrom: offer.valid_from,
       validThrough: offer.valid_through,
       value: getValue({
         unit: marketInfo.productObject?.quantity_unit,

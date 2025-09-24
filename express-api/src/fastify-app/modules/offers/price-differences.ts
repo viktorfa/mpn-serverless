@@ -9,8 +9,8 @@ import {
   orderNullsLast,
   standardizeQuantity,
 } from "./utils";
-import { Offers } from "generated/kysely";
-import { sql } from "kysely";
+import { DB } from "generated/kysely";
+import { ExpressionBuilder, Kysely, sql } from "kysely";
 
 export const priceDifferencesSchema = {
   schema: {
@@ -33,28 +33,63 @@ export const priceDifferencesSchema = {
   },
 };
 
-export const priceDifferencesHandler = async (
-  request: FastifyRequest<{
-    Querystring: Static<typeof priceDifferencesSchema.schema.querystring>;
-  }>,
-  reply: FastifyReply,
-  server: FastifyInstance,
-): Promise<Static<(typeof priceDifferencesSchema.schema.response)["200"]>> => {
-  const dealerKeys = getCommaSeparatedAsList(request.query.dealers);
-  const categoryKeys = getCommaSeparatedAsList(request.query.categories);
-  const offerContext = getOfferContextFromSiteCollection(
-    request.query.productCollection,
+const selectProductFromOffer = (
+  eb: ExpressionBuilder<DB, "offers" | "product_market_infos">,
+) =>
+  jsonObjectFrom(
+    eb
+      .selectFrom("products")
+      .select([
+        "products.id",
+        "products.quantity_unit",
+        "products.quantity_amount",
+      ])
+      .whereRef("offers.product_id", "=", "products.id"),
   );
 
+const getOffersQuery = async ({
+  db,
+  market,
+  context,
+  direction,
+  dealerKeys,
+  categoryKeys,
+  limit,
+  daysPast,
+}: {
+  db: Kysely<DB>;
+  market: string;
+  context: string;
+  direction: "asc" | "desc";
+  dealerKeys: string[];
+  categoryKeys: string[];
+  limit: number;
+  daysPast: number;
+}) => {
   const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
 
-  let offersQuery = server.db
+  let offersQuery = db
     .selectFrom("offers")
-    .selectAll("offers")
-    .innerJoin(
-      "product_market_infos",
-      "offers.product_id",
-      "product_market_infos.product_id",
+    .select([
+      "offers.uri",
+      "offers.price",
+      "offers.pre_price",
+      "offers.title",
+      "offers.image",
+      "offers.difference_7_days_mean",
+      "offers.difference_7_days_mean_percentage",
+      "offers.difference_30_days_mean",
+      "offers.difference_30_days_mean_percentage",
+      "offers.difference_90_days_mean",
+      "offers.difference_90_days_mean_percentage",
+      "offers.difference_180_days_mean",
+      "offers.difference_180_days_mean_percentage",
+    ])
+    .innerJoin("product_market_infos", (join) =>
+      join
+        .onRef("offers.product_id", "=", "product_market_infos.product_id")
+        .onRef("offers.market", "=", "product_market_infos.market"),
     )
     .select((eb) => [
       jsonObjectFrom(
@@ -68,32 +103,31 @@ export const priceDifferencesHandler = async (
             "dealers.is_partner",
             "dealers.url",
           ])
-          .where("market", "=", request.query.market)
+          .where("dealers.market", "=", market)
           .whereRef("offers.dealer_key", "=", "dealers.key"),
       ).as("dealerObject"),
     ])
-    .select((eb) => [
-      jsonObjectFrom(
-        eb
-          .selectFrom("products")
-          .select([
-            "products.id",
-            "products.quantity_unit",
-            "products.quantity_amount",
-          ])
-          .whereRef("offers.product_id", "=", "products.id"),
-      ).as("productObject"),
-    ])
-    .where("offers.market", "=", request.query.market)
-    .where("offers.context", "=", offerContext)
+    .select((eb) => [selectProductFromOffer(eb).as("productObject")])
     .where("offers.valid_through", ">", now)
-    .orderBy(
-      "difference_180_days_mean_percentage",
-      orderNullsLast(request.query.direction),
-    )
-    .limit(Math.min(request.query.limit, 10));
+    //.where("offers.market", "=", market)
+    .where("offers.context", "=", context)
+    .limit(Math.min(limit, 10));
 
-  console.log({ dealerKeys, categoryKeys });
+  if (daysPast === 90) {
+    offersQuery = offersQuery
+      .where("offers.difference_90_days_mean_percentage", "is not", null)
+      .orderBy(
+        "offers.difference_90_days_mean_percentage",
+        orderNullsLast(direction),
+      );
+  } else {
+    offersQuery = offersQuery
+      .where("offers.difference_7_days_mean_percentage", "is not", null)
+      .orderBy(
+        "offers.difference_7_days_mean_percentage",
+        orderNullsLast(direction),
+      );
+  }
 
   if (dealerKeys.length > 0) {
     offersQuery = offersQuery.where("dealer_key", "in", dealerKeys);
@@ -106,7 +140,32 @@ export const priceDifferencesHandler = async (
     );
   }
 
-  const offers = await offersQuery.execute();
+  return offersQuery.execute();
+};
+
+export const priceDifferencesHandler = async (
+  request: FastifyRequest<{
+    Querystring: Static<typeof priceDifferencesSchema.schema.querystring>;
+  }>,
+  reply: FastifyReply,
+  server: FastifyInstance,
+): Promise<Static<(typeof priceDifferencesSchema.schema.response)["200"]>> => {
+  const dealerKeys = getCommaSeparatedAsList(request.query.dealers);
+  const categoryKeys = getCommaSeparatedAsList(request.query.categories);
+  const offerContext = getOfferContextFromSiteCollection(
+    request.query.productCollection,
+  );
+
+  const offers = await getOffersQuery({
+    db: server.db,
+    market: request.query.market,
+    context: offerContext,
+    direction: request.query.direction,
+    dealerKeys,
+    categoryKeys,
+    limit: request.query.limit,
+    daysPast: request.query.daysPast,
+  });
 
   const result = offers.map((offer) => {
     const pricingHistoryObject = {
@@ -136,9 +195,9 @@ export function convertOffer({
   newOffer,
   product,
 }: {
-  newOffer: Offers;
-  product?: any;
-}): any {
+  newOffer: Awaited<ReturnType<typeof getOffersQuery>>[number];
+  product?: Awaited<ReturnType<typeof getOffersQuery>>[number]["productObject"];
+}) {
   const [dealer, sku] = newOffer.uri.split(":");
   // Must keep old urls on frontend
   const uri = `${dealer}:product:${sku}`;

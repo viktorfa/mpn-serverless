@@ -5,7 +5,7 @@
     "build": "pnpm build:types && pnpm build:es",
     "build:types": "tsc --emitDeclarationOnly",
     "build:es": "esbuild src/node-server.ts --bundle --platform=node --target=node20 --outdir=out",
-    "build-fastify": "esbuild src/fastify-app/server.ts --bundle --platform=node --target=node20 --outdir=out-fastify --external:@fastify/swagger-ui",
+    "build-fastify": "esbuild src/fastify-app/server.ts --bundle --platform=node --target=node20 --outdir=out-fastify --external:@fastify/swagger-ui --sourcemap",
     "dev": "nodemon --watch src --ext ts --exec 'pnpm build:es && pnpm start'",
     "dev-fastify": "nodemon --watch src/fastify-app --ext ts --exec 'pnpm build-fastify && pnpm start-fastify'",
     "generate-kysely-types": "kysely-codegen --out-file generated/kysely.d.ts --exclude-pattern hdb_* --env-file .env.local --dialect postgres",

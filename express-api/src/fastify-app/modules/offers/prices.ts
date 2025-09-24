@@ -27,7 +27,7 @@ export const getPricingHandler = async (
 
   const recordedPrices = await server.db
     .selectFrom("offer_prices")
-    .selectAll()
+    .select(["offer_prices.price", "offer_prices.recorded_at"])
     .where("uri", "=", uri)
     .orderBy("recorded_at", "asc")
     .execute();
@@ -70,6 +70,7 @@ export const getPricingHandler = async (
   };
 
   const now = new Date();
+  now.setUTCHours(23, 59, 59, 999);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);

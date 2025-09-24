@@ -4,6 +4,7 @@ import fp from "fastify-plugin";
 import { Pool } from "pg";
 import { Kysely, PostgresDialect } from "kysely";
 import type { DB } from "../../../generated/kysely.d";
+
 var types = require("pg").types;
 
 var types = require("pg").types;

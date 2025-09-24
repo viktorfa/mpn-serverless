@@ -6,14 +6,14 @@ import {
 } from "fastify";
 import { Static, Type } from "@sinclair/typebox";
 import { getPricingHandler, getPricingSchema } from "./prices";
-import { getUri, convertDenormalizedProduct } from "./utils";
+import { getUri } from "./utils";
 import {
   priceDifferencesHandler,
   priceDifferencesSchema,
 } from "./price-differences";
 import { searchRelationsHandler, searchRelationsSchema } from "./browse";
 import { getSingleHandler, getSingleSchema } from "./single";
-import { sql } from "kysely";
+import { extraRelationsHandler, extraRelationsSchema } from "./extra";
 
 export const offerRoutes = async (
   server: FastifyInstance,
@@ -27,29 +27,16 @@ export const offerRoutes = async (
     searchRelationsHandler(request, reply, server),
   );
 
-  const extraRelationsSchema = {
+  const singleRedirectSchema = {
     schema: {
       params: Type.Object({
         uri: Type.String(),
       }),
-      querystring: Type.Object({
-        market: Type.String(),
-        productCollection: Type.String(),
-        limit: Type.Integer(),
-      }),
-
       response: {
         200: Type.Object({
-          items: Type.Array(Type.Object({}, { additionalProperties: true })),
-          /*meta: Type.Object(
-            {
-              count: Type.Integer(),
-              page: Type.Integer(),
-              pageSize: Type.Integer(),
-              pageCount: Type.Integer(),
-            },
-            { additionalProperties: true },
-          ),*/
+          href: Type.String(),
+          ahref: Type.Optional(Type.String()),
+          title: Type.String(),
         }),
         404: Type.Object({
           error: Type.String(),
@@ -57,18 +44,17 @@ export const offerRoutes = async (
       },
     },
   };
-  const extraRelationsHandler = async (
+  const singleRedirectHandler = async (
     request: FastifyRequest<{
-      Params: Static<typeof extraRelationsSchema.schema.params>;
-      Querystring: Static<typeof extraRelationsSchema.schema.querystring>;
+      Params: Static<typeof singleRedirectSchema.schema.params>;
     }>,
     reply: FastifyReply,
-  ): Promise<Static<(typeof extraRelationsSchema.schema.response)["200"]>> => {
+  ): Promise<Static<(typeof singleRedirectSchema.schema.response)["200"]>> => {
     const uri = getUri(request.params.uri);
 
     const offer = await server.db
       .selectFrom("offers")
-      .select(["title", "product_id"])
+      .select(["href", "ahref", "title"])
       .where("uri", "=", uri)
       .executeTakeFirst();
 
@@ -76,46 +62,12 @@ export const offerRoutes = async (
       return reply.code(404).send({ error: "Not found" });
     }
 
-    const sanitizedQuery = offer.title.replace(/[^\w\s]/g, " ");
-    const tsQuery = sanitizedQuery.replace(/\s+/g, "|");
-
-    const rank = sql<any>`tsvector_col @@ to_tsquery('simple', ${tsQuery})`.as(
-      "rank",
-    );
-    const trigramSimilarity =
-      sql<number>`similarity(trigram_col, ${sanitizedQuery})`.as("similarity");
-
-    const products = await server.db
-      .selectFrom("denormalized_products")
-      .selectAll("denormalized_products")
-      .select(rank)
-      .select(trigramSimilarity)
-      // Use | to OR the terms
-      .where((eb) =>
-        eb.or([
-          sql<any>`(tsvector_col @@ to_tsquery('simple', ${tsQuery}) `,
-          sql<any>`trigram_col % ${sanitizedQuery})`,
-          //sql<any>`dealers.is_partner = true`,
-          eb("denormalized_products.market", "=", request.query.market),
-        ]),
-      )
-      .where("denormalized_products.market", "=", request.query.market) // Explicitly using "denormalized_products.market"
-      .where("denormalized_products.product_id", "!=", offer.product_id) // Explicit reference here too
-      .limit(Math.min(request.query.limit, 10))
-      .orderBy("rank", "desc")
-      .orderBy("similarity", "desc")
-      .execute();
-
-    const items = products.map((product) => {
-      return convertDenormalizedProduct(product);
-    });
-
-    return reply.code(200).send({ items });
+    return reply.code(200).send(offer);
   };
-  server.get(
-    "/extrarelations/:uri",
-    extraRelationsSchema,
-    extraRelationsHandler,
+  server.get("/:uri/redirect", singleRedirectSchema, singleRedirectHandler);
+
+  server.get("/extrarelations/:uri", extraRelationsSchema, (request, reply) =>
+    extraRelationsHandler(request, reply, server),
   );
 
   server.get("/pricedifferences", priceDifferencesSchema, (request, reply) =>

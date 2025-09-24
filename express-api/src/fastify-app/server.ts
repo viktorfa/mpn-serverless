@@ -1,5 +1,7 @@
+import "source-map-support/register";
+
 import dotenv from "dotenv-safe";
-import path from "path";
+import path from "node:path";
 import { fastifyApp } from "./app";
 
 dotenv.config({
@@ -8,7 +10,7 @@ dotenv.config({
 });
 
 // Run the server!
-fastifyApp.listen({ port: 3000 }, function (err, address) {
+fastifyApp.listen({ port: 3000, host: "0.0.0.0" }, function (err, address) {
   if (err) {
     fastifyApp.log.error(err);
     process.exit(1);

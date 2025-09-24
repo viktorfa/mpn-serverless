@@ -2,9 +2,15 @@ import { sql } from "kysely";
 
 export const getUri = (uri: string): string => {
   const uriParts = uri.split(":");
-  const dealer = uriParts[0];
+  const namespace = uriParts[0];
   const sku = uriParts.length === 3 ? uriParts[2] : uriParts[1];
-  return `${dealer}:${sku}`;
+  return `${namespace}:${sku}`;
+};
+export const getLegacyUri = (uri: string): string => {
+  const uriParts = uri.split(":");
+  const namespace = uriParts[0];
+  const sku = uriParts[1];
+  return `${namespace}:product:${sku}`;
 };
 
 export function getSIUnit(
@@ -88,7 +94,7 @@ export function standardizeQuantity(
   }
 }
 
-type NewOfferType = {
+type DenormalizedOfferType = {
   uri: string;
   title: string;
   href: string;
@@ -102,20 +108,50 @@ type NewOfferType = {
     key: string;
     market: string;
     title: string;
+    url?: string;
+    logo_url?: string;
   };
 };
 
-type ProductType = {
+type DenormalizedIngredientType = {
+  key: string;
+  name: string;
+  ingredient_id: string;
+  shortDescription: string;
+};
+
+type DenormalizedProductType = {
+  product_id: string;
+  market: string;
+  image_url?: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  short_description?: string;
+  brand_key?: string;
+  vendor_key?: string;
+  gtins?: string[];
+  ingredients?: DenormalizedIngredientType[];
   quantity_unit?: string;
   quantity_amount?: number;
+  offers?: DenormalizedOfferType[];
+  price_min?: number;
+  price_max?: number;
+  value_min?: number;
+  value_max?: number;
+  valid_through: string;
+  context: string;
+  category_key?: string;
+  category_keys?: string[];
+  nutrition: Record<string, number>;
 };
 
 export function convertDenormalizedOffer({
   newOffer,
   product,
 }: {
-  newOffer: NewOfferType;
-  product?: ProductType;
+  newOffer: DenormalizedOfferType;
+  product?: DenormalizedProductType;
 }): any {
   const [dealer, sku] = newOffer.uri.split(":");
   // Must keep old urls on frontend
@@ -197,7 +233,7 @@ export const getQuantity = ({
   const siUnit = getSIUnit(unit);
   const standardizedAmount = standardizeQuantity(unit, amount);
 
-  if (!unit || !amount) {
+  if (!unit || !amount || unit == "None") {
     return null;
   }
 
@@ -252,7 +288,22 @@ export const getValue = ({
   };
 };
 
-export function convertDenormalizedProduct(newProduct: any): any {
+export function convertDenormalizedProduct(
+  newProduct: DenormalizedProductType,
+) {
+  let offers = [];
+  if (newProduct.offers) {
+    const offerUris = [];
+    newProduct.offers.forEach((offer) => {
+      if (!offerUris.includes(offer.uri)) {
+        offerUris.push(offer.uri);
+        offers.push(
+          convertDenormalizedOffer({ newOffer: offer, product: newProduct }),
+        );
+      }
+    });
+  }
+
   return {
     _id: newProduct.product_id,
     brand: newProduct.brand,
@@ -266,11 +317,7 @@ export function convertDenormalizedProduct(newProduct: any): any {
       unit: newProduct.quantity_unit,
       amount: parseFloat(newProduct.quantity_amount),
     }),
-    offers: newProduct.offers
-      ? newProduct.offers.map((offer) =>
-          convertDenormalizedOffer({ newOffer: offer, product: newProduct }),
-        )
-      : [],
+    offers,
     priceMin: parseFloat(newProduct.price_min) || null,
     priceMax: parseFloat(newProduct.price_max) || null,
     valueMin: parseFloat(newProduct.value_min) || null,
