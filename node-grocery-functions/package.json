@@ -3,27 +3,21 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.670.0",
-    "@nhost/nhost-js": "^3.1.10",
+    "@aws-sdk/client-ses": "^3.896.0",
     "@sendgrid/mail": "^7.7.0",
-    "@sentry/serverless": "^7.119.2",
-    "date-fns": "^2.30.0",
-    "fast-csv": "^4.3.6",
-    "graphql": "^16.9.0",
-    "graphql-tag": "^2.12.6",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
-    "serverless-postgres": "^2.1.1",
+    "serverless-postgres": "^2.1.2",
     "slugify": "^1.6.6"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.10",
-    "@types/node": "^20.16.12",
-    "serverless": "^3.39.0",
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^20.19.17",
+    "serverless": "^3.40.0",
     "serverless-cloudformation-sub-variables": "^0.2.1",
-    "serverless-esbuild": "^1.54.4",
-    "serverless-offline": "^14.3.2"
+    "serverless-esbuild": "^1.55.1",
+    "serverless-offline": "^14.4.0"
   },
   "scripts": {}
 }
