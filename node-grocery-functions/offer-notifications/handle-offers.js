@@ -3,7 +3,6 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const Handlebars = require("handlebars");
 const { getMessageFromSnsEvent } = require("../utils");
-const { getCollection } = require("../config/mongo");
 const { groupBy } = require("lodash");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const { client: pgClient } = require("../config/postgres");

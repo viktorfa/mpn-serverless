@@ -1,7 +1,0 @@
-{
-  "mongoCollection": "groceryoffers",
-  "engineName": "groceryoffers",
-  "mongoFilter": {
-    "dealer": "europris"
-  }
-}

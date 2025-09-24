@@ -1,19 +1,7 @@
 org: matpanett
 app: node-mpn-functions
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
 
-service: node-mpn-functions # NOTE: update this with your service name
+service: node-mpn-functions 
 frameworkVersion: "3"
 useDotenv: true
 
@@ -28,22 +16,11 @@ provider:
   versionFunctions: false
 
   environment:
-    MONGO_URI: ${env:MONGO_URI}
-    BUCKET_NAME: !ImportValue StaticAssetsBucket
-    CLOUD_FRONT_DISTRIBUTION_ID: !ImportValue StaticAssetsDistribution
     STAGE: ${sls:stage}
     NODE_ENV: ${env:NODE_ENV}
-    ELASTIC_URL: ${env:ELASTIC_URL}
-    ELASTIC_API_KEY: ${env:ELASTIC_API_KEY}
     SENTRY_DSN: ${env:SENTRY_DSN}
     SENTRY_ENVIRONMENT: ${sls:stage}
     NHOST_ADMIN_SECRET: ${env:NHOST_ADMIN_SECRET}
-    NHOST_SUBDOMAIN: ${env:NHOST_SUBDOMAIN}
-    NHOST_REGION: ${env:NHOST_REGION}
-    NHOST_DB_USER: ${env:NHOST_DB_USER}
-    NHOST_DB_PW: ${env:NHOST_DB_PW}
-    NHOST_DB_HOST: ${env:NHOST_DB_HOST}
-    NHOST_DB_NAME: ${env:NHOST_DB_NAME}
     JWT_SECRET: ${env:JWT_SECRET}
     SENDGRID_API_KEY: ${env:SENDGRID_API_KEY}
     ENDPOINT_URL: !Sub
@@ -55,280 +32,8 @@ provider:
       Action:
         - "ses:SendEmail"
       Resource: "*"
-    - Effect: "Allow"
-      Action:
-        - "s3:PutObject"
-      Resource: !Sub
-        - "#{BucketArn}/*"
-        - BucketArn: !ImportValue StaticAssetsBucketArn
-    - Effect: "Allow"
-      Action:
-        - "cloudfront:CreateInvalidation"
-      Resource: !Sub
-        - "arn:aws:cloudfront::#{AccountId}:distribution/#{DistributionId}"
-        - AccountId: !Ref "AWS::AccountId"
-          DistributionId: !ImportValue StaticAssetsDistribution
+    
 functions:
-  runKavallProducts:
-    handler: kavall_ean.matchKavallProducts
-    #events:
-    #  - schedule:
-    #      rate: cron(0 7 ? * * *) # Every day 07:00 AM
-    #      input:
-    #        market: "no"
-  getKavallProducts:
-    handler: kavall_ean.getKavallCsv
-    timeout: 30
-    events:
-      - httpApi: "GET /kavall.csv"
-
-  processGroceryOffers:
-    handler: tokens/handler.processGroceryOffers
-    events:
-      - schedule:
-          rate: cron(0 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "byggoffers"
-      - schedule:
-          rate: cron(1 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "sebyggoffers"
-      - schedule:
-          rate: cron(2 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "segroceryoffers"
-      - schedule:
-          rate: cron(3 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "herbvuoffers"
-      - schedule:
-          rate: cron(4 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "groceryoffers"
-      - schedule:
-          rate: cron(5 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "beautyoffers"
-      - schedule:
-          rate: cron(6 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "sebeautyoffers"
-      - schedule:
-          rate: cron(7 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "degroceryoffers"
-      - schedule:
-          rate: cron(8 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "debyggoffers"
-      - schedule:
-          rate: cron(9 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "debeautyoffers"
-      - schedule:
-          rate: cron(10 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "dkgroceryoffers"
-      - schedule:
-          rate: cron(11 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "dkbyggoffers"
-      - schedule:
-          rate: cron(12 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "dkbeautyoffers"
-      - schedule:
-          rate: cron(13 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "ukbyggoffers"
-      - schedule:
-          rate: cron(14 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "ukgroceryoffers"
-      - schedule:
-          rate: cron(15 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "ukbeautyoffers"
-      - schedule:
-          rate: cron(16 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "usbyggoffers"
-      - schedule:
-          rate: cron(17 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "usgroceryoffers"
-      - schedule:
-          rate: cron(18 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "usbeautyoffers"
-      - schedule:
-          rate: cron(19 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "sggroceryoffers"
-      - schedule:
-          rate: cron(20 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "thgroceryoffers"
-      - schedule:
-          rate: cron(21 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "nlgroceryoffers"
-      - schedule:
-          rate: cron(22 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "frgroceryoffers"
-      - schedule:
-          rate: cron(23 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "figroceryoffers"
-      - schedule:
-          rate: cron(24 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "plgroceryoffers"
-      - schedule:
-          rate: cron(25 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "esgroceryoffers"
-      - schedule:
-          rate: cron(26 7 ? * MON *) # Every Monday 07:00 AM
-          input:
-            mongoCollection: "itgroceryoffers"
-
-  # deleteOffersFromElastic:
-  #   handler: elastic/handler.handleTriggerDeleteEvent
-  #   events:
-  #     - schedule:
-  #         rate: rate(55 minutes)
-  #         input:
-  #           engineName: byggoffers
-  #     - schedule:
-  #         rate: rate(110 minutes)
-  #         input:
-  #           engineName: groceryoffers
-  #     - schedule:
-  #         rate: rate(125 minutes)
-  #         input:
-  #           engineName: segroceryoffers
-  #     - schedule:
-  #         rate: rate(65 minutes)
-  #         input:
-  #           engineName: sebyggoffers
-  #     - schedule:
-  #         rate: rate(45 minutes)
-  #         input:
-  #           engineName: extraoffers
-  #     - schedule:
-  #         rate: rate(41 minutes)
-  #         input:
-  #           engineName: seextraoffers
-  #     - schedule:
-  #         rate: rate(70 minutes)
-  #         input:
-  #           engineName: beautyoffers
-  #     - schedule:
-  #         rate: rate(75 minutes)
-  #         input:
-  #           engineName: sebeautyoffers
-  #     - schedule:
-  #         rate: rate(72 minutes)
-  #         input:
-  #           engineName: degroceryoffers
-  #     - schedule:
-  #         rate: rate(68 minutes)
-  #         input:
-  #           engineName: debyggoffers
-  #     - schedule:
-  #         rate: rate(75 minutes)
-  #         input:
-  #           engineName: ukbeautyoffers
-  #     - schedule:
-  #         rate: rate(72 minutes)
-  #         input:
-  #           engineName: ukgroceryoffers
-  #     - schedule:
-  #         rate: rate(68 minutes)
-  #         input:
-  #           engineName: ukbyggoffers
-  #     - schedule:
-  #         rate: rate(75 minutes)
-  #         input:
-  #           engineName: usbeautyoffers
-  #     - schedule:
-  #         rate: rate(72 minutes)
-  #         input:
-  #           engineName: usgroceryoffers
-  #     - schedule:
-  #         rate: rate(68 minutes)
-  #         input:
-  #           engineName: usbyggoffers
-  #     - schedule:
-  #         rate: rate(72 minutes)
-  #         input:
-  #           engineName: dkgroceryoffers
-  #     - schedule:
-  #         rate: rate(68 minutes)
-  #         input:
-  #           engineName: dkbyggoffers
-  #     - schedule:
-  #         rate: rate(73 minutes)
-  #         input:
-  #           engineName: figroceryoffers
-  #     - schedule:
-  #         rate: rate(65 minutes)
-  #         input:
-  #           engineName: fibyggoffers
-  #     - schedule:
-  #         rate: rate(85 minutes)
-  #         input:
-  #           engineName: sggroceryoffers
-
-  migrateDealersToCloudflareKv:
-    handler: cloudflare-kv/handler.migrateDealersToCloudflare
-  migrateOffersToCloudflareKv:
-    handler: cloudflare-kv/handler.handleTriggerMigrateEvent
-  migrateOffersToCloudflareSns:
-    handler: cloudflare-kv/handler.handleSnsMigrateEvent
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Fn::ImportValue: !Sub
-              - "#{Stage}-ScraperFeedHandledTopicArn"
-              - Stage: ${sls:stage}
-  migrateOffersToElastic:
-    handler: elastic/handler.handleTriggerMigrateEvent
-  migrateOffersToElasticSns:
-    handler: elastic/handler.handleSnsMigrateEvent
-    #events:
-    #  - sns:
-    #      topicName: ScraperFeedHandled
-    #      arn:
-    #        Fn::ImportValue: !Sub
-    #          - "#{Stage}-ScraperFeedHandledTopicArn"
-    #          - Stage: ${sls:stage}
-
-  processGroceryOffersSns:
-    handler: tokens/handler.processGroceryOffersSns
-    #events:
-    #  - sns:
-    #      topicName: ScraperFeedHandled
-    #      arn:
-    #        Fn::ImportValue: !Sub
-    #          - "#{Stage}-ScraperFeedHandledTopicArn"
-    #          - Stage: ${sls:stage}
-
-  processOffersKeysSns:
-    handler: offer-feed/handle-offers-fields.handlerSns
-    events:
-      - sns:
-          topicName: ScraperFeedHandled
-          arn:
-            Fn::ImportValue: !Sub
-              - "#{Stage}-ScraperFeedHandledTopicArn"
-              - Stage: ${sls:stage}
-  processOffersKeysTrigger:
-    handler: offer-feed/handle-offers-fields.handlerTrigger
-
   handleOffersForNotificationsSns:
     handler: offer-notifications/handle-offers.handlerSns
     events:
@@ -340,13 +45,6 @@ functions:
               - Stage: ${sls:stage}
   handleOffersForNotificationsTrigger:
     handler: offer-notifications/handle-offers.handlerTrigger
-
-  flagInactiveOffers:
-    handler: crons/filter-active.flagInactiveOffers
-    events:
-      - schedule:
-          rate: cron(0 2 ? * * *) # Every night 2 am
-
   unsubscribeEvents:
     handler: offer-notifications/unsubscribe.handle
     timeout: 30
