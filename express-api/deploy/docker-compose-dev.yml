@@ -1,17 +1,23 @@
 services:
   fastify-api:
-    image: 'ewr.vultrcr.com/vikfandvultryregistry/mpn-fastify-app:latest'
+    image: 'fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest'
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=mpn,deployment.environment=$${env:STAGE},service.version=$${env:GIT_COMMIT}"
+      OTEL_TRACES_SAMPLER: "always_on"
+      OTEL_AUTH_TOKEN: ${OTEL_AUTH_TOKEN}
+      OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer%20${OTEL_AUTH_TOKEN}"
       STAGE: dev
     networks:
       - traefik-public
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/healthz || exit 1"]
+      test: ["CMD", "node", "healthcheck.cjs"]
       interval: 20s
       timeout: 5s
       retries: 3
-      start_period: 5s
+      start_period: 10s
     deploy:
       replicas: 1
       resources:

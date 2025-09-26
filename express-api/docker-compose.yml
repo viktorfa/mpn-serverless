@@ -1,0 +1,26 @@
+services:
+  fastify-api:
+    image: "fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
+    network_mode: host
+    build:
+      dockerfile: ./Dockerfile.fastify
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=mpn,deployment.environment=local,service.version=$${env:GIT_COMMIT}"
+      OTEL_TRACES_SAMPLER: "always_on"
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS}
+      STAGE: dev
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "require(''http'').get(''http://localhost:3000/healthz'', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1))"',
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

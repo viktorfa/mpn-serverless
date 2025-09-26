@@ -23,4 +23,4 @@ This is a project for a Fastify API server for a price comparison website.
 We recently migrated from MongoDB and Express running in AWS Lambda to Postgres, Fastify and running in a Docker Swarm.
 
 
-
+We use pnpm for scripts and package management, and n for node version management

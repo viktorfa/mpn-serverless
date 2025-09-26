@@ -72,7 +72,7 @@ fi
 # Set the app folder name dynamically based on the stage
 APP_FOLDER="fastify-$APP_NAME-$STAGE"
 
-DOCKER_IMAGE_NAME="ewr.vultrcr.com/vikfandvultryregistry/mpn-fastify-app:latest"
+DOCKER_IMAGE_NAME="fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
 
 docker build -f Dockerfile.fastify -t $DOCKER_IMAGE_NAME .
 docker push $DOCKER_IMAGE_NAME
@@ -88,8 +88,7 @@ else
 fi
 
 # Convert docker-compose.yml to canonical form to insert env variables
-docker compose --env-file ./${ENV_FILE} -f ./deploy/docker-compose-${STAGE}.yml config --no-path-resolution | grep -v '^name'  > ./deploy/docker-compose-${STAGE}.canonical.yml
-
+docker compose --env-file ./${ENV_FILE} -f ./deploy/docker-compose-${STAGE}.yml config --no-path-resolution | grep -v '^name' > ./deploy/docker-compose-${STAGE}.canonical.yml
 
 # Sync the files to the remote server using rsync
 rsync -avz --delete ./deploy/ "root@116.203.157.166:/root/${APP_FOLDER}/"

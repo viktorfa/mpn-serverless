@@ -1,21 +1,23 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20
-
-# Set the working directory
+# syntax=docker/dockerfile:1
+FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Copy package.json and install dependencies
+RUN corepack enable && corepack prepare pnpm@8.10.3 --activate
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm && pnpm install
+RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the application code
+FROM node:20-alpine AS build
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@8.10.3 --activate
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN pnpm build && pnpm prune --prod
 
-# Build the application
-RUN pnpm build-fastify
-
-# Expose the app on port 3000
+FROM node:20-alpine AS run
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY package.json ./
+COPY healthcheck.cjs ./
 EXPOSE 3000
-
-# Start the app
-CMD ["node", "out-fastify/server.js"]
+CMD ["node", "--import", "./dist/otel.js", "dist/server.js"]
