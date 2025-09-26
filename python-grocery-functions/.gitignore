@@ -34,3 +34,5 @@ layer/
 
 .env.prod
 .env.dev
+
+docker-compose-*.canonical.yml
