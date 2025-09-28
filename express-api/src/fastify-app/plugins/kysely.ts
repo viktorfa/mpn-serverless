@@ -1,13 +1,13 @@
 // src/fastify-app/plugins/kysely.ts
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import fp from "fastify-plugin";
-import { Pool } from "pg";
+import pg from "pg";
+const { Pool } = pg; // CJS default import interop
 import { Kysely, PostgresDialect } from "kysely";
 import type { DB } from "../../../generated/kysely.d";
 
-var types = require("pg").types;
-
-var types = require("pg").types;
+// Fix pg types parsing for ESM
+const types = pg.types;
 types.setTypeParser(types.builtins.NUMERIC, function (val) {
   return Number.parseFloat(val);
 });
@@ -16,12 +16,12 @@ async function kyselyPlugin(
   fastify: FastifyInstance,
   options: FastifyPluginOptions,
 ) {
-  // Initialize the PostgreSQL pool
+  // Initialize the PostgreSQL pool using config from env plugin
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    max: 10,
+    connectionString: fastify.config.DATABASE_URL,
+    max: fastify.config.NODE_ENV === 'test' ? 5 : 10, // Smaller pool for tests
     min: 0,
-    idleTimeoutMillis: 10000,
+    idleTimeoutMillis: fastify.config.NODE_ENV === 'test' ? 5000 : 10000,
     allowExitOnIdle: true,
   });
 
@@ -45,4 +45,5 @@ async function kyselyPlugin(
 // Export the plugin wrapped with fastify-plugin
 export default fp(kyselyPlugin, {
   name: "kysely-plugin",
+  dependencies: ["@fastify/env"],
 });

@@ -1,13 +1,14 @@
 services:
   fastify-api:
-    image: 'fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest'
+    image: "fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
-      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=mpn,deployment.environment=$${env:STAGE},service.version=$${env:GIT_COMMIT}"
-      OTEL_TRACES_SAMPLER: "always_on"
-      OTEL_AUTH_TOKEN: ${OTEL_AUTH_TOKEN}
+      OTEL_RESOURCE_ATTRIBUTES: ${OTEL_RESOURCE_ATTRIBUTES}
+      OTEL_PROPAGATORS: "tracecontext,baggage"
+      OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+      OTEL_TRACES_SAMPLER_ARG: 0.1
       OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Bearer%20${OTEL_AUTH_TOKEN}"
       STAGE: dev
     networks:
@@ -36,9 +37,13 @@ services:
         - traefik.http.routers.api-mpn_dev.entrypoints=https
         - traefik.http.routers.api-mpn_dev.tls.certresolver=letsencrypt
         - traefik.http.services.api-mpn_dev.loadbalancer.server.port=3000
-  
+    labels:
+      KUMA.mpndevgroup.group.name: "Mpn Dev"
+      KUMA.mpnfastifydev.http.name: "Fastify Api"
+      KUMA.mpnfastifydev.http.parent_name: "mpndevgroup"
+      KUMA.mpnfastifydev.http.url: "https://${API_DOMAIN}/healthz"
+
 networks:
   traefik-public:
     external: true
     name: traefik-public
-  

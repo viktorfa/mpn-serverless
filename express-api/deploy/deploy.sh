@@ -22,12 +22,8 @@ done
 # Shift past the processed options (in this case, -y)
 shift $((OPTIND - 1))
 
-# Check if an application name is provided as the first positional argument
-if [ -n "$1" ]; then
-    APP_NAME="$1"
-else
-    APP_NAME=$(<"$SCRIPT_DIR/app_name")
-fi
+
+APP_NAME=$(<"$SCRIPT_DIR/app_name")
 
 echo -e "The application name is: \e[1m$APP_NAME\e[0m"
 
@@ -61,7 +57,7 @@ fi
 
 
 # Get the stage (e.g., dev or prod) from the first argument
-STAGE=$2
+STAGE=$1
 
 # Exit if not provided
 if [ -z "$STAGE" ]; then
@@ -74,7 +70,11 @@ APP_FOLDER="fastify-$APP_NAME-$STAGE"
 
 DOCKER_IMAGE_NAME="fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
 
-docker build -f Dockerfile.fastify -t $DOCKER_IMAGE_NAME .
+# Get git commit short hash
+GIT_COMMIT=$(git rev-parse --short HEAD)
+echo "Building with Git commit: $GIT_COMMIT"
+
+docker build --build-arg GIT_COMMIT=$GIT_COMMIT -f Dockerfile.fastify -t $DOCKER_IMAGE_NAME .
 docker push $DOCKER_IMAGE_NAME
 
 # Load environment variables based on the stage
@@ -86,6 +86,9 @@ else
   echo "Invalid stage specified. Please use 'dev' or 'prod'."
   exit 1
 fi
+
+# Set OTEL_RESOURCE_ATTRIBUTES with actual values
+export OTEL_RESOURCE_ATTRIBUTES="service.namespace=mpn,deployment.environment=${STAGE},service.version=${GIT_COMMIT}"
 
 # Convert docker-compose.yml to canonical form to insert env variables
 docker compose --env-file ./${ENV_FILE} -f ./deploy/docker-compose-${STAGE}.yml config --no-path-resolution | grep -v '^name' > ./deploy/docker-compose-${STAGE}.canonical.yml
