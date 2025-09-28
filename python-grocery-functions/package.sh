@@ -21,6 +21,7 @@ cp -R parsing $TEMP_DIR/ || { echo "Failed to copy parsing"; exit 1; }
 cp -R config $TEMP_DIR/ || { echo "Failed to copy config"; exit 1; }
 cp -R amp_types $TEMP_DIR/ || { echo "Failed to copy amp_types"; exit 1; }
 cp -R transform $TEMP_DIR/ || { echo "Failed to copy transform"; exit 1; }
+cp collector.yaml $TEMP_DIR/ || { echo "Failed to copy collector.yaml"; exit 1; }
 
 # Clean up unnecessary files
 find $TEMP_DIR -type d -name "__tests__" -exec rm -rf {} + || { echo "Failed to remove __tests__"; exit 1; }

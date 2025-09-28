@@ -30,6 +30,7 @@ provider:
 
   layers:
     - !Ref CommonLambdaLayer
+    - "arn:aws:lambda:eu-central-1:184161586896:layer:opentelemetry-collector-amd64-0_17_0:1"
 
   environment:
     STAGE: ${sls:stage}
@@ -41,6 +42,30 @@ provider:
     REDIS_HOST: ${env:LAMBDA_REDIS_HOST}
     REDIS_PASSWORD: ${env:LAMBDA_REDIS_PASSWORD}
     DRAMATIQ_NAMESPACE: ${env:DRAMATIQ_NAMESPACE}
+
+    # ==========================================
+    # OPENTELEMETRY CONFIGURATION
+    # ==========================================
+    PYTHONPATH: "/opt/python:/opt/python/lib/python3.12/site-packages"
+    AWS_LAMBDA_EXEC_WRAPPER: "/opt/bin/otel-wrapper"
+    OTEL_SERVICE_NAME: "mpn-python-lambda-functions"
+    OTEL_RESOURCE_ATTRIBUTES: "service.namespace=mpn,deployment.environment=${sls:stage},service.version=${env:GIT_COMMIT, 'unknown'}"
+    OTEL_PROPAGATORS: "tracecontext,baggage"
+    OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+    OTEL_TRACES_SAMPLER_ARG: 0.1
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://127.0.0.1:4318"
+    OTEL_METRICS_EXPORTER: "otlp"
+    OTEL_LOGS_EXPORTER: "otlp"
+    OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED: true
+    OTEL_PYTHON_LOG_CORRELATION: true
+    OPENTELEMETRY_COLLECTOR_CONFIG_URI: "/var/task/collector.yaml"
+    SIGNOZ_ACCESS_TOKEN: ${env:SIGNOZ_ACCESS_TOKEN}
+    # Automatic logging and metrics
+    OTEL_PYTHON_DISABLED_INSTRUMENTATIONS: ""
+    OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+    OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "http/protobuf"
+    OTEL_EXPORTER_OTLP_METRICS_PROTOCOL: "http/protobuf"
+    OTEL_EXPORTER_OTLP_LOGS_PROTOCOL: "http/protobuf"
 
   iamRoleStatements:
     - Effect: Allow
