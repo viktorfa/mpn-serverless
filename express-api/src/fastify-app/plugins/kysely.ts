@@ -17,15 +17,16 @@ async function kyselyPlugin(
   options: FastifyPluginOptions,
 ) {
   const pool = new Pool({
-    // Initialize the PostgreSQL pool using config from env plugin
     connectionString: fastify.config.DATABASE_URL,
-    max: fastify.config.NODE_ENV === "test" ? 5 : 20, // Increased from 10
+    max: fastify.config.NODE_ENV === "test" ? 5 : 20,
     min: fastify.config.STAGE === "prod" ? 2 : 0, // Keep 2 warm connections
-    idleTimeoutMillis: fastify.config.NODE_ENV === "test" ? 5000 : 30000, // Increased
-    connectionTimeoutMillis: 5000, // Fail fast if no connection available
-    statement_timeout: 10000, // 10s query timeout
-    query_timeout: 10000, // Additional safety
+    idleTimeoutMillis: fastify.config.NODE_ENV === "test" ? 5000 : 30000,
+    connectionTimeoutMillis: 5000,
     allowExitOnIdle: true,
+  });
+
+  pool.on("connect", async (client) => {
+    await client.query("SET statement_timeout = 10000");
   });
 
   pool.on("error", (err) => {
