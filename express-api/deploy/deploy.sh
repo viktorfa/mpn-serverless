@@ -88,6 +88,7 @@ else
 fi
 
 # Set OTEL_RESOURCE_ATTRIBUTES with actual values
+export GIT_COMMIT=$GIT_COMMIT
 export OTEL_RESOURCE_ATTRIBUTES="service.namespace=mpn,deployment.environment=${STAGE},service.version=${GIT_COMMIT}"
 
 # Convert docker-compose.yml to canonical form to insert env variables
