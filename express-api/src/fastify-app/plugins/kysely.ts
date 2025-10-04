@@ -16,19 +16,26 @@ async function kyselyPlugin(
   fastify: FastifyInstance,
   options: FastifyPluginOptions,
 ) {
-  // Initialize the PostgreSQL pool using config from env plugin
   const pool = new Pool({
+    // Initialize the PostgreSQL pool using config from env plugin
     connectionString: fastify.config.DATABASE_URL,
-    max: fastify.config.NODE_ENV === 'test' ? 5 : 10, // Smaller pool for tests
-    min: 0,
-    idleTimeoutMillis: fastify.config.NODE_ENV === 'test' ? 5000 : 10000,
+    max: fastify.config.NODE_ENV === "test" ? 5 : 20, // Increased from 10
+    min: fastify.config.STAGE === "prod" ? 2 : 0, // Keep 2 warm connections
+    idleTimeoutMillis: fastify.config.NODE_ENV === "test" ? 5000 : 30000, // Increased
+    connectionTimeoutMillis: 5000, // Fail fast if no connection available
+    statement_timeout: 10000, // 10s query timeout
+    query_timeout: 10000, // Additional safety
     allowExitOnIdle: true,
+  });
+
+  pool.on("error", (err) => {
+    fastify.log.error({ err }, "Unexpected pool error");
   });
 
   // Initialize Kysely with the Postgres dialect
   const kyselyDb = new Kysely<DB>({
     dialect: new PostgresDialect({
-      pool: () => pool,
+      pool: pool, // Direct reference, not a function
     }),
   });
 
@@ -37,7 +44,12 @@ async function kyselyPlugin(
 
   // Handle graceful shutdown
   fastify.addHook("onClose", async (instance, done) => {
-    await instance.db.destroy();
+    try {
+      await instance.db.destroy();
+      await pool.end(); // Explicitly close pool
+    } catch (err) {
+      fastify.log.error({ err }, "Error closing database connections");
+    }
     done();
   });
 }
