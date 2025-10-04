@@ -30,18 +30,25 @@ services:
         parallelism: 1
         delay: 10s
       restart_policy:
-        condition: on-failure
+        condition: any
+        delay: 5s
+        max_attempts: 3
       labels:
         - traefik.enable=true
         - traefik.http.routers.api-mpn_dev.rule=Host(`${API_DOMAIN}`)
         - traefik.http.routers.api-mpn_dev.entrypoints=https
         - traefik.http.routers.api-mpn_dev.tls.certresolver=letsencrypt
         - traefik.http.services.api-mpn_dev.loadbalancer.server.port=3000
+        - KUMA.mpndevgroup.group.name=Mpn Dev
+        - KUMA.mpnfastifydev.http.name=Fastify Dev
+        - KUMA.mpnfastifydev.http.parent_name=mpndevgroup
+        - KUMA.mpnfastifydev.http.url=https://${API_DOMAIN}/healthz
     labels:
-      KUMA.mpndevgroup.group.name: "Mpn Dev"
-      KUMA.mpnfastifydev.http.name: "Fastify Api"
-      KUMA.mpnfastifydev.http.parent_name: "mpndevgroup"
-      KUMA.mpnfastifydev.http.url: "https://${API_DOMAIN}/healthz"
+      logging.promtail.enabled: false
+      service.name: ${OTEL_SERVICE_NAME}
+      service.namespace: "mpn"
+      service.version: ${GIT_COMMIT}
+      deployment.environment: ${STAGE}
 
 networks:
   traefik-public:
