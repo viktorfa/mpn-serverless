@@ -43,14 +43,13 @@ async function kyselyPlugin(
   fastify.decorate("db", kyselyDb);
 
   // Handle graceful shutdown
-  fastify.addHook("onClose", async (instance, done) => {
+  fastify.addHook("onClose", async () => {
     try {
-      await instance.db.destroy();
+      await fastify.db.destroy();
       await pool.end(); // Explicitly close pool
     } catch (err) {
       fastify.log.error({ err }, "Error closing database connections");
     }
-    done();
   });
 }
 
