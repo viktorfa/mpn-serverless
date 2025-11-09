@@ -68,7 +68,7 @@ fi
 # Set the app folder name dynamically based on the stage
 APP_FOLDER="fastify-$APP_NAME-$STAGE"
 
-DOCKER_IMAGE_NAME="fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
+DOCKER_IMAGE_NAME="registry.vikfand.com/mpn-fastify-app:latest"
 
 # Get git commit short hash
 GIT_COMMIT=$(git rev-parse --short HEAD)

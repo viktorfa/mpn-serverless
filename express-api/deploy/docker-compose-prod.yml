@@ -1,6 +1,6 @@
 services:
   fastify-api:
-    image: "fra.vultrcr.com/crvikfandfrankfurt/mpn-fastify-app:latest"
+    image: "registry.vikfand.com/mpn-fastify-app:latest"
     environment:
       DATABASE_URL: ${DATABASE_URL}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
