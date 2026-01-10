@@ -3,14 +3,7 @@ from collections import defaultdict
 from collections.abc import Mapping
 
 from google.analytics import data_v1beta
-from google.analytics.data_v1beta.types import (
-    DateRange,
-    Dimension,
-    Filter,
-    FilterExpression,
-    Metric,
-    OrderBy,
-)
+from google.analytics.data_v1beta.types import DateRange, Dimension, Filter, FilterExpression, Metric, OrderBy
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
