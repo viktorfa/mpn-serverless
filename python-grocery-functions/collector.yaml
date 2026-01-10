@@ -1,0 +1,41 @@
+# collector.yaml (must be packaged at /var/task/collector.yaml)
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 128
+  memory_limiter:
+    check_interval: 2s
+    limit_mib: 128
+    spike_limit_mib: 32
+
+exporters:
+  otlphttp:
+    endpoint: "https://otlp-nhost.vikfand.com"
+    headers:
+      Authorization: "Bearer ${env:SIGNOZ_ACCESS_TOKEN}" # or the exact header your gateway expects
+    timeout: 2s
+    retry_on_failure:
+      enabled: false
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlphttp]

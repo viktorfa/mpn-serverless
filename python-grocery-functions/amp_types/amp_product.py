@@ -32,37 +32,105 @@ class AdditionalProperty(TypedDict):
     value: Any
 
 
-class MpnOffer(TypedDict):
+class DimensionsData(TypedDict, total=False):
+    """Extracted product dimensions."""
+
+    width: float
+    height: float
+    depth: float
+    diameter: float
+    unit: str
+
+
+class PropertiesData(TypedDict, total=False):
+    """Extracted product properties."""
+
+    material: str
+    color: str
+    weight: float
+    size: str
+
+
+# Core required fields
+class MpnOfferRequired(TypedDict):
     title: str
     pricing: PricingField
-    subtitle: str
-    shortDescription: str
-    description: str
-    imageUrl: str
-    pieces: Quantity
-    value: QuantityField
-    quantity: QuantityField
-    items: ItemsField
     validFrom: datetime
     validThrough: datetime
     href: str
     provenance: str
-    brand: str | None
-    brandKey: str | None
-    vendor: str | None
-    vendorKey: str | None
     dealer: str
     uri: str
     provenanceId: str
+    categories: list[str]
+    gtins: Mapping[str, str]
+
+
+# All optional fields
+class MpnOfferOptional(TypedDict, total=False):
+    subtitle: str
+    shortDescription: str
+    description: str
+    imageUrl: str
+    dealerKey: str
+    market: str
+    isPartner: bool
+    isRecent: bool
+
+    # Quantity fields
+    pieces: Quantity
+    value: QuantityField
+    quantity: QuantityField
+    items: ItemsField
+
+    # Optional fields
+    ahref: str
+    trackingUrl: str
+    brand: str
+    brandKey: str
+    vendor: str
+    vendorKey: str
     availability: str
     additionalProperties: Mapping[str, AdditionalProperty]
     mpnProperties: Mapping[str, AdditionalProperty]
     mpnNutrition: Mapping[str, NutritionalData]
     rawIngredients: list[str]
-    categories: list[str]
-    gtins: Mapping[str, str]
-    market: str
-    isPartner: bool
+    mpnIngredients: list[str]
+    mpnCategories: list[str]
+    mpnStock: str
+    sku: str
+    properties: Mapping[str, Any]
+    dimensions: Mapping[str, Any]
+
+    # Version fields - added during finalization
+    mpnCategoriesV: int
+    mpnIngredientsV: int
+    mpnNutritionV: int
+    mpnPropertiesV: int
+    mpnStockV: int
+    mpnQuantityV: int
+
+    # Price difference fields - may be added later in pipeline
+    difference: float
+    differencePercentage: float
+    price7DaysMean: float
+    difference7DaysMean: float
+    difference7DaysMeanPercentage: float
+    price30DaysMean: float
+    difference30DaysMean: float
+    difference30DaysMeanPercentage: float
+    price90DaysMean: float
+    difference90DaysMean: float
+    difference90DaysMeanPercentage: float
+    price365DaysMean: float
+    difference365DaysMean: float
+    difference365DaysMeanPercentage: float
+    pageviews: int
+
+
+# Combined type
+class MpnOffer(MpnOfferRequired, MpnOfferOptional):
+    pass
 
 
 class ProcessedMpnOffer(MpnOffer):

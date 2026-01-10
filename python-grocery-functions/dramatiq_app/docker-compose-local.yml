@@ -1,0 +1,43 @@
+services:
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - "6379:6379"  # Exposing Redis port on localhost
+      - "8001:8001"  # Exposing Redis port on localhost
+    networks:
+      - redis-network
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  dramatiq_dev:
+    image: registry.vikfand.com/dramatiq-app-mpn:latest
+    environment:
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-} 
+      STAGE: ${STAGE:-local}
+      DRAMATIQ_NAMESPACE: ${DRAMATIQ_NAMESPACE:-dramatiq_mpn_local}
+      
+      OFFLINE_AWS_ACCESS_KEY_ID: ${OFFLINE_AWS_ACCESS_KEY_ID}
+      OFFLINE_AWS_SECRET_ACCESS_KEY: ${OFFLINE_AWS_SECRET_ACCESS_KEY}
+
+      SCRAPER_FEED_BUCKET: ${SCRAPER_FEED_BUCKET}
+
+      # OpenTelemetry configuration - set to your collector endpoint
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_COLLECTOR_ENDPOINT:-}
+
+    healthcheck:
+      test: ["CMD", "python", "/app/dramatiq_app/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+      
+    networks:
+      - redis-network
+    depends_on:
+      - redis
+
+networks:
+  redis-network:
+    driver: bridge

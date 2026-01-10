@@ -35,7 +35,17 @@ dev = [
     "pylance>=0.36.0",
     "polyfactory>=2.22.2",
 ]
-dramatiq = ["boto3~=1.35.0"]
+dramatiq = [
+    "boto3~=1.35.0",
+    "opentelemetry-api~=1.37.0",
+    "opentelemetry-sdk~=1.37.0",
+    "opentelemetry-instrumentation>=0.58b0",
+    "opentelemetry-instrumentation-redis>=0.58b0",
+    "opentelemetry-instrumentation-psycopg2>=0.58b0",
+    "opentelemetry-instrumentation-sqlalchemy>=0.58b0",
+    "opentelemetry-instrumentation-logging>=0.58b0",
+    "opentelemetry-exporter-otlp~=1.37.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

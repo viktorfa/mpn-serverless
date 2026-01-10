@@ -13,6 +13,11 @@ DRAMATIQ_NAMESPACE = f"dramatiq_mpn_{STAGE}"
 # Env variables from the rest of the app that is currently AWS Lambdas
 load_dotenv(dotenv_path=f".env.{STAGE}")
 
+# Initialize OpenTelemetry before any other imports
+from dramatiq_app.otel import initialize_opentelemetry
+
+initialize_opentelemetry()
+
 import dramatiq
 from dramatiq.brokers.redis import RedisBroker
 

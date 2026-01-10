@@ -2,7 +2,7 @@ services:
   dramatiq:
     image: ${DRAMATIQ_IMAGE_TAG:-registry.vikfand.com/dramatiq-app-mpn:latest}
     deploy:
-      replicas: 2
+      replicas: 3
       resources:
         limits:
           memory: 1024M

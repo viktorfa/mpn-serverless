@@ -12,6 +12,9 @@ WORKDIR /app
 COPY requirements-dramatiq.txt /app/
 RUN pip install --upgrade --quiet --no-cache-dir pip && pip install --quiet --no-cache-dir -r requirements-dramatiq.txt
 
+ARG GIT_COMMIT=unknown
+ENV GIT_COMMIT=${GIT_COMMIT}
+
 # Copy the entire project to the working directory
 COPY . /app/
 
